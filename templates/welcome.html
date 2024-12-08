@@ -135,14 +135,11 @@
         }
 
         .today {
-
-            color:red;
+            color: red;
             font-weight: bold;
-
             display: flex;
             align-items: center;
             justify-content: center;
-
             margin: auto; /* Center today's date in the cell */
         }
     </style>
@@ -209,24 +206,25 @@
         calendarTitle.textContent = `${new Date(year, month, 1).toLocaleString('ru', { month: 'long' })} ${year}`;
 
         let date = 1;
-        for (let i = 0; i < 6; i++) {
-            const row = document.createElement('tr');
+        let row = document.createElement('tr');
+        for (let i = 0; i < firstDay; i++) {
+            const cell = document.createElement('td');
+            cell.innerHTML = '';
+            row.appendChild(cell);
+        }
 
-            for (let j = 0; j < 7; j++) {
-                const cell = document.createElement('td');
-
-                if ((i === 0 && j < firstDay) || date > daysInMonth) {
-                    cell.innerHTML = '';
-                } else {
-                    cell.textContent = date;
-                    if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
-                        cell.classList.add('today');
-                    }
-                    date++;
-                }
-                row.appendChild(cell);
+        for (let i = 1; i <= daysInMonth; i++) {
+            const cell = document.createElement('td');
+            cell.textContent = i;
+            if (i === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                cell.classList.add('today');
             }
-            calendarBody.appendChild(row);
+            row.appendChild(cell);
+
+            if ((i + firstDay) % 7 === 0 || i === daysInMonth) {
+                calendarBody.appendChild(row);
+                row = document.createElement('tr');
+            }
         }
     }
 
