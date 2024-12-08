@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
+
 @router.get("/register", response_class=HTMLResponse)
 async def get_register(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
@@ -64,13 +65,14 @@ async def welcome(request: Request):
 
 
 @router.get("/confirm", response_class=HTMLResponse)
-async def confirm(request: Request, user: dict = Depends(get_authenticated_user),):
+async def confirm(
+    request: Request,
+    user: dict = Depends(get_authenticated_user),
+):
     if isinstance(user, RedirectResponse):
         return user  # Если пользователь не аутентифицирован
 
-    return templates.TemplateResponse(
-        "confirm.html", {"request": request}
-    )
+    return templates.TemplateResponse("confirm.html", {"request": request})
 
 
 @router.get("/access", response_class=HTMLResponse)

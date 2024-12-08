@@ -17,7 +17,6 @@ class User(BaseModel):
     role: str
 
 
-
 class UserCreate(User):
     username: str
     password: str
@@ -26,5 +25,3 @@ class UserCreate(User):
 
 class UpdateUserRole(BaseModel):
     role: str
-
-

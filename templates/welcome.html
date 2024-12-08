@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Добро пожаловать</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            margin: 0;
+            background-image: url('/static/img/bg.jpg');
+            background-size: cover;
+            background-position: center;
+            font-family: Arial, sans-serif; /* Added font for consistency */
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-bottom: 1px solid #ccc;
+        }
+
+        .logo {
+            height: 50px;
+        }
+
+        .welcome-title {
+            margin: 0;
+            font-size: 24px;
+            color: #333;
+            text-align: center; /* Improved alignment for various devices */
+        }
+
+        .section-center {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .button-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .welcome-btn {
+            cursor: pointer;
+            padding: 12px 20px;
+            background-color: #00aaff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Added shadow for button */
+        }
+
+        .welcome-btn:hover {
+            background-color: #008fcc;
+        }
+
+        .welcome-btn:active {
+            transform: scale(0.95);
+        }
+
+        .welcome-btn a {
+            color: white;
+            text-decoration: none;
+        }
+
+        .welcome-container {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+
+        .calendar-widget {
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin-top: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .nav-btn {
+            background-color: #00aaff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .nav-btn:hover {
+            background-color: #008fcc;
+        }
+
+        .calendar {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .calendar th, .calendar td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .calendar th {
+            background-color: #f4f4f4;
+        }
+
+        .calendar td {
+            background-color: #fff;
+        }
+
+        .today {
+
+            color:red;
+            font-weight: bold;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            margin: auto; /* Center today's date in the cell */
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <img src="/static/img/logo.jpeg" class="logo" alt="Логотип">
+        <div class="welcome-container">
+            <h2 class="welcome-title">Добро пожаловать, {{ username }}</h2>
+        </div>
+    </div>
+    <section class="section-center">
+        <div class="button-container">
+            <button class="welcome-btn"><a href="/objects/">Объекты</a></button>
+            <button class="welcome-btn"><a href="/contracts/">Договоры</a></button>
+            <button class="welcome-btn"><a href="/customers/">Заказчики</a></button>
+            <button class="welcome-btn"><a href="/dashboards/">Дашборды</a></button>
+            <button class="welcome-btn"><a href="/employees/">Сотрудники</a></button>
+            <button class="welcome-btn"><a href="/directory/">Справочник</a></button>
+            {% if role == 'admin' %}
+            <button class="welcome-btn"><a href="/users/">Доступ</a></button>
+            {% endif %}
+        </div>
+        <div class="calendar-widget">
+            <div class="calendar-header">
+                <button class="nav-btn" id="prev-month">&lt;</button>
+                <h3 id="calendar-title">Декабрь 2024</h3>
+                <button class="nav-btn" id="next-month">&gt;</button>
+            </div>
+            <table class="calendar">
+                <thead>
+                    <tr>
+                        <th>Пн</th>
+                        <th>Вт</th>
+                        <th>Ср</th>
+                        <th>Чт</th>
+                        <th>Пт</th>
+                        <th>Сб</th>
+                        <th>Вс</th>
+                    </tr>
+                </thead>
+                <tbody id="calendar-body">
+                    <!-- Дни будут генерироваться через JS -->
+                </tbody>
+            </table>
+        </div>
+    </section>
+</body>
+<script>
+    const calendarBody = document.getElementById('calendar-body');
+    const calendarTitle = document.getElementById('calendar-title');
+    const prevMonthBtn = document.getElementById('prev-month');
+    const nextMonthBtn = document.getElementById('next-month');
+
+    const today = new Date();
+    let currentMonth = today.getMonth();
+    let currentYear = today.getFullYear();
+
+    function generateCalendar(month, year) {
+        const firstDay = (new Date(year, month, 1).getDay() + 6) % 7;
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+        calendarBody.innerHTML = '';
+        calendarTitle.textContent = `${new Date(year, month, 1).toLocaleString('ru', { month: 'long' })} ${year}`;
+
+        let date = 1;
+        for (let i = 0; i < 6; i++) {
+            const row = document.createElement('tr');
+
+            for (let j = 0; j < 7; j++) {
+                const cell = document.createElement('td');
+
+                if ((i === 0 && j < firstDay) || date > daysInMonth) {
+                    cell.innerHTML = '';
+                } else {
+                    cell.textContent = date;
+                    if (date === today.getDate() && month === today.getMonth() && year === today.getFullYear()) {
+                        cell.classList.add('today');
+                    }
+                    date++;
+                }
+                row.appendChild(cell);
+            }
+            calendarBody.appendChild(row);
+        }
+    }
+
+    function changeMonth(offset) {
+        currentMonth += offset;
+        if (currentMonth < 0) {
+            currentMonth = 11;
+            currentYear--;
+        } else if (currentMonth > 11) {
+            currentMonth = 0;
+            currentYear++;
+        }
+        generateCalendar(currentMonth, currentYear);
+    }
+
+    prevMonthBtn.addEventListener('click', () => changeMonth(-1));
+    nextMonthBtn.addEventListener('click', () => changeMonth(1));
+
+    generateCalendar(currentMonth, currentYear);
+</script>
+</html>

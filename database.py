@@ -5,16 +5,19 @@ from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
 
+import os
+
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 # Строка подключения к базе данных
-DATABASE_URL = ""
+DATABASE_URL = os.getenv("DATABASE_URL")
 async_engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # Создаем базовый класс для моделей
 Base = declarative_base()
+
 
 # Определение модели WebUser с использованием SQLAlchemy
 class WebUser(Base):
@@ -37,9 +40,11 @@ async def init_db():
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 
+
 async def get_db():
     async with async_session() as session:
         yield session
+
 
 # Example route to test the database connection
 @router.get("/")

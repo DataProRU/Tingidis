@@ -14,6 +14,7 @@ templates = Jinja2Templates(directory="templates")
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 @router.get("/users/")
 async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     token = get_token_from_cookie(request)
@@ -31,7 +32,10 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     stmt = select(WebUser)
     result = await db.execute(stmt)
     users_data = result.scalars().all()
-    return templates.TemplateResponse("access.html", {"request": request, "users": users_data})
+    return templates.TemplateResponse(
+        "access.html", {"request": request, "users": users_data}
+    )
+
 
 @router.delete("/users/{user_id}/")
 async def delete_user(
@@ -62,6 +66,7 @@ async def delete_user(
         return JSONResponse({"detail": "User deleted successfully"})
     return JSONResponse({"detail": "User not found"}, status_code=404)
 
+
 @router.get("/users/{user_id}/edit/")
 async def edit_user_form(
     user_id: int,
@@ -87,7 +92,10 @@ async def edit_user_form(
     if not user:
         return templates.TemplateResponse("not_found.html", {"request": request})
 
-    return templates.TemplateResponse("edit_user.html", {"request": request, "user": user})
+    return templates.TemplateResponse(
+        "edit_user.html", {"request": request, "user": user}
+    )
+
 
 @router.post("/users/{user_id}/edit/")
 async def update_user(
@@ -123,6 +131,7 @@ async def update_user(
 
     return RedirectResponse(url="/users/", status_code=303)
 
+
 @router.post("/users/add/")
 async def add_user(
     request: Request,
@@ -152,6 +161,7 @@ async def add_user(
     await db.refresh(new_user)
 
     return RedirectResponse(url="/users/", status_code=303)
+
 
 @router.post("/users/{user_id}/delete/")
 async def delete_user_post(

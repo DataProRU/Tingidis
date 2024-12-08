@@ -4,7 +4,8 @@ from services.auth import verify_password, get_password_hash, create_access_toke
 from schemas import UserCreate
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from database  import WebUser # Assuming you have a User model
+from database import WebUser  # Assuming you have a User model
+
 
 async def register_user(
     request: Request,
@@ -16,7 +17,11 @@ async def register_user(
 ):
     user = UserCreate(username=username, password=password, role=role)
     try:
-        new_user = WebUser(username=user.username, password=get_password_hash(user.password), role=user.role)
+        new_user = WebUser(
+            username=user.username,
+            password=get_password_hash(user.password),
+            role=user.role,
+        )
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
@@ -25,6 +30,7 @@ async def register_user(
         return templates.TemplateResponse(
             "register.html", {"request": request, "error": str(e)}
         )
+
 
 async def login_user(request: Request, form_data, db: AsyncSession, templates):
     try:
@@ -36,9 +42,7 @@ async def login_user(request: Request, form_data, db: AsyncSession, templates):
         # Проверка, найден ли пользователь и совпадает ли пароль
         if user and verify_password(form_data.password, user.password):
             # Генерация токена и установка куки
-            token = create_access_token(
-                {"sub": form_data.username, "role": user.role}
-            )
+            token = create_access_token({"sub": form_data.username, "role": user.role})
             response = RedirectResponse(
                 url="/welcome", status_code=status.HTTP_303_SEE_OTHER
             )

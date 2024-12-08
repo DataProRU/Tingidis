@@ -6,12 +6,9 @@ from fastapi.staticfiles import StaticFiles
 
 app = FastAPI()
 
-app.mount("/templates", StaticFiles(directory="templates"), name="templates")
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_routes.router)
 app.include_router(users.router)
-
-
 
 
 @app.on_event("startup")
@@ -19,11 +16,11 @@ async def startup():
     # При старте приложения создаем таблицы
     await init_db()
 
+
 @app.on_event("shutdown")
 async def shutdown():
     # Отключаемся от базы данных при завершении работы
     await database.disconnect()
-
 
 
 app.add_middleware(
@@ -33,4 +30,3 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
