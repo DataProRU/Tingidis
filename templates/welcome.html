@@ -14,7 +14,7 @@
             background-image: url('/static/img/bg.jpg');
             background-size: cover;
             background-position: center;
-            font-family: Arial, sans-serif; /* Added font for consistency */
+            font-family: Arial, sans-serif;
         }
 
         .header {
@@ -34,7 +34,7 @@
             margin: 0;
             font-size: 24px;
             color: #333;
-            text-align: center; /* Improved alignment for various devices */
+            text-align: center;
         }
 
         .section-center {
@@ -62,7 +62,7 @@
             border-radius: 8px;
             font-size: 16px;
             transition: background-color 0.3s ease, transform 0.3s ease;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Added shadow for button */
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
         }
 
         .welcome-btn:hover {
@@ -84,14 +84,40 @@
             justify-content: center;
         }
 
-        .calendar-widget {
+        .widget-container {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+
+        .table-widget, .calendar-widget {
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            margin-top: 20px;
+            padding: 10px;
+            flex: 1;
+        }
+
+        .table-widget table {
             width: 100%;
-            max-width: 600px;
+            border-collapse: collapse;
+            table-layout: fixed;
+            word-wrap: break-word;
+        }
+
+        .table-widget th, .table-widget td {
+            border: 1px solid #ddd;
+            padding: 10px;
+            text-align: left;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-size:50%;
+        }
+
+        .table-widget th {
+            background-color: #f4f4f4;
         }
 
         .calendar-header {
@@ -140,7 +166,7 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            margin: auto; /* Center today's date in the cell */
+            margin: auto;
         }
 
         .time-container {
@@ -178,28 +204,86 @@
             <button class="welcome-btn"><a href="/users/">Доступ</a></button>
             {% endif %}
         </div>
-        <div class="calendar-widget">
-            <div class="calendar-header">
-                <button class="nav-btn" id="prev-month">&lt;</button>
-                <h3 id="calendar-title">Декабрь 2024</h3>
-                <button class="nav-btn" id="next-month">&gt;</button>
+        <div class="widget-container">
+            <div class="table-widget">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Номер</th>
+                            <th>Шифр</th>
+                            <th>Наименование</th>
+                            <th>Заказчик</th>
+                            <th>Ответственный исполнитель</th>
+                            <th>Статус</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>A001</td>
+                            <td>Объект 1</td>
+                            <td>Заказчик 1</td>
+                            <td>Иванов Иван</td>
+                            <td>В процессе</td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>A002</td>
+                            <td>Объект 2</td>
+                            <td>Заказчик 2</td>
+                            <td>Петров Петр</td>
+                            <td>Завершен</td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>A003</td>
+                            <td>Объект 3</td>
+                            <td>Заказчик 3</td>
+                            <td>Сидоров Сидор</td>
+                            <td>Отменен</td>
+                        </tr>
+                        <tr>
+                            <td>4</td>
+                            <td>A004</td>
+                            <td>Объект 4</td>
+                            <td>Заказчик 4</td>
+                            <td>Кузнецов Кузьма</td>
+                            <td>В процессе</td>
+                        </tr>
+                        <tr>
+                            <td>5</td>
+                            <td>A005</td>
+                            <td>Объект 5</td>
+                            <td>Заказчик 5</td>
+                            <td>Смирнов Сергей</td>
+                            <td>Завершен</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
-            <table class="calendar">
-                <thead>
-                    <tr>
-                        <th>Пн</th>
-                        <th>Вт</th>
-                        <th>Ср</th>
-                        <th>Чт</th>
-                        <th>Пт</th>
-                        <th>Сб</th>
-                        <th>Вс</th>
-                    </tr>
-                </thead>
-                <tbody id="calendar-body">
-                    <!-- Дни будут генерироваться через JS -->
-                </tbody>
-            </table>
+            <div class="calendar-widget">
+                <div class="calendar-header">
+                    <button class="nav-btn" id="prev-month">&lt;</button>
+                    <h3 id="calendar-title">Декабрь 2024</h3>
+                    <button class="nav-btn" id="next-month">&gt;</button>
+                </div>
+                <table class="calendar">
+                    <thead>
+                        <tr>
+                            <th>Пн</th>
+                            <th>Вт</th>
+                            <th>Ср</th>
+                            <th>Чт</th>
+                            <th>Пт</th>
+                            <th>Сб</th>
+                            <th>Вс</th>
+                        </tr>
+                    </thead>
+                    <tbody id="calendar-body">
+                        <!-- Дни будут генерироваться через JS -->
+                    </tbody>
+                </table>
+            </div>
         </div>
     </section>
 </body>
