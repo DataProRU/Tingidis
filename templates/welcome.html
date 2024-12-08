@@ -142,6 +142,17 @@
             justify-content: center;
             margin: auto; /* Center today's date in the cell */
         }
+
+        .time-container {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+        }
+
+        .time {
+            font-size: 16px;
+            color: #333;
+        }
     </style>
 </head>
 <body>
@@ -149,6 +160,10 @@
         <img src="/static/img/logo.jpeg" class="logo" alt="Логотип">
         <div class="welcome-container">
             <h2 class="welcome-title">Добро пожаловать, {{ username }}</h2>
+        </div>
+        <div class="time-container">
+            <div class="time" id="current-time"></div>
+            <div class="time" id="future-time"></div>
         </div>
     </div>
     <section class="section-center">
@@ -193,6 +208,8 @@
     const calendarTitle = document.getElementById('calendar-title');
     const prevMonthBtn = document.getElementById('prev-month');
     const nextMonthBtn = document.getElementById('next-month');
+    const currentTimeElem = document.getElementById('current-time');
+    const futureTimeElem = document.getElementById('future-time');
 
     const today = new Date();
     let currentMonth = today.getMonth();
@@ -244,5 +261,16 @@
     nextMonthBtn.addEventListener('click', () => changeMonth(1));
 
     generateCalendar(currentMonth, currentYear);
+
+    function updateTime() {
+        const now = new Date();
+        const futureTime = new Date(now.getTime() + 2 * 60 * 60 * 1000);
+
+        currentTimeElem.textContent = `Текущее время: ${now.toLocaleTimeString('ru-RU', { hour12: false })}`;
+        futureTimeElem.textContent = `Второе время: ${futureTime.toLocaleTimeString('ru-RU', { hour12: false })}`;
+    }
+
+    updateTime();
+    setInterval(updateTime, 1000);
 </script>
 </html>
