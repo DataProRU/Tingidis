@@ -33,7 +33,7 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(stmt)
     users_data = result.scalars().all()
     return templates.TemplateResponse(
-        "access.html", {"request": request, "users": users_data}
+        "users.html", {"request": request, "users": users_data}
     )
 
 
