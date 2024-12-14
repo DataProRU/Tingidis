@@ -29,58 +29,31 @@
                 <th>Специализация</th>
                 <th>Примечание</th>
                 <th>Логин</th>
-                <th>Пароль</th>
+                <th>Действия</th>
             </tr>
         </thead>
         <tbody>
+            {% for user in users %}
             <tr>
-                <td>Иванов</td>
-                <td>Иван</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
-                <td>Иванович</td>
+                <td>{{ user.last_name }}</td>
+                <td>{{ user.first_name }}</td>
+                <td>{{ user.middle_name }}</td>
+                <td>{{ user.full_name }}</td>
+                <td>{{ user.position }}</td>
+                <td>{{ user.phone }}</td>
+                <td>{{ user.email }}</td>
+                <td>{{ user.telegram }}</td>
+                <td>{{ user.birthdate }}</td>
+                <td>{{ user.category }}</td>
+                <td>{{ user.specialization }}</td>
+                <td>{{ user.notes }}</td>
+                <td>{{ user.login }}</td>
+                <td>
+                    <button class="edit-button" data-user-id="{{ user.id }}">Изменить</button>
+                    <button class="delete-button" data-user-id="{{ user.id }}">Удалить</button>
+                </td>
             </tr>
-            <tr>
-                <td>Петров</td>
-                <td>Петр</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-                <td>Петрович</td>
-            </tr>
-            <tr>
-                <td>Сидоров</td>
-                <td>Сидор</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-                <td>Сидорович</td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </div>
@@ -90,25 +63,21 @@
     <div class="modal-content">
         <span class="close-button" id="close-modal">&times;</span>
         <h2>Добавить нового сотрудника</h2>
-        <form>
+        <form action="/users/add/" method="post">
             <div class="form-group flex">
                 <div class="form-item">
                     <label for="last-name">Фамилия:</label>
-                    <input type="text" id="last-name" name="last-name" required>
+                    <input type="text" id="last-name" name="last_name" required>
                 </div>
                 <div class="form-item">
                     <label for="first-name">Имя:</label>
-                    <input type="text" id="first-name" name="first-name" required>
+                    <input type="text" id="first-name" name="first_name" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
                     <label for="middle-name">Отчество:</label>
-                    <input type="text" id="middle-name" name="middle-name" required>
-                </div>
-                <div class="form-item">
-                    <label for="full-name">Фамилия ИО:</label>
-                    <input type="text" id="full-name" name="full-name" required>
+                    <input type="text" id="middle-name" name="middle_name" required>
                 </div>
             </div>
             <div class="form-group flex">
@@ -168,6 +137,92 @@
     </div>
 </div>
 
+<div id="edit-employee-modal" class="modal">
+    <div class="modal-content">
+        <span class="close-button" id="close-edit-modal">&times;</span>
+        <h2>Редактировать сотрудника</h2>
+        <form id="edit-employee-form" method="post">
+            <input type="hidden" id="edit-user-id" name="user_id">
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-last-name">Фамилия:</label>
+                    <input type="text" id="edit-last-name" name="last_name" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-first-name">Имя:</label>
+                    <input type="text" id="edit-first-name" name="first_name" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-middle-name">Отчество:</label>
+                    <input type="text" id="edit-middle-name" name="middle_name" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-position">Должность:</label>
+                    <input type="text" id="edit-position" name="position" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-phone">Телефон:</label>
+                    <input type="number" id="edit-phone" name="phone" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-email">e-mail:</label>
+                    <input type="email" id="edit-email" name="email" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-telegram">Логин Телеграм:</label>
+                    <input type="text" id="edit-telegram" name="telegram" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-birthdate">ДР, дата:</label>
+                    <input type="date" id="edit-birthdate" name="birthdate" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-category">Категория:</label>
+                    <input type="text" id="edit-category" name="category" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-specialization">Специализация:</label>
+                    <input type="text" id="edit-specialization" name="specialization" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-notes">Примечание:</label>
+                    <input type="text" id="edit-notes" name="notes" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-login">Логин:</label>
+                    <input type="text" id="edit-login" name="login" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-password">Пароль:</label>
+                    <input type="password" id="edit-password" name="password" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-role">Роль:</label>
+                    <input type="text" id="edit-role" name="role" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <input type="submit" value="Сохранить">
+            </div>
+        </form>
+    </div>
+</div>
+
+
 <style>
 .employee-table-container {
     margin: 20px auto;
@@ -209,8 +264,6 @@
     display: block; /* Отменяем центровку */
     padding: 20px; /* Добавляем отступ для удобства чтения */
 }
-
-
 
 .add-employee-button {
     width: 50px;
@@ -319,7 +372,24 @@
 </style>
 
 <script>
+function clearFormFields() {
+    document.getElementById('last-name').value = '';
+    document.getElementById('first-name').value = '';
+    document.getElementById('middle-name').value = '';
+    document.getElementById('position').value = '';
+    document.getElementById('phone').value = '';
+    document.getElementById('email').value = '';
+    document.getElementById('telegram').value = '';
+    document.getElementById('birthdate').value = '';
+    document.getElementById('category').value = '';
+    document.getElementById('specialization').value = '';
+    document.getElementById('notes').value = '';
+    document.getElementById('login').value = '';
+    document.getElementById('password').value = '';
+}
+
 document.getElementById('add-employee-button').addEventListener('click', function() {
+    clearFormFields();
     document.getElementById('add-employee-modal').style.display = 'block';
 });
 
@@ -327,11 +397,92 @@ document.getElementById('close-modal').addEventListener('click', function() {
     document.getElementById('add-employee-modal').style.display = 'none';
 });
 
+document.getElementById('close-edit-modal').addEventListener('click', function() {
+    document.getElementById('edit-employee-modal').style.display = 'none';
+});
+
 window.addEventListener('click', function(event) {
     var modal = document.getElementById('add-employee-modal');
     if (event.target == modal) {
         modal.style.display = 'none';
     }
+
+    var editModal = document.getElementById('edit-employee-modal');
+    if (event.target == editModal) {
+        editModal.style.display = 'none';
+    }
 });
+
+document.querySelectorAll('.edit-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        fetch(`/users/${userId}/`)
+            .then(response => response.json())
+            .then(user => {
+                if (user.detail) {
+                    alert(user.detail);
+                    return;
+                }
+                document.getElementById('edit-user-id').value = user.id;
+                document.getElementById('edit-last-name').value = user.last_name;
+                document.getElementById('edit-first-name').value = user.first_name;
+                document.getElementById('edit-middle-name').value = user.middle_name;
+                document.getElementById('edit-position').value = user.position;
+                document.getElementById('edit-phone').value = user.phone;
+                document.getElementById('edit-email').value = user.email;
+                document.getElementById('edit-telegram').value = user.telegram;
+                document.getElementById('edit-birthdate').value = user.birthdate;
+                document.getElementById('edit-category').value = user.category;
+                document.getElementById('edit-specialization').value = user.specialization;
+                document.getElementById('edit-notes').value = user.notes;
+                document.getElementById('edit-login').value = user.login;
+                document.getElementById('edit-password').value = '';
+                document.getElementById('edit-employee-modal').style.display = 'block';
+            })
+            .catch(error => {
+                console.error('Error fetching user data:', error);
+                alert(`Ошибка: ${error.message}`)
+            });
+    });
+});
+
+document.getElementById('edit-employee-form').addEventListener('submit', function(event) {
+    event.preventDefault();
+    const userId = document.getElementById('edit-user-id').value;
+    const formData = new FormData(this);
+    fetch(`/users/${userId}/edit/`, {
+        method: 'POST',
+        body: formData
+    }).then(response => {
+        if (response.ok) {
+            window.location.reload();
+        } else {
+            return response.json().then(data => {
+                throw new Error(JSON.stringify(data));
+            });
+        }
+    }).catch(error => {
+        console.error('Error:', error);
+        alert(`Ошибка: ${error.message}`);
+    });
+});
+
+document.querySelectorAll('.delete-button').forEach(button => {
+    button.addEventListener('click', function() {
+        const userId = this.getAttribute('data-user-id');
+        if (confirm('Вы уверены, что хотите удалить этого сотрудника?')) {
+            fetch(`/users/${userId}/delete/`, {
+                method: 'POST',
+            }).then(response => {
+                if (response.ok) {
+                    window.location.reload();
+                } else {
+                    alert('Ошибка при удалении сотрудника');
+                }
+            });
+        }
+    });
+});
+
 </script>
 {% endblock %}

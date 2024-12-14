@@ -28,12 +28,12 @@ async def register_user(request, username, password, role, db, templates):
             role=role,
             login="Pavel",
         )
-        print(f"New user object: {new_user}")
+
         db.add(new_user)
         await db.commit()
-        print("Transaction committed successfully.")
+
         await db.refresh(new_user)
-        print(f"User registered with ID: {new_user.id}")
+
         return RedirectResponse("/users", status_code=303)
     except Exception as e:
         print(f"Error during user registration: {e}")
@@ -44,16 +44,10 @@ async def register_user(request, username, password, role, db, templates):
 
 async def login_user(request: Request, form_data, db: AsyncSession, templates):
     try:
-        # Use SQLAlchemy's select statement
+
         stmt = select(WebUser).where(WebUser.username == form_data.username)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
-        stmt = select(WebUser)
-        result = await db.execute(stmt)
-        users_data = result.scalars().all()
-        print(f"All users  {users_data}")
-        print(f"Form data username: {form_data.username}")
-        print(f"User found: {user}")
 
         # Проверка, найден ли пользователь и совпадает ли пароль
         if user and verify_password(form_data.password, user.password):
