@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import users, auth_routes
+from routes import users, auth_routes, custom
 from database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -9,6 +9,7 @@ app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(auth_routes.router)
 app.include_router(users.router)
+app.include_router(custom.router)
 
 
 @app.on_event("startup")

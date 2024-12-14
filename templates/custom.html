@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Добро пожаловать{% endblock %}
+{% block nav %}
+<div class="welcome-container">
+    <h2 class="welcome-title">Настройки </h2>
+</div>
+{% endblock %}
+{% block content %}
+    <h1>Upload Image</h1>
+    <form action="/upload_image/" method="post" enctype="multipart/form-data" class="upload-form">
+        <input name="file" type="file">
+        <input type="submit">
+    </form>
+
+    <h1>Upload Logo</h1>
+    <form action="/upload-logo/" method="post" enctype="multipart/form-data" class="upload-form">
+        <input name="file" type="file">
+        <input type="submit">
+    </form>
+<style>
+      body {
+            background-image: url("/static/uploads/{{ bg_filename }}");
+            }
+</style>
+
+{% endblock %}

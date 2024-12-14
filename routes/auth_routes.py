@@ -2,14 +2,17 @@ from fastapi import APIRouter, Request, Depends, Form
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
-import databases
+
 from services.auth_service import login_user, register_user
 from dependencies import get_authenticated_user, get_current_user, get_token_from_cookie
 from database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
+import os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+UPLOAD_DIRECTORY = "static/uploads"
+LOGO_DIRECTORY = "static/img"
 
 
 @router.get("/register", response_class=HTMLResponse)
@@ -31,7 +34,16 @@ async def post_register(
 
 @router.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request, "error": None})
+    # Возвращаем HTML-шаблон с данными пользователя
+    logo_files = os.listdir(LOGO_DIRECTORY)
+    bg_files = os.listdir(UPLOAD_DIRECTORY)
+    if logo_files and bg_files:
+        logo_file = max(logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f)))
+        bg_file = max(bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f)))
+    else:
+        logo_file = None
+        bg_file = None
+    return templates.TemplateResponse("login.html", {"request": request, "error": None, "bg_filename": bg_file, "logo_file":logo_file})
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -59,8 +71,16 @@ async def welcome(request: Request):
     role = payload.get("role")
 
     # Возвращаем HTML-шаблон с данными пользователя
+    logo_files = os.listdir(LOGO_DIRECTORY)
+    bg_files = os.listdir(UPLOAD_DIRECTORY)
+    if logo_files and bg_files:
+        logo_file = max(logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f)))
+        bg_file = max(bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f)))
+    else:
+        logo_file = None
+        bg_file = None
     return templates.TemplateResponse(
-        "welcome.html", {"request": request, "username": username, "role": role}
+        "welcome.html", {"request": request, "username": username, "role": role, "bg_filename": bg_file, "logo_file":logo_file}
     )
 
 

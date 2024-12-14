@@ -4,7 +4,12 @@
 <div class="welcome-container">
     <h2 class="welcome-title">Панель управления, {{ username }}</h2>
 </div>
+
+<a href="/customaze">
+        <h2 class="welcome-title">Настройки</h2>
+    </a>
 <div class="time-container">
+
     <div class="time" id="current-time"></div>
     <div class="time" id="future-time"></div>
 </div>
@@ -103,4 +108,9 @@
         </table>
     </div>
 </div>
+<style>
+        body {
+            background-image: url("/static/uploads/{{ bg_filename }}");
+            }
+</style>
 {% endblock %}

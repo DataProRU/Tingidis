@@ -8,9 +8,12 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import NoResultFound, SQLAlchemyError
 from passlib.context import CryptContext
 from datetime import date
+import os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+UPLOAD_DIRECTORY = "static/uploads"
+LOGO_DIRECTORY = "static/img"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -30,7 +33,15 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     stmt = select(WebUser)
     result = await db.execute(stmt)
     users_data = result.scalars().all()
-    return templates.TemplateResponse("users.html", {"request": request, "users": users_data})
+    logo_files = os.listdir(LOGO_DIRECTORY)
+    bg_files = os.listdir(UPLOAD_DIRECTORY)
+    if logo_files and bg_files:
+        logo_file = max(logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f)))
+        bg_file = max(bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f)))
+    else:
+        logo_file = None
+        bg_file = None
+    return templates.TemplateResponse("users.html", {"request": request, "users": users_data, "bg_filename": bg_file, "logo_file":logo_file})
 
 
 @router.post("/users/{user_id}/edit/")
