@@ -29,6 +29,7 @@
                 <th>Специализация</th>
                 <th>Примечание</th>
                 <th>Логин</th>
+                <th>Роль</th>
                 <th>Действия</th>
             </tr>
         </thead>
@@ -48,6 +49,7 @@
                 <td>{{ user.specialization }}</td>
                 <td>{{ user.notes }}</td>
                 <td>{{ user.login }}</td>
+                <td>{{ user.role }}</td>
                 <td>
                     <button class="edit-button" data-user-id="{{ user.id }}">Изменить</button>
                     <button class="delete-button" data-user-id="{{ user.id }}">Удалить</button>
@@ -130,6 +132,15 @@
                     <input type="password" id="password" name="password" required>
                 </div>
             </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="role">Роль:</label>
+                    <select id="role" name="role" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
+                </div>
+            </div>
             <div class="form-group">
                 <input type="submit" value="Добавить">
             </div>
@@ -166,7 +177,7 @@
                 </div>
                 <div class="form-item">
                     <label for="edit-phone">Телефон:</label>
-                    <input type="number" id="edit-phone" name="phone" required>
+                    <input type="text" id="edit-phone" name="phone" required>
                 </div>
             </div>
             <div class="form-group flex">
@@ -212,7 +223,10 @@
             <div class="form-group flex">
                 <div class="form-item">
                     <label for="edit-role">Роль:</label>
-                    <input type="text" id="edit-role" name="role" required>
+                    <select id="edit-role" name="role" required>
+                        <option value="user">User</option>
+                        <option value="admin">Admin</option>
+                    </select>
                 </div>
             </div>
             <div class="form-group">
@@ -221,7 +235,6 @@
         </form>
     </div>
 </div>
-
 
 <style>
 .employee-table-container {
@@ -347,13 +360,28 @@
 .form-group input[type="text"],
 .form-group input[type="email"],
 .form-group input[type="password"],
-.form-group input[type="date"] {
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group select {
     width: 100%;
     padding: 10px;
     margin-bottom: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-sizing: border-box;
+}
+
+.form-group select {
+    background-color: #f9f9f9;
+    cursor: pointer;
+    appearance: none; /* Убираем стандартное оформление селектора */
+    -webkit-appearance: none; /* Для WebKit браузеров */
+    -moz-appearance: none; /* Для Firefox */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 144 144"><path fill="%23333" d="M43.018 96.5l55.512-55.512a6.997 6.997 0 0 0-9.9-9.9L33.118 86.6a7.002 7.002 0 0 0 0 9.9l55.512 55.512a6.997 6.997 0 1 0 9.9-9.9L43.018 96.5z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    padding-right: 30px; /* Добавляем отступ справа для иконки */
 }
 
 .form-group input[type="submit"] {
@@ -367,6 +395,22 @@
 }
 
 .form-group input[type="submit"]:hover {
+    background-color: #0088cc;
+}
+
+.edit-button,
+.delete-button {
+    background-color: #00aaff;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+    margin: 2px;
+}
+
+.edit-button:hover,
+.delete-button:hover {
     background-color: #0088cc;
 }
 </style>
@@ -386,6 +430,7 @@ function clearFormFields() {
     document.getElementById('notes').value = '';
     document.getElementById('login').value = '';
     document.getElementById('password').value = '';
+    document.getElementById('role').value = 'user';
 }
 
 document.getElementById('add-employee-button').addEventListener('click', function() {
@@ -437,6 +482,7 @@ document.querySelectorAll('.edit-button').forEach(button => {
                 document.getElementById('edit-notes').value = user.notes;
                 document.getElementById('edit-login').value = user.login;
                 document.getElementById('edit-password').value = '';
+                document.getElementById('edit-role').value = user.role;
                 document.getElementById('edit-employee-modal').style.display = 'block';
             })
             .catch(error => {
