@@ -43,4 +43,4 @@ async def upload_logo(file: UploadFile = File(...)):
     file_location = f"{LOGO_DIRECTORY}/{file.filename}"
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    return RedirectResponse(url="/", status_code=303)
+    return RedirectResponse(url="/customaze", status_code=303)

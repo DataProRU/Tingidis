@@ -2,25 +2,137 @@
 {% block title %}Добро пожаловать{% endblock %}
 {% block nav %}
 <div class="welcome-container">
-    <h2 class="welcome-title">Настройки </h2>
+    <h2 class="welcome-title">Настройки</h2>
 </div>
 {% endblock %}
 {% block content %}
-    <h1>Upload Image</h1>
-    <form action="/upload_image/" method="post" enctype="multipart/form-data" class="upload-form">
-        <input name="file" type="file">
-        <input type="submit">
-    </form>
+    <h1>Загрузить Изображение</h1>
+    <div class="image-container">
+        <form action="/upload_image/" method="post" enctype="multipart/form-data" class="upload-form">
+            <input name="file" type="file" class="file-input" accept="image/*" onchange="previewImage(event, 'preview-image', 'preview-wrapper')">
+            <div class="preview-wrapper" id="preview-wrapper" style="display: none;">
+                <img id="preview-image" class="preview-image" alt="Предпросмотр" style="display: none;">
+                <button type="button" class="remove-button" onclick="removeImage('file-input', 'preview-image', 'preview-wrapper')">&times;</button>
+            </div>
+            <input type="submit" value="Загрузить" class="submit-button">
+        </form>
+    </div>
 
-    <h1>Upload Logo</h1>
-    <form action="/upload-logo/" method="post" enctype="multipart/form-data" class="upload-form">
-        <input name="file" type="file">
-        <input type="submit">
-    </form>
+    <h1>Загрузить Логотип</h1>
+    <div class="image-container">
+        <form action="/upload-logo/" method="post" enctype="multipart/form-data" class="upload-form">
+            <input name="file" type="file" class="file-input" accept="image/*" onchange="previewImage(event, 'logo-preview-image', 'logo-preview-wrapper')">
+            <div class="preview-wrapper" id="logo-preview-wrapper" style="display: none;">
+                <img id="logo-preview-image" class="preview-image" alt="Предпросмотр" style="display: none;">
+                <button type="button" class="remove-button" onclick="removeImage('file-input', 'logo-preview-image', 'logo-preview-wrapper')">&times;</button>
+            </div>
+            <input type="submit" value="Загрузить" class="submit-button">
+        </form>
+    </div>
+
 <style>
-      body {
-            background-image: url("/static/uploads/{{ bg_filename }}");
-            }
+    body {
+        background-image: url("/static/uploads/{{ bg_filename }}");
+        font-family: Arial, sans-serif;
+        color: #333;
+        background-size: cover;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+    }
+    .image-container {
+        max-width: 400px;
+        margin: 20px auto;
+        padding: 20px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background-color: #f9f9f9;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    .upload-form {
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+    }
+    .file-input {
+        display: block;
+        width: calc(100% - 20px); /* Adjust to prevent overflow */
+        padding: 10px;
+        margin: 10px auto;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #fff;
+    }
+    .submit-button {
+        display: block;
+        width: calc(100% - 20px); /* Adjust to stay within container */
+        padding: 10px;
+        margin: 10px auto;
+        border: none;
+        border-radius: 5px;
+        background-color: #00aaff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .submit-button:hover {
+        background-color: #008fcc;
+    }
+    .preview-wrapper {
+        position: relative;
+        display: inline-block;
+    }
+    .preview-image {
+        max-width: 100%;
+        height: auto;
+        display: block;
+        margin: 10px 0;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+    }
+    .remove-button {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background-color: red;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 20px;
+        height: 20px;
+        cursor: pointer;
+        font-size: 14px;
+        line-height: 18px;
+        text-align: center;
+    }
 </style>
+
+<script>
+    function previewImage(event, previewId, wrapperId) {
+        const file = event.target.files[0];
+        const previewImage = document.getElementById(previewId);
+        const wrapper = document.getElementById(wrapperId);
+
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                previewImage.src = e.target.result;
+                previewImage.style.display = 'block';
+                wrapper.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function removeImage(inputId, previewId, wrapperId) {
+        const input = document.querySelector(`input[name='file']`);
+        const previewImage = document.getElementById(previewId);
+        const wrapper = document.getElementById(wrapperId);
+
+        input.value = "";
+        previewImage.src = "";
+        previewImage.style.display = 'none';
+        wrapper.style.display = 'none';
+    }
+</script>
 
 {% endblock %}
