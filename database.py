@@ -12,7 +12,7 @@ templates = Jinja2Templates(directory="templates")
 
 # Строка подключения к базе данных
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+psycopg2://testuser:testpass@localhost:5432/testdb"
+    "DATABASE_URL", "postgresql+asyncpg://testuser:testpass@localhost:5432/testdb"
 )
 async_engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
