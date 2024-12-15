@@ -24,20 +24,20 @@ class WebUser(Base):
     __tablename__ = "web_user"
     id = Column(Integer, primary_key=True, autoincrement=True)
     username = Column(String, unique=True, nullable=False)
-    last_name = Column(String, unique=True, nullable=False)
-    first_name = Column(String, unique=True, nullable=False)
-    middle_name = Column(String, unique=True, nullable=False)
-    full_name = Column(String, unique=True, nullable=False)
-    position = Column(String, unique=True, nullable=False)
-    phone = Column(Integer, unique=True, nullable=False)
-    email = Column(String, unique=True, nullable=False)
-    telegram = Column(String, unique=True, nullable=False)
-    birthdate = Column(Date, unique=True, nullable=False)
-    category = Column(String, unique=True, nullable=False)
-    specialization = Column(String, unique=True, nullable=False)
-    notes = Column(String, unique=True, nullable=False)
+    last_name = Column(String, nullable=False)
+    first_name = Column(String, nullable=False)
+    middle_name = Column(String, nullable=True)
+    full_name = Column(String,  nullable=False)
+    position = Column(String, nullable=True)
+    phone = Column(String, unique=True, nullable=True)
+    email = Column(String, unique=True, nullable=False, index=True)
+    telegram = Column(String, unique=True, nullable=True)
+    birthdate = Column(Date, nullable=True)
+    category = Column(String, nullable=True)
+    specialization = Column(String, nullable=True)
+    notes = Column(Text, nullable=True)  # Для длинных текстов
     login = Column(String, unique=True, nullable=False)
-    password = Column(String, nullable=False)
+    password = Column(String, nullable=False)  # Здесь требуется хэширование
     role = Column(String, nullable=False, server_default="user")
 
 

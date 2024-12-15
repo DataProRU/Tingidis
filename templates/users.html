@@ -89,7 +89,7 @@
                 </div>
                 <div class="form-item">
                     <label for="phone">Телефон:</label>
-                    <input type="text" id="phone" name="phone" required>
+                    <input type="tel" id="phone" name="phone" required>
                 </div>
             </div>
             <div class="form-group flex">
@@ -177,7 +177,7 @@
                 </div>
                 <div class="form-item">
                     <label for="edit-phone">Телефон:</label>
-                    <input type="text" id="edit-phone" name="phone" required>
+                    <input type="tel" id="edit-phone" name="phone" required>
                 </div>
             </div>
             <div class="form-group flex">
@@ -365,6 +365,7 @@
 .form-group input[type="password"],
 .form-group input[type="date"],
 .form-group input[type="number"],
+.form-group input[type="tel"],
 .form-group select {
     width: 100%;
     padding: 10px;
@@ -533,5 +534,54 @@ document.querySelectorAll('.delete-button').forEach(button => {
     });
 });
 
+// Функция для форматирования номера телефона
+function formatPhoneNumber(input) {
+    let value = input.value.replace(/\D/g, ''); // Удаляем все нецифровые символы
+    if (value.startsWith('8')) {
+        value = '7' + value.substring(1); // Заменяем 8 на 7
+    }
+    if (value.startsWith('7')) {
+        value = '+7 (' + value.substring(1, 4) + ') ' + value.substring(4, 7) + ' ' + value.substring(7, 10) + ' ' + value.substring(10); // Форматируем номер
+    }
+    input.value = value;
+}
+
+// Добавляем обработчик события input для полей ввода телефона
+document.getElementById('phone').addEventListener('input', function(event) {
+    const input = event.target;
+    let rawValue = input.value.replace(/\D/g, ''); // Удаляем все символы, кроме цифр
+
+    // Убедимся, что номер начинается с "7" (для России)
+    if (!rawValue.startsWith('7')) {
+        rawValue = '7' + rawValue;
+    }
+
+    // Форматируем номер телефона
+    const formattedValue = rawValue.replace(/^7(\d{3})(\d{3})(\d{2})(\d{2})$/, '+7 ($1) $2-$3-$4');
+
+    // Ограничиваем ввод только до нужного количества символов
+    if (rawValue.length <= 11) {
+        input.value = formattedValue;
+    } else {
+        input.value = input.value.slice(0, 18);
+    }
+});
+
+document.getElementById('edit-phone').addEventListener('input', function(event) {
+    const input = event.target;
+    let rawValue = input.value.replace(/\D/g, '');
+
+    if (!rawValue.startsWith('7')) {
+        rawValue = '7' + rawValue;
+    }
+
+    const formattedValue = rawValue.replace(/^7(\d{3})(\d{3})(\d{2})(\d{2})$/, '+7 ($1) $2-$3-$4');
+
+    if (rawValue.length <= 11) {
+        input.value = formattedValue;
+    } else {
+        input.value = input.value.slice(0, 18);
+    }
+});
 </script>
 {% endblock %}

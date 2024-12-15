@@ -18,7 +18,7 @@ async def register_user(request, username, password, role, db, templates):
             middle_name="Default Middle Name",
             full_name="Default Full Name",
             position="Default Position",
-            phone=1234567890,
+            phone="12345677",
             email="default@example.com",
             telegram="default_telegram",
             birthdate=datetime.strptime("2001-06-26", "%Y-%m-%d").date(),

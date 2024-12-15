@@ -1,32 +1,45 @@
 {% extends 'base.html' %}
-{% block title %}Добро пожаловать{% endblock %}
+{% block title %}Настройки{% endblock %}
 {% block nav %}
 <div class="welcome-container">
     <h2 class="welcome-title">Настройки</h2>
 </div>
 {% endblock %}
 {% block content %}
-    <h1>Загрузить Изображение</h1>
     <div class="image-container">
-        <form action="/upload_image/" method="post" enctype="multipart/form-data" class="upload-form">
-            <input name="file" type="file" class="file-input" accept="image/*" onchange="previewImage(event, 'preview-image', 'preview-wrapper')">
+        <h1 class="section-title">Загрузить Изображение</h1>
+        <form id="bg-upload-form" action="/upload_image/" method="post" enctype="multipart/form-data" class="upload-form" onsubmit="return validateForm('bg-file-input', 'bg-notification')">
+            <label for="bg-file-input" class="file-label">Загрузить фон</label>
+            <div class="custom-file-input">
+                <input id="bg-file-input" name="file" type="file" class="file-input" accept="image/*"
+       onchange="previewImage(event, 'preview-image', 'preview-wrapper', 'bg-notification')">
+                <button type="button" class="custom-upload-button" onclick="document.getElementById('bg-file-input').click()">Выбрать файл</button>
+            </div>
             <div class="preview-wrapper" id="preview-wrapper" style="display: none;">
                 <img id="preview-image" class="preview-image" alt="Предпросмотр" style="display: none;">
-                <button type="button" class="remove-button" onclick="removeImage('file-input', 'preview-image', 'preview-wrapper')">&times;</button>
+                <button type="button" class="remove-button" onclick="removeImage('bg-file-input', 'preview-image', 'preview-wrapper')">&times;</button>
             </div>
-            <input type="submit" value="Загрузить" class="submit-button">
+            <div id="bg-notification" class="notification" style="display: none;">Пожалуйста, загрузите изображение.</div>
+            <input type="submit" value="Отправить" class="submit-button">
         </form>
     </div>
 
-    <h1>Загрузить Логотип</h1>
     <div class="image-container">
-        <form action="/upload-logo/" method="post" enctype="multipart/form-data" class="upload-form">
-            <input name="file" type="file" class="file-input" accept="image/*" onchange="previewImage(event, 'logo-preview-image', 'logo-preview-wrapper')">
+        <h1 class="section-title">Загрузить Логотип</h1>
+        <form id="logo-upload-form" action="/upload-logo/" method="post" enctype="multipart/form-data" class="upload-form" onsubmit="return validateForm('logo-file-input', 'logo-notification')">
+            <label for="logo-file-input" class="file-label">Загрузить логотип</label>
+            <div class="custom-file-input">
+              <input id="logo-file-input" name="file" type="file" class="file-input" accept="image/*"
+       onchange="previewImage(event, 'logo-preview-image', 'logo-preview-wrapper', 'logo-notification')">
+
+                <button type="button" class="custom-upload-button" onclick="document.getElementById('logo-file-input').click()">Выбрать файл</button>
+            </div>
             <div class="preview-wrapper" id="logo-preview-wrapper" style="display: none;">
                 <img id="logo-preview-image" class="preview-image" alt="Предпросмотр" style="display: none;">
-                <button type="button" class="remove-button" onclick="removeImage('file-input', 'logo-preview-image', 'logo-preview-wrapper')">&times;</button>
+                <button type="button" class="remove-button" onclick="removeImage('logo-file-input', 'logo-preview-image', 'logo-preview-wrapper')">&times;</button>
             </div>
-            <input type="submit" value="Загрузить" class="submit-button">
+            <div id="logo-notification" class="notification" style="display: none;">Пожалуйста, загрузите логотип.</div>
+            <input type="submit" value="Отправить" class="submit-button">
         </form>
     </div>
 
@@ -38,6 +51,13 @@
         background-size: cover;
         background-repeat: no-repeat;
         background-attachment: fixed;
+    }
+    .section-title {
+        text-align: center;
+        font-size: 18px;
+        font-weight: bold;
+        margin-bottom: 10px;
+        color: #000;
     }
     .image-container {
         max-width: 400px;
@@ -53,14 +73,34 @@
         background-color: #fff;
         border-radius: 5px;
     }
-    .file-input {
+    .file-label {
         display: block;
-        width: calc(100% - 20px); /* Adjust to prevent overflow */
-        padding: 10px;
-        margin: 10px auto;
-        border: 1px solid #ccc;
+        text-align: center;
+        margin-bottom: 10px;
+        font-size: 16px;
+        font-weight: bold;
+    }
+    .custom-file-input {
+        position: relative;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    .file-input {
+        display: none;
+    }
+    .custom-upload-button {
+        padding: 10px 20px;
+        border: none;
         border-radius: 5px;
-        background-color: #fff;
+        background-color: #00aaff;
+        color: #fff;
+        font-size: 16px;
+        cursor: pointer;
+    }
+    .custom-upload-button:hover {
+        background-color: #008fcc;
     }
     .submit-button {
         display: block;
@@ -104,27 +144,39 @@
         line-height: 18px;
         text-align: center;
     }
+    .notification {
+        text-align: center;
+        color: red;
+        margin-top: 10px;
+    }
 </style>
 
 <script>
-    function previewImage(event, previewId, wrapperId) {
-        const file = event.target.files[0];
-        const previewImage = document.getElementById(previewId);
-        const wrapper = document.getElementById(wrapperId);
+    function previewImage(event, previewId, wrapperId, notificationId) {
+    const file = event.target.files[0];
+    const previewImage = document.getElementById(previewId);
+    const wrapper = document.getElementById(wrapperId);
+    const notification = document.getElementById(notificationId);
 
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                previewImage.src = e.target.result;
-                previewImage.style.display = 'block';
-                wrapper.style.display = 'block';
-            };
-            reader.readAsDataURL(file);
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            previewImage.src = e.target.result;
+            previewImage.style.display = 'block';
+            wrapper.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+
+        // Скрываем уведомление
+        if (notification) {
+            notification.style.display = 'none';
         }
     }
+}
+
 
     function removeImage(inputId, previewId, wrapperId) {
-        const input = document.querySelector(`input[name='file']`);
+        const input = document.getElementById(inputId);
         const previewImage = document.getElementById(previewId);
         const wrapper = document.getElementById(wrapperId);
 
@@ -132,6 +184,19 @@
         previewImage.src = "";
         previewImage.style.display = 'none';
         wrapper.style.display = 'none';
+    }
+
+    function validateForm(inputId, notificationId) {
+        const input = document.getElementById(inputId);
+        const notification = document.getElementById(notificationId);
+
+        if (!input.files.length) {
+            notification.style.display = 'block';
+            return false;
+        } else {
+            notification.style.display = 'none';
+            return true;
+        }
     }
 </script>
 

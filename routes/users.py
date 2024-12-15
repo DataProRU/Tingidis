@@ -53,7 +53,7 @@ async def update_user(
     first_name: str = Form(...),
     middle_name: str = Form(...),
     position: str = Form(...),
-    phone: int = Form(...),
+    phone: str = Form(...),
     email: str = Form(...),
     telegram: str = Form(...),
     birthdate: date = Form(...),
@@ -83,11 +83,13 @@ async def update_user(
         if not user:
             return JSONResponse({"detail": "User not found"}, status_code=404)
 
+        initials = f"{first_name[0].upper()}. {middle_name[0].upper()}." if middle_name else f"{first_name[0].upper()}."
         # Обновляем данные пользователя
         user.role = role
         user.last_name = last_name
         user.first_name = first_name
         user.middle_name = middle_name
+        user.full_name = f"{last_name} {initials}"
         user.position = position
         user.phone = phone
         user.email = email
@@ -107,12 +109,11 @@ async def update_user(
 @router.post("/users/add/")
 async def add_user(
     request: Request,
-    username: str = Form("nono"),
     last_name: str = Form(...),
     first_name: str = Form(...),
     middle_name: str = Form(...),
     position: str = Form(...),
-    phone: int = Form(...),
+    phone: str = Form(...),
     email: str = Form(...),
     telegram: str = Form(...),
     birthdate: date = Form(...),
@@ -138,11 +139,12 @@ async def add_user(
     try:
         hashed_password = pwd_context.hash(password)
 
+        initials = f"{first_name[0].upper()}. {middle_name[0].upper()}." if middle_name else f"{first_name[0].upper()}."
         new_user = WebUser(
-            username=username,
+            username=login,
             last_name=last_name,
             first_name=first_name,
-            full_name = last_name + first_name,
+            full_name = f"{last_name} {initials}",
             middle_name=middle_name,
             position=position,
             phone=phone,
