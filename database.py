@@ -27,7 +27,7 @@ class WebUser(Base):
     last_name = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
     middle_name = Column(String, nullable=True)
-    full_name = Column(String,  nullable=False)
+    full_name = Column(String, nullable=False)
     position = Column(String, nullable=True)
     phone = Column(String, unique=True, nullable=True)
     email = Column(String, unique=True, nullable=False, index=True)

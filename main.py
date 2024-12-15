@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import users, auth_routes, custom
+from routes import custom, auth_routes, users
 from database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles

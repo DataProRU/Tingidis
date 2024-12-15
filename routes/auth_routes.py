@@ -38,12 +38,24 @@ async def get_login(request: Request):
     logo_files = os.listdir(LOGO_DIRECTORY)
     bg_files = os.listdir(UPLOAD_DIRECTORY)
     if logo_files and bg_files:
-        logo_file = max(logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f)))
-        bg_file = max(bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f)))
+        logo_file = max(
+            logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
+        )
+        bg_file = max(
+            bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f))
+        )
     else:
         logo_file = None
         bg_file = None
-    return templates.TemplateResponse("login.html", {"request": request, "error": None, "bg_filename": bg_file, "logo_file":logo_file})
+    return templates.TemplateResponse(
+        "login.html",
+        {
+            "request": request,
+            "error": None,
+            "bg_filename": bg_file,
+            "logo_file": logo_file,
+        },
+    )
 
 
 @router.post("/login", response_class=HTMLResponse)
@@ -74,13 +86,24 @@ async def welcome(request: Request):
     logo_files = os.listdir(LOGO_DIRECTORY)
     bg_files = os.listdir(UPLOAD_DIRECTORY)
     if logo_files and bg_files:
-        logo_file = max(logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f)))
-        bg_file = max(bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f)))
+        logo_file = max(
+            logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
+        )
+        bg_file = max(
+            bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f))
+        )
     else:
         logo_file = None
         bg_file = None
     return templates.TemplateResponse(
-        "welcome.html", {"request": request, "username": username, "role": role, "bg_filename": bg_file, "logo_file":logo_file}
+        "welcome.html",
+        {
+            "request": request,
+            "username": username,
+            "role": role,
+            "bg_filename": bg_file,
+            "logo_file": logo_file,
+        },
     )
 
 

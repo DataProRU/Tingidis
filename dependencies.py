@@ -1,4 +1,4 @@
-from fastapi import Request, HTTPException, status
+from fastapi import Request, status
 from fastapi.responses import RedirectResponse
 from services.auth import decode_access_token
 
