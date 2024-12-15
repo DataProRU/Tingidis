@@ -44,7 +44,6 @@ async def register_user(request, username, password, role, db, templates):
 
 async def login_user(request: Request, form_data, db: AsyncSession, templates):
     try:
-
         stmt = select(WebUser).where(WebUser.username == form_data.username)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
