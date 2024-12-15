@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from main import app  # Импортируйте ваш FastAPI-приложение
+from Tingidis.main import app  # Укажите ваш корневой модуль
 
 client = TestClient(app)
 
