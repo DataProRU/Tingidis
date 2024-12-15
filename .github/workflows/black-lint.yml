@@ -38,5 +38,16 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Print Python Path
+        run: |
+          python -c "import sys; print(sys.path)"
+
+      - name: Print Current Working Directory
+        run: |
+          pwd
+          ls -la
+
       - name: Run Tests
         run: pytest tests
+        env:
+          DATABASE_URL: postgres://testuser:testpass@localhost:5432/testdb
