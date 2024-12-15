@@ -18,12 +18,6 @@ async def startup():
     await init_db()
 
 
-@app.on_event("shutdown")
-async def shutdown():
-    # Отключаемся от базы данных при завершении работы
-    await database.disconnect()
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
