@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from sqlalchemy import Column, Integer, String, Date, Text, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import declarative_base  # Updated import
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
@@ -14,12 +14,12 @@ templates = Jinja2Templates(directory="templates")
 DATABASE_URL = os.getenv(
     "DATABASE_URL", "postgresql+asyncpg://testuser:testpass@localhost:5432/testdb"
 )
-print("DATABASE_URL:", DATABASE_URL)
+
 async_engine = create_async_engine(DATABASE_URL, echo=True)
 async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # Создаем базовый класс для моделей
-Base = declarative_base()
+Base = declarative_base()  # Now uses sqlalchemy.orm.declarative_base
 
 
 # Определение модели WebUser с использованием SQLAlchemy

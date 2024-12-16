@@ -33,9 +33,11 @@ async def read_root(request: Request):
     else:
         logo_file = None
         bg_file = None
+
     return templates.TemplateResponse(
-        "custom.html",
-        {"request": request, "bg_filename": bg_file, "logo_file": logo_file},
+        request,  # request comes first
+        "custom.html",  # template name
+        {"bg_filename": bg_file, "logo_file": logo_file},
     )
 
 

@@ -1,8 +1,7 @@
-from fastapi import APIRouter, Request, Depends, Form
+from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
-
 from web_app.services.auth_service import login_user, register_user
 from web_app.dependencies import (
     get_authenticated_user,
@@ -21,7 +20,7 @@ LOGO_DIRECTORY = "web_app/static/img"
 
 @router.get("/register", response_class=HTMLResponse)
 async def get_register(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
+    return templates.TemplateResponse(request, "register.html", {"request": request})
 
 
 @router.post("/register")
@@ -32,15 +31,17 @@ async def post_register(
     role: str = Form(),
     db: AsyncSession = Depends(get_db),
 ):
-    await register_user(request, username, password, role, db, templates)
+    try:
+        await register_user(request, username, password, role, db, templates)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     return RedirectResponse(url="/users", status_code=303)
 
 
 @router.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
-    # Возвращаем HTML-шаблон с данными пользователя
-    logo_files = os.listdir(LOGO_DIRECTORY)
-    bg_files = os.listdir(UPLOAD_DIRECTORY)
+    logo_files = [f.name for f in os.scandir(LOGO_DIRECTORY) if f.is_file()]
+    bg_files = [f.name for f in os.scandir(UPLOAD_DIRECTORY) if f.is_file()]
     if logo_files and bg_files:
         logo_file = max(
             logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
@@ -52,6 +53,7 @@ async def get_login(request: Request):
         logo_file = None
         bg_file = None
     return templates.TemplateResponse(
+        request,
         "login.html",
         {
             "request": request,
@@ -68,7 +70,11 @@ async def login(
     form_data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
-    return await login_user(request, form_data, db, templates)
+    try:
+        return await login_user(request, form_data, db, templates)
+    except Exception as e:
+        # Handle specific exceptions if possible
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/welcome", response_class=HTMLResponse)
@@ -82,13 +88,12 @@ async def welcome(request: Request):
     if isinstance(payload, RedirectResponse):
         return payload
 
-    # Извлекаем информацию о пользователе
+    # Extract user information
     username = payload.get("sub")
     role = payload.get("role")
 
-    # Возвращаем HTML-шаблон с данными пользователя
-    logo_files = os.listdir(LOGO_DIRECTORY)
-    bg_files = os.listdir(UPLOAD_DIRECTORY)
+    logo_files = [f.name for f in os.scandir(LOGO_DIRECTORY) if f.is_file()]
+    bg_files = [f.name for f in os.scandir(UPLOAD_DIRECTORY) if f.is_file()]
     if logo_files and bg_files:
         logo_file = max(
             logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
@@ -100,6 +105,7 @@ async def welcome(request: Request):
         logo_file = None
         bg_file = None
     return templates.TemplateResponse(
+        request,
         "welcome.html",
         {
             "request": request,
@@ -117,9 +123,9 @@ async def confirm(
     user: dict = Depends(get_authenticated_user),
 ):
     if isinstance(user, RedirectResponse):
-        return user  # Если пользователь не аутентифицирован
+        return user  # If the user is not authenticated
 
-    return templates.TemplateResponse("confirm.html", {"request": request})
+    return templates.TemplateResponse(request, "confirm.html", {"request": request})
 
 
 @router.get("/access", response_class=HTMLResponse)
@@ -133,5 +139,11 @@ async def access(request: Request):
     username = payload.get("sub")
     role = payload.get("role")
     return templates.TemplateResponse(
-        "access.html", {"request": request, "username": username, "role": role}
+        request,
+        "access.html",
+        {
+            "request": request,
+            "username": username,
+            "role": role,
+        },
     )
