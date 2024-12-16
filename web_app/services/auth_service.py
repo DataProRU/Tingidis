@@ -1,9 +1,13 @@
 from fastapi import Request, status
 from fastapi.responses import RedirectResponse
-from services.auth import verify_password, get_password_hash, create_access_token
+from web_app.services.auth import (
+    verify_password,
+    get_password_hash,
+    create_access_token,
+)
 from sqlalchemy.future import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from database import WebUser  # Assuming you have a User model
+from web_app.database import WebUser  # Assuming you have a User model
 from datetime import datetime
 
 

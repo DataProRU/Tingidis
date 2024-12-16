@@ -8,12 +8,12 @@ import os
 router = APIRouter()
 
 # Настройка статических файлов и шаблонов
-router.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="templates")
+router.mount("/static", StaticFiles(directory="web_app/static"), name="static")
+templates = Jinja2Templates(directory="web_app/templates")
 
 # Путь для сохранения загруженных изображений
-UPLOAD_DIRECTORY = "static/uploads"
-LOGO_DIRECTORY = "static/img"
+UPLOAD_DIRECTORY = "web_app/static/uploads"
+LOGO_DIRECTORY = "web_app/static/img"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 

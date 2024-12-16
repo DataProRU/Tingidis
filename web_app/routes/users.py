@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Request, Form, Depends
-from database import WebUser, get_db
+from web_app.database import WebUser, get_db
 from fastapi.templating import Jinja2Templates
-from dependencies import get_token_from_cookie, get_current_user
+from web_app.dependencies import get_token_from_cookie, get_current_user
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -11,9 +11,9 @@ from datetime import date
 import os
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
-UPLOAD_DIRECTORY = "static/uploads"
-LOGO_DIRECTORY = "static/img"
+templates = Jinja2Templates(directory="web_app/templates")
+UPLOAD_DIRECTORY = "web_app/static/uploads"
+LOGO_DIRECTORY = "web_app/static/img"
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

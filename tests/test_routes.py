@@ -1,8 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
-from main import app
-from database import async_engine, async_session
-from sqlalchemy.ext.asyncio import AsyncSession
+from web_app.main import app
+from web_app.database import async_session
 
 
 @pytest.fixture(scope="module")

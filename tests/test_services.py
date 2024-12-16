@@ -1,7 +1,5 @@
 import pytest
-from services.auth_service import login_user, register_user
-from database import async_session
-from sqlalchemy.ext.asyncio import AsyncSession
+from web_app.database import async_session
 from fastapi.templating import Jinja2Templates
 
 
@@ -19,4 +17,4 @@ async def db_session():
 @pytest.fixture(scope="module")
 def templates():
     # Mock templates if needed
-    return Jinja2Templates(directory="templates")
+    return Jinja2Templates(directory="web_app/templates")

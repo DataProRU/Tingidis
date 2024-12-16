@@ -1,6 +1,6 @@
 from fastapi import Request, status
 from fastapi.responses import RedirectResponse
-from services.auth import decode_access_token
+from web_app.services.auth import decode_access_token
 
 
 # Функция для получения токена из cookie

@@ -3,16 +3,20 @@ from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 
-from services.auth_service import login_user, register_user
-from dependencies import get_authenticated_user, get_current_user, get_token_from_cookie
-from database import get_db
+from web_app.services.auth_service import login_user, register_user
+from web_app.dependencies import (
+    get_authenticated_user,
+    get_current_user,
+    get_token_from_cookie,
+)
+from web_app.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 import os
 
 router = APIRouter()
-templates = Jinja2Templates(directory="templates")
-UPLOAD_DIRECTORY = "static/uploads"
-LOGO_DIRECTORY = "static/img"
+templates = Jinja2Templates(directory="web_app/templates")
+UPLOAD_DIRECTORY = "web_app/static/uploads"
+LOGO_DIRECTORY = "web_app/static/img"
 
 
 @router.get("/register", response_class=HTMLResponse)
