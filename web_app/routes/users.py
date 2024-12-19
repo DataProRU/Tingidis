@@ -185,7 +185,7 @@ async def add_user(
         await db.commit()
         await db.refresh(new_user)
 
-        return RedirectResponse(url="/users/", status_code=303)
+        return RedirectResponse(request, url="/users/", status_code=303)
 
     except SQLAlchemyError as e:
         await db.rollback()
