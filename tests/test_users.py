@@ -1,10 +1,10 @@
 import pytest
 from unittest.mock import MagicMock
-from datetime import date
+from fastapi.testclient import TestClient
 from fastapi.responses import RedirectResponse
 from fastapi import HTTPException
+from web_app.main import app  # Импортируйте ваше FastAPI приложение
 from web_app.routes.users import add_user  # Функция добавления пользователя
-from web_app.database import WebUser  # Импорт модели пользователя
 from web_app.database import async_session  # Импорт сессии базы данных
 
 
@@ -27,7 +27,44 @@ def mock_request():
     return request
 
 
-# Тестирование добавления пользователя
+# Создайте экземпляр TestClient
+@pytest.fixture
+def client():
+    return TestClient(app)
+
+
+# Тестирование добавления пользователя с неправильной датой
+def test_add_user_with_invalid_date(client):
+    # Данные для создания нового пользователя с неправильной датой
+    data = {
+        "last_name": "Ivanov",
+        "first_name": "Ivan",
+        "middle_name": "Ivanovich",
+        "position": "Developer",
+        "phone": "+7-800-555-35-35",
+        "email": "ivanov@example.com",
+        "telegram": "@ivanov",
+        "birthdate": "invalid_date",  # Неправильная дата
+        "category": "Employee",
+        "specialization": "Backend",
+        "notes": "Some notes",
+        "login": "ivanov_login",
+        "password": "SecurePassword123",
+        "role": "admin",
+    }
+
+    response = client.post("/users/add/", data=data)
+
+    # Проверяем, что ответ содержит ожидаемую ошибку валидации
+    assert response.status_code == 422
+    assert "detail" in response.json()
+    assert any(
+        "Input should be a valid date" in error["msg"]
+        for error in response.json()["detail"]
+    )
+
+
+# Тестирование добавления пользователя без токена
 @pytest.mark.asyncio
 async def test_add_user_without_token(mock_db_session, mock_request):
     # Данные для создания нового пользователя
@@ -39,7 +76,7 @@ async def test_add_user_without_token(mock_db_session, mock_request):
         "phone": "+7-800-555-35-35",
         "email": "ivanov@example.com",
         "telegram": "@ivanov",
-        "birthdate": date(1985, 7, 15),
+        "birthdate": "1985-07-15",  # Правильная дата
         "category": "Employee",
         "specialization": "Backend",
         "notes": "Some notes",
