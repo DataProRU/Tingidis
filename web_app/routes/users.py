@@ -1,3 +1,4 @@
+import logging
 from fastapi import APIRouter, Request, Form, Depends, status
 from web_app.database import WebUser, get_db
 from fastapi.templating import Jinja2Templates
@@ -10,22 +11,29 @@ from passlib.context import CryptContext
 from web_app.services.storage import get_logo, get_bg
 from datetime import date
 
+# Настройка логирования
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-
 @router.get("/users/")
 async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
+    logger.info("Fetching users list")
     token = get_token_from_cookie(request)
     if isinstance(token, RedirectResponse):
+        logger.warning("Unauthorized access attempt")
         return token
 
     payload = get_current_user(token)
     if isinstance(payload, RedirectResponse):
+        logger.warning("Invalid token")
         return payload
 
     if payload.get("role") != "admin":
+        logger.warning("Access denied for non-admin user")
         return templates.TemplateResponse("not_access.html", {"request": request})
 
     stmt = select(WebUser)
@@ -43,7 +51,6 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
             "logo_file": logo_file,
         },
     )
-
 
 @router.post("/users/{user_id}/edit/")
 async def update_user(
@@ -64,16 +71,19 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
 ):
     form_data = await request.form()
-    print("Данные формы:", form_data)
+    logger.info(f"Form data received: {form_data}")
     token = get_token_from_cookie(request)
     if isinstance(token, RedirectResponse):
+        logger.warning("Unauthorized access attempt")
         return token
 
     payload = get_current_user(token)
     if isinstance(payload, RedirectResponse):
+        logger.warning("Invalid token")
         return payload
 
     if payload.get("role") != "admin":
+        logger.warning("Access denied for non-admin user")
         return templates.TemplateResponse("not_access.html", {"request": request})
 
     try:
@@ -82,6 +92,7 @@ async def update_user(
         user = result.scalar_one_or_none()
 
         if not user:
+            logger.error(f"User not found: {user_id}")
             return JSONResponse(
                 {"detail": "User not found"}, status_code=status.HTTP_404_NOT_FOUND
             )
@@ -107,14 +118,15 @@ async def update_user(
         user.notes = notes
 
         await db.commit()
+        logger.info(f"User {user_id} updated successfully")
         return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
 
     except SQLAlchemyError as e:
         await db.rollback()
+        logger.error(f"Database error: {e}")
         return JSONResponse(
             {"detail": str(e)}, status_code=status.HTTP_505_HTTP_VERSION_NOT_SUPPORTED
         )
-
 
 @router.post("/users/add/")
 async def add_user(
@@ -137,13 +149,16 @@ async def add_user(
 ):
     token = get_token_from_cookie(request)
     if isinstance(token, RedirectResponse):
+        logger.warning("Unauthorized access attempt")
         return token
 
     payload = get_current_user(token)
     if isinstance(payload, RedirectResponse):
+        logger.warning("Invalid token")
         return payload
 
     if payload.get("role") != "admin":
+        logger.warning("Access denied for non-admin user")
         return templates.TemplateResponse("not_access.html", {"request": request})
 
     try:
@@ -176,24 +191,27 @@ async def add_user(
         db.add(new_user)
         await db.commit()
         await db.refresh(new_user)
+        logger.info(f"New user added: {new_user.username}")
 
         return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
 
     except SQLAlchemyError as e:
         await db.rollback()
+        logger.error(f"Database error: {e}")
         return JSONResponse(
             {"detail": "Database error"},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
-
 @router.get("/users/{user_id}/")
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    logger.info(f"Fetching user details for user_id: {user_id}")
     stmt = select(WebUser).where(WebUser.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
 
     if not user:
+        logger.error(f"User not found: {user_id}")
         return JSONResponse(
             {"detail": "User not found"}, status_code=status.HTTP_404_NOT_FOUND
         )
@@ -216,23 +234,26 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
         }
     )
 
-
 @router.post("/users/{user_id}/delete/")
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
+    logger.info(f"Deleting user with user_id: {user_id}")
     try:
         stmt = select(WebUser).where(WebUser.id == user_id)
         result = await db.execute(stmt)
         user = result.scalar_one_or_none()
 
         if not user:
+            logger.error(f"User not found: {user_id}")
             return templates.TemplateResponse("not_found.html", {"request": Request()})
 
         await db.delete(user)
         await db.commit()
+        logger.info(f"User {user_id} deleted successfully")
 
         return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
     except SQLAlchemyError as e:
         await db.rollback()
+        logger.error(f"Database error: {e}")
         return JSONResponse(
             {"detail": "Database error"},
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
