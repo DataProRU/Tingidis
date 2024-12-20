@@ -38,6 +38,12 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Install Black
+        run: pip install black
+
+      - name: Run Black
+        run: black --check .
+
       - name: Print Python Path
         run: |
           python -c "import sys; print(sys.path)"
