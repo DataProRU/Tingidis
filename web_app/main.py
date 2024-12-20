@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from web_app.routes import custom, auth_routes, users
+from web_app.routes import custom, auth_routes, users, register_contracts
 from web_app.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -24,6 +24,7 @@ app.mount(
 app.include_router(auth_routes.router)
 app.include_router(users.router)
 app.include_router(custom.router)
+app.include_router(register_contracts.router)
 
 
 app.add_middleware(

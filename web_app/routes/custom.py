@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Request, APIRouter
+from fastapi import FastAPI, File, UploadFile, Request, APIRouter, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
@@ -46,7 +46,7 @@ async def upload_image(file: UploadFile = File(...)):
     file_location = f"{UPLOAD_DIRECTORY}/{file.filename}"
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    return RedirectResponse(url="/customaze", status_code=303)
+    return RedirectResponse(url="/customaze", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/upload-logo/")
@@ -54,4 +54,4 @@ async def upload_logo(file: UploadFile = File(...)):
     file_location = f"{LOGO_DIRECTORY}/{file.filename}"
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
-    return RedirectResponse(url="/customaze", status_code=303)
+    return RedirectResponse(url="/customaze", status_code=status.HTTP_303_SEE_OTHER)

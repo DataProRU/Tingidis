@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Form, Depends
+from fastapi import APIRouter, Request, Form, Depends, status
 from web_app.database import WebUser, get_db
 from fastapi.templating import Jinja2Templates
 from web_app.dependencies import get_token_from_cookie, get_current_user
@@ -7,14 +7,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
+from web_app.services.storage import get_logo, get_bg
 from datetime import date
-import os
 
 router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
-UPLOAD_DIRECTORY = "web_app/static/uploads"
-LOGO_DIRECTORY = "web_app/static/img"
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -34,18 +31,9 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     stmt = select(WebUser)
     result = await db.execute(stmt)
     users_data = result.scalars().all()
-    logo_files = os.listdir(LOGO_DIRECTORY)
-    bg_files = os.listdir(UPLOAD_DIRECTORY)
-    if logo_files and bg_files:
-        logo_file = max(
-            logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
-        )
-        bg_file = max(
-            bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f))
-        )
-    else:
-        logo_file = None
-        bg_file = None
+    logo_file = get_logo()
+    bg_file = get_bg()
+
     return templates.TemplateResponse(
         "users.html",
         {
@@ -94,7 +82,9 @@ async def update_user(
         user = result.scalar_one_or_none()
 
         if not user:
-            return JSONResponse({"detail": "User not found"}, status_code=404)
+            return JSONResponse(
+                {"detail": "User not found"}, status_code=status.HTTP_404_NOT_FOUND
+            )
 
         initials = (
             f"{first_name[0].upper()}. {middle_name[0].upper()}."
@@ -117,11 +107,13 @@ async def update_user(
         user.notes = notes
 
         await db.commit()
-        return RedirectResponse(url="/users/", status_code=303)
+        return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
 
     except SQLAlchemyError as e:
         await db.rollback()
-        return JSONResponse({"detail": str(e)}, status_code=500)
+        return JSONResponse(
+            {"detail": str(e)}, status_code=status.HTTP_505_HTTP_VERSION_NOT_SUPPORTED
+        )
 
 
 @router.post("/users/add/")
@@ -185,11 +177,14 @@ async def add_user(
         await db.commit()
         await db.refresh(new_user)
 
-        return RedirectResponse(request, url="/users/", status_code=303)
+        return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
 
     except SQLAlchemyError as e:
         await db.rollback()
-        return JSONResponse({"detail": "Database error"}, status_code=500)
+        return JSONResponse(
+            {"detail": "Database error"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )
 
 
 @router.get("/users/{user_id}/")
@@ -199,7 +194,9 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     user = result.scalar_one_or_none()
 
     if not user:
-        return JSONResponse({"detail": "User not found"}, status_code=404)
+        return JSONResponse(
+            {"detail": "User not found"}, status_code=status.HTTP_404_NOT_FOUND
+        )
 
     return JSONResponse(
         {
@@ -233,7 +230,10 @@ async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
         await db.delete(user)
         await db.commit()
 
-        return RedirectResponse(url="/users/", status_code=303)
+        return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
     except SQLAlchemyError as e:
         await db.rollback()
-        return JSONResponse({"detail": "Database error"}, status_code=500)
+        return JSONResponse(
+            {"detail": "Database error"},
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        )

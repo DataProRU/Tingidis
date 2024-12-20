@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, Form, HTTPException
+from fastapi import APIRouter, Request, Depends, Form, HTTPException, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
@@ -10,12 +10,10 @@ from web_app.dependencies import (
 )
 from web_app.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
-import os
+from web_app.services.storage import get_bg, get_logo
 
 router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
-UPLOAD_DIRECTORY = "web_app/static/uploads"
-LOGO_DIRECTORY = "web_app/static/img"
 
 
 @router.get("/register", response_class=HTMLResponse)
@@ -34,24 +32,17 @@ async def post_register(
     try:
         await register_user(request, username, password, role, db, templates)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    return RedirectResponse(url="/users", status_code=303)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
+    return RedirectResponse(url="/users", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
-    logo_files = [f.name for f in os.scandir(LOGO_DIRECTORY) if f.is_file()]
-    bg_files = [f.name for f in os.scandir(UPLOAD_DIRECTORY) if f.is_file()]
-    if logo_files and bg_files:
-        logo_file = max(
-            logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
-        )
-        bg_file = max(
-            bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f))
-        )
-    else:
-        logo_file = None
-        bg_file = None
+    logo_file = get_logo()
+    bg_file = get_bg()
+
     return templates.TemplateResponse(
         request,
         "login.html",
@@ -74,7 +65,9 @@ async def login(
         return await login_user(request, form_data, db, templates)
     except Exception as e:
         # Handle specific exceptions if possible
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        )
 
 
 @router.get("/welcome", response_class=HTMLResponse)
@@ -92,18 +85,9 @@ async def welcome(request: Request):
     username = payload.get("sub")
     role = payload.get("role")
 
-    logo_files = [f.name for f in os.scandir(LOGO_DIRECTORY) if f.is_file()]
-    bg_files = [f.name for f in os.scandir(UPLOAD_DIRECTORY) if f.is_file()]
-    if logo_files and bg_files:
-        logo_file = max(
-            logo_files, key=lambda f: os.path.getctime(os.path.join(LOGO_DIRECTORY, f))
-        )
-        bg_file = max(
-            bg_files, key=lambda f: os.path.getctime(os.path.join(UPLOAD_DIRECTORY, f))
-        )
-    else:
-        logo_file = None
-        bg_file = None
+    logo_file = get_logo()
+    bg_file = get_bg()
+
     return templates.TemplateResponse(
         request,
         "welcome.html",

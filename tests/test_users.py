@@ -5,7 +5,6 @@ from fastapi.responses import RedirectResponse
 from fastapi import HTTPException
 from web_app.main import app  # Импортируйте ваше FastAPI приложение
 from web_app.routes.users import add_user  # Функция добавления пользователя
-from web_app.database import async_session  # Импорт сессии базы данных
 
 
 # Мокирование зависимости get_db

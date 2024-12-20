@@ -4,7 +4,7 @@ from sqlalchemy.orm import declarative_base  # Updated import
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
-
+from sqlalchemy.types import Enum
 import os
 
 router = APIRouter()
@@ -42,6 +42,30 @@ class WebUser(Base):
     login = Column(String, unique=True, nullable=False)
     password = Column(String, nullable=False)  # Здесь требуется хэширование
     role = Column(String, nullable=False, server_default="user")
+
+
+class Contract(Base):
+    __tablename__ = "contract"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    contract_code = Column(Integer, unique=True, nullable=False)
+    object_name = Column(String, nullable=False)
+    customer = Column(String, nullable=False)
+    executer = Column(String, nullable=False)
+    contract_number = Column(Integer, nullable=False)
+    status = Column(String, nullable=False)
+    stage = Column(String, nullable=False)
+    contract_scan = Column(String, nullable=False)
+    original_scan = Column(String, nullable=False)
+    percent_complite = Column(Integer, nullable=False)
+    date_start = Column(Date, nullable=False)
+    date_finish = Column(Date)
+    cost = Column(Integer)
+    money_received = Column(Integer)
+    money_left = Column(Integer)
+    scan_complited_act = Column(String, nullable=False)
+    original_complited_act = Column(String, nullable=False)
+    volumes = Column(Text, nullable=False)
+    notes = Column(Text, nullable=True)
 
 
 # Асинхронная функция для создания таблиц
