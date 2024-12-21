@@ -19,6 +19,7 @@ router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 @router.get("/users/")
 async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     logger.info("Fetching users list")
@@ -51,6 +52,7 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
             "logo_file": logo_file,
         },
     )
+
 
 @router.post("/users/{user_id}/edit/")
 async def update_user(
@@ -128,6 +130,7 @@ async def update_user(
             {"detail": str(e)}, status_code=status.HTTP_505_HTTP_VERSION_NOT_SUPPORTED
         )
 
+
 @router.post("/users/add/")
 async def add_user(
     request: Request,
@@ -203,6 +206,7 @@ async def add_user(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
         )
 
+
 @router.get("/users/{user_id}/")
 async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
     logger.info(f"Fetching user details for user_id: {user_id}")
@@ -233,6 +237,7 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
             "login": user.login,
         }
     )
+
 
 @router.post("/users/{user_id}/delete/")
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):

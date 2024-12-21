@@ -15,6 +15,7 @@ from datetime import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def register_user(request, username, password, role, db, templates):
     try:
         logger.info(f"Registering user: {username}, role: {role}")
@@ -48,6 +49,7 @@ async def register_user(request, username, password, role, db, templates):
         return templates.TemplateResponse(
             "register.html", {"request": request, "error": str(e)}
         )
+
 
 async def login_user(request: Request, form_data, db: AsyncSession, templates):
     try:

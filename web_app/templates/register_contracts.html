@@ -62,7 +62,7 @@
                 <td>{{ contract.notes}}</td>
                 <td>
                     <button class="edit-button" data-contract-id="{{ contract.id }}">Изменить</button>
-                    <button class="delete-button" data-contract-id="{{ contract.id }}">Удалить</button>
+                    <button class="delete-button" data-contract-id="{{ contract.id }}">Удалить  </button>
                 </td>
             </tr>
             {% endfor %}
@@ -135,7 +135,7 @@
             <div class="form-group flex">
                 <div class="form-item">
                     <label for="date-finish">Дата окончания договора:</label>
-                    <input type="text" id="date-finish" name="date_finish" required>
+                    <input type="date" id="date-finish" name="date_finish" required>
                 </div>
                 <div class="form-item">
                     <label for="cost">Стоимость договора:</label>
@@ -244,7 +244,7 @@
             <div class="form-group flex">
                 <div class="form-item">
                     <label for="edit-date-finish">Дата окончания договора:</label>
-                    <input type="text" id="edit-date-finish" name="date_finish" required>
+                    <input type="date" id="edit-date-finish" name="date_finish" required>
                 </div>
                 <div class="form-item">
                     <label for="edit-cost">Стоимость договора:</label>
@@ -317,8 +317,10 @@
         padding: 10px;
         text-align: left;
         font-size: 14px;
-        white-space: nowrap;
-        /* Предотвращаем перенос текста */
+        word-wrap: break-word;
+        /* Разрешаем перенос слов */
+        white-space: normal;
+        /* Разрешаем перенос текста */
     }
 
     .contract-table th {
@@ -551,15 +553,16 @@
     });
 
     document.querySelectorAll('.edit-button').forEach(button => {
-        button.addEventListener('click', function () {
-            const contractId = this.getAttribute('data-contract-id');
-            fetch(`/contracts/${contractId}/`)
-                .then(response => response.json())
-                .then(contract => {
-                    if (contract.detail) {
-                        alert(contract.detail);
-                        return;
-                    }
+    button.addEventListener('click', function () {
+        const contractId = this.getAttribute('data-contract-id');
+        fetch(`/register_contracts/${contractId}`)
+            .then(response => response.json())
+            .then(contract => {
+                if (contract.detail) {
+                    alert(contract.detail);
+                    return;
+                }
+                try {
                     document.getElementById('edit-contract-id').value = contract.id;
                     document.getElementById('edit-contract-code').value = contract.contract_code;
                     document.getElementById('edit-object-name').value = contract.object_name;
@@ -581,19 +584,23 @@
                     document.getElementById('edit-volumes').value = contract.volumes;
                     document.getElementById('edit-notes').value = contract.notes;
                     document.getElementById('edit-contract-modal').style.display = 'block';
-                })
-                .catch(error => {
-                    console.error('Error fetching contract data:', error);
-                    alert(`Ошибка: ${error.message}`)
-                });
-        });
+                } catch (error) {
+                    console.error('Error setting contract data:', error);
+                    alert(`Ошибка: ${error.message}`);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching contract data:', error);
+                alert(`Ошибка: ${error.message}`);
+            });
     });
+});
 
     document.getElementById('edit-contract-form').addEventListener('submit', function (event) {
         event.preventDefault();
         const contractId = document.getElementById('edit-contract-id').value;
         const formData = new FormData(this);
-        fetch(`/contracts/${contractId}/edit/`, {
+        fetch(`/register_contracts/${contractId}/edit/`, {
             method: 'POST',
             body: formData
         }).then(response => {
@@ -614,7 +621,7 @@
         button.addEventListener('click', function () {
             const contractId = this.getAttribute('data-contract-id');
             if (confirm('Вы уверены, что хотите удалить этот договор?')) {
-                fetch(`/contracts/${contractId}/delete/`, {
+                fetch(`/register_contracts/${contractId}/delete/`, {
                     method: 'POST',
                 }).then(response => {
                     if (response.ok) {

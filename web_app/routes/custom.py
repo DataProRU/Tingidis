@@ -21,6 +21,7 @@ UPLOAD_DIRECTORY = "web_app/static/uploads"
 LOGO_DIRECTORY = "web_app/static/img"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
+
 @router.get("/customaze", response_class=HTMLResponse)
 async def read_root(request: Request):
     logger.info("Accessing customization page")
@@ -43,6 +44,7 @@ async def read_root(request: Request):
         {"request": request, "bg_filename": bg_file, "logo_file": logo_file},
     )
 
+
 @router.post("/upload_image/")
 async def upload_image(file: UploadFile = File(...)):
     logger.info(f"Uploading image: {file.filename}")
@@ -51,6 +53,7 @@ async def upload_image(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
     logger.info(f"Image uploaded successfully: {file.filename}")
     return RedirectResponse(url="/customaze", status_code=status.HTTP_303_SEE_OTHER)
+
 
 @router.post("/upload-logo/")
 async def upload_logo(file: UploadFile = File(...)):

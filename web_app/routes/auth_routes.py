@@ -20,10 +20,12 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
 
+
 @router.get("/register", response_class=HTMLResponse)
 async def get_register(request: Request):
     logger.info("Accessing registration page")
     return templates.TemplateResponse(request, "register.html", {"request": request})
+
 
 @router.post("/register")
 async def post_register(
@@ -44,6 +46,7 @@ async def post_register(
     logger.info(f"User {username} registered successfully")
     return RedirectResponse(url="/users", status_code=status.HTTP_303_SEE_OTHER)
 
+
 @router.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
     logger.info("Accessing login page")
@@ -61,6 +64,7 @@ async def get_login(request: Request):
         },
     )
 
+
 @router.post("/login", response_class=HTMLResponse)
 async def login(
     request: Request,
@@ -75,6 +79,7 @@ async def login(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
         )
+
 
 @router.get("/welcome", response_class=HTMLResponse)
 @router.get("/", response_class=HTMLResponse)
@@ -109,6 +114,7 @@ async def welcome(request: Request):
         },
     )
 
+
 @router.get("/confirm", response_class=HTMLResponse)
 async def confirm(
     request: Request,
@@ -120,6 +126,7 @@ async def confirm(
         return user  # If the user is not authenticated
 
     return templates.TemplateResponse(request, "confirm.html", {"request": request})
+
 
 @router.get("/access", response_class=HTMLResponse)
 async def access(request: Request):
