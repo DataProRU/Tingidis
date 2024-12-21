@@ -52,7 +52,7 @@ async def get_contracts(
         logger.error(f"Database error: {e}")
         return JSONResponse(
             {"detail": "Database error"},
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=500,
         )
 
 
@@ -95,9 +95,7 @@ async def update_user(
 
         if not user:
             logger.error(f"Contract not found: {contract_id}")
-            return JSONResponse(
-                {"detail": "Contract not found"}, status_code=status.HTTP_404_NOT_FOUND
-            )
+            return JSONResponse({"detail": "Contract not found"}, status_code=404)
 
         # Обновляем данные пользователя
         contract.contract_code = contract_code
@@ -122,19 +120,15 @@ async def update_user(
 
         await db.commit()
         logger.info(f"User {contract_id} updated successfully")
-        return RedirectResponse(
-            url="/register_contracts/", status_code=status.HTTP_303_SEE_OTHER
-        )
+        return RedirectResponse(url="/register_contracts/", status_code=303)
 
     except SQLAlchemyError as e:
         await db.rollback()
         logger.error(f"Database error: {e}")
-        return JSONResponse(
-            {"detail": str(e)}, status_code=status.HTTP_505_HTTP_VERSION_NOT_SUPPORTED
-        )
+        return JSONResponse({"detail": str(e)}, status_code=500)
 
 
-@router.post("/register_contracts/add")
+@router.post("/register_contracts/add/")
 async def add_contract(
     request: Request,
     contract_code: int = Form(...),
@@ -159,6 +153,7 @@ async def add_contract(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_authenticated_user),
 ):
+    logger.warning("open")
     if isinstance(user, RedirectResponse):
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
