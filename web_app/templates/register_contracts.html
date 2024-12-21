@@ -7,17 +7,17 @@
     <h2 class="welcome-title">Реестр договоров</h2>
 </div>
 <div class="time-container">
-    <div class="add-employee-button" id="add-employee-button">+</div>
+    <div class="add-contract-button" id="add-contract-button">+</div>
 </div>
 {% endblock %}
 
 {% block content %}
-<div class="employee-table-container">
-    <table class="employee-table">
+<div class="contract-table-container">
+    <table class="contract-table">
         <thead>
             <tr>
-                <th>Шифр обьекта</th>
-                <th>Наименование обьекта</th>
+                <th>Шифр объекта</th>
+                <th>Наименование объекта</th>
                 <th>Заказчик</th>
                 <th>Исполнитель</th>
                 <th>Номер договора</th>
@@ -29,11 +29,11 @@
                 <th>Дата подписания договора</th>
                 <th>Дата окончания договора</th>
                 <th>Стоимость договора</th>
-                <th>Полученно</th>
+                <th>Получено</th>
                 <th>Остаток</th>
-                <th>Скан подписанного акта выполненых работ</th>
-                <th>Ориггинал подписанного акта выполненных работ</th>
-                <th>Обьемы</th>
+                <th>Скан подписанного акта выполненных работ</th>
+                <th>Оригинал подписанного акта выполненных работ</th>
+                <th>Объемы</th>
                 <th>Примечания</th>
                 <th>Действия</th>
             </tr>
@@ -61,8 +61,8 @@
                 <td>{{ contract.volumes}}</td>
                 <td>{{ contract.notes}}</td>
                 <td>
-                    <button class="edit-button" data-user-id="{{ contract.id }}">Изменить</button>
-                    <button class="delete-button" data-user-id="{{ contract.id }}">Удалить</button>
+                    <button class="edit-button" data-contract-id="{{ contract.id }}">Изменить</button>
+                    <button class="delete-button" data-contract-id="{{ contract.id }}">Удалить</button>
                 </td>
             </tr>
             {% endfor %}
@@ -70,92 +70,106 @@
     </table>
 </div>
 
-<!-- Всплывающее окно для добавления нового контракта -->
-<div id="add-employee-modal" class="modal">
+<!-- Всплывающее окно для добавления нового договора -->
+<div id="add-contract-modal" class="modal">
     <div class="modal-content">
         <span class="close-button" id="close-modal">&times;</span>
-        <h2>Добавить нового сотрудника</h2>
-        <form action="/users/add/" method="post">
+        <h2>Зарегистрировать новый договор</h2>
+        <form action="/register_contracts/add/" method="post">
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="last-name">Фамилия:</label>
-                    <input type="text" id="last-name" name="last_name" required>
+                    <label for="contract-code">Шифр объекта:</label>
+                    <input type="text" id="contract-code" name="contract_code" required>
                 </div>
                 <div class="form-item">
-                    <label for="first-name">Имя:</label>
-                    <input type="text" id="first-name" name="first_name" required>
+                    <label for="object-name">Наименование объекта:</label>
+                    <input type="text" id="object-name" name="object_name" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="middle-name">Отчество:</label>
-                    <input type="text" id="middle-name" name="middle_name" required>
+                    <label for="customer">Заказчик:</label>
+                    <input type="text" id="customer" name="customer" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="position">Должность:</label>
-                    <input type="text" id="position" name="position" required>
+                    <label for="executer">Исполнитель:</label>
+                    <input type="text" id="executer" name="executer" required>
                 </div>
                 <div class="form-item">
-                    <label for="phone">Телефон:</label>
-                    <input type="tel" id="phone" name="phone" required>
-                </div>
-            </div>
-            <div class="form-group flex">
-                <div class="form-item">
-                    <label for="email">e-mail:</label>
-                    <input type="email" id="email" name="email" required>
-                </div>
-                <div class="form-item">
-                    <label for="telegram">Логин Телеграм:</label>
-                    <input type="text" id="telegram" name="telegram" required>
+                    <label for="contract-number">Номер договора</label>
+                    <input type="text" id="contract-number" name="contract_number" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="birthdate">ДР, дата:</label>
-                    <input type="date" id="birthdate" name="birthdate" required>
+                    <label for="status">Статус:</label>
+                    <input type="text" id="status" name="status" required>
                 </div>
                 <div class="form-item">
-                    <label for="category">Категория:</label>
-                    <input type="text" id="category" name="category" required>
+                    <label for="stage">Стадия:</label>
+                    <input type="text" id="stage" name="stage" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="specialization">Специализация:</label>
-                    <input type="text" id="specialization" name="specialization" required>
+                    <label for="contract-scan">Скан подписанного договора:</label>
+                    <input type="text" id="contract-scan" name="contract_scan" required>
                 </div>
                 <div class="form-item">
-                    <label for="notes">Примечание:</label>
+                    <label for="original-scan">Оригинал подписанного договора:</label>
+                    <input type="text" id="original-scan" name="original_scan" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="percent-complite">% выполнения:</label>
+                    <input type="text" id="percent-complite" name="percent_complite" required>
+                </div>
+                <div class="form-item">
+                    <label for="date-start">Дата подписания договора:</label>
+                    <input type="date" id="date-start" name="date_start" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="date-finish">Дата окончания договора:</label>
+                    <input type="text" id="date-finish" name="date_finish" required>
+                </div>
+                <div class="form-item">
+                    <label for="cost">Стоимость договора:</label>
+                    <input type="text" id="cost" name="cost" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="money-received">Получено:</label>
+                    <input type="text" id="money-received" name="money_received" required>
+                </div>
+                <div class="form-item">
+                    <label for="money-left">Остаток:</label>
+                    <input type="text" id="money-left" name="money_left" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="scan-complited-act">Скан подписанного акта выполненных работ:</label>
+                    <input type="text" id="scan-complited-act" name="scan_complited_act" required>
+                </div>
+                <div class="form-item">
+                    <label for="original-complited-act">Оригинал подписанного акта выполненных работ:</label>
+                    <input type="text" id="original-complited-act" name="original_complited_act" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="volumes">Объемы:</label>
+                    <input type="text" id="volumes" name="volumes" required>
+                </div>
+                <div class="form-item">
+                    <label for="notes">Примечания:</label>
                     <input type="text" id="notes" name="notes" required>
-                </div>
-            </div>
-            <div class="form-group flex">
-                <div class="form-item">
-                    <label for="login">Логин:</label>
-                    <input type="text" id="login" name="login" required>
-                </div>
-                <div class="form-item">
-                    <label for="password">Пароль:</label>
-                    <input type="password" id="password" name="password" required>
-                    <div id="password-strength-indicator" class="password-strength-indicator">
-                        <span class="strength-bar" id="strength-bar-1"></span>
-                        <span class="strength-bar" id="strength-bar-2"></span>
-                        <span class="strength-bar" id="strength-bar-3"></span>
-                        <span class="strength-bar" id="strength-bar-4"></span>
-                        <span class="strength-bar" id="strength-bar-5"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group flex">
-                <div class="form-item">
-                    <label for="role">Роль:</label>
-                    <select id="role" name="role" required>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                    </select>
                 </div>
             </div>
             <div class="form-group">
@@ -165,92 +179,106 @@
     </div>
 </div>
 
-<div id="edit-employee-modal" class="modal">
+<div id="edit-contract-modal" class="modal">
     <div class="modal-content">
         <span class="close-button" id="close-edit-modal">&times;</span>
-        <h2>Редактировать сотрудника</h2>
-        <form id="edit-employee-form" method="post">
-            <input type="hidden" id="edit-user-id" name="user_id">
+        <h2>Редактировать договор</h2>
+        <form id="edit-contract-form" method="post">
+            <input type="hidden" id="edit-contract-id" name="contract_id">
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="edit-last-name">Фамилия:</label>
-                    <input type="text" id="edit-last-name" name="last_name" required>
+                    <label for="edit-contract-code">Шифр объекта:</label>
+                    <input type="text" id="edit-contract-code" name="contract_code" required>
                 </div>
                 <div class="form-item">
-                    <label for="edit-first-name">Имя:</label>
-                    <input type="text" id="edit-first-name" name="first_name" required>
+                    <label for="edit-object-name">Наименование объекта:</label>
+                    <input type="text" id="edit-object-name" name="object_name" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="edit-middle-name">Отчество:</label>
-                    <input type="text" id="edit-middle-name" name="middle_name" required>
+                    <label for="edit-customer">Заказчик:</label>
+                    <input type="text" id="edit-customer" name="customer" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="edit-position">Должность:</label>
-                    <input type="text" id="edit-position" name="position" required>
+                    <label for="edit-executer">Исполнитель:</label>
+                    <input type="text" id="edit-executer" name="executer" required>
                 </div>
                 <div class="form-item">
-                    <label for="edit-phone">Телефон:</label>
-                    <input type="tel" id="edit-phone" name="phone" required>
-                </div>
-            </div>
-            <div class="form-group flex">
-                <div class="form-item">
-                    <label for="edit-email">e-mail:</label>
-                    <input type="email" id="edit-email" name="email" required>
-                </div>
-                <div class="form-item">
-                    <label for="edit-telegram">Логин Телеграм:</label>
-                    <input type="text" id="edit-telegram" name="telegram" required>
+                    <label for="edit-contract-number">Номер договора:</label>
+                    <input type="text" id="edit-contract-number" name="contract_number" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="edit-birthdate">ДР, дата:</label>
-                    <input type="date" id="edit-birthdate" name="birthdate" required>
+                    <label for="edit-status">Статус:</label>
+                    <input type="text" id="edit-status" name="status" required>
                 </div>
                 <div class="form-item">
-                    <label for="edit-category">Категория:</label>
-                    <input type="text" id="edit-category" name="category" required>
+                    <label for="edit-stage">Стадия:</label>
+                    <input type="text" id="edit-stage" name="stage" required>
                 </div>
             </div>
             <div class="form-group flex">
                 <div class="form-item">
-                    <label for="edit-specialization">Специализация:</label>
-                    <input type="text" id="edit-specialization" name="specialization" required>
+                    <label for="edit-contract-scan">Скан подписанного договора:</label>
+                    <input type="text" id="edit-contract-scan" name="contract_scan" required>
                 </div>
                 <div class="form-item">
-                    <label for="edit-notes">Примечание:</label>
+                    <label for="edit-original-scan">Оригинал подписанного договора:</label>
+                    <input type="text" id="edit-original-scan" name="original_scan" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-percent-complite">% выполнения:</label>
+                    <input type="text" id="edit-percent-complite" name="percent_complite" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-date-start">Дата подписания договора:</label>
+                    <input type="date" id="edit-date-start" name="date_start" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-date-finish">Дата окончания договора:</label>
+                    <input type="text" id="edit-date-finish" name="date_finish" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-cost">Стоимость договора:</label>
+                    <input type="text" id="edit-cost" name="cost" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-money-received">Получено:</label>
+                    <input type="text" id="edit-money-received" name="money_received" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-money-left">Остаток:</label>
+                    <input type="text" id="edit-money-left" name="money_left" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-scan-complited-act">Скан подписанного акта выполненных работ:</label>
+                    <input type="text" id="edit-scan-complited-act" name="scan_complited_act" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-original-complited-act">Оригинал подписанного акта выполненных работ:</label>
+                    <input type="text" id="edit-original-complited-act" name="original_complited_act" required>
+                </div>
+            </div>
+            <div class="form-group flex">
+                <div class="form-item">
+                    <label for="edit-volumes">Объемы:</label>
+                    <input type="text" id="edit-volumes" name="volumes" required>
+                </div>
+                <div class="form-item">
+                    <label for="edit-notes">Примечания:</label>
                     <input type="text" id="edit-notes" name="notes" required>
-                </div>
-            </div>
-            <div class="form-group flex">
-                <div class="form-item">
-                    <label for="edit-login">Логин:</label>
-                    <input type="text" id="edit-login" name="login" required>
-                </div>
-                <div class="form-item">
-                    <label for="edit-password">Пароль:</label>
-                    <input type="password" id="edit-password" name="password" required>
-                    <div id="edit-password-strength-indicator" class="password-strength-indicator">
-                        <span class="strength-bar" id="edit-strength-bar-1"></span>
-                        <span class="strength-bar" id="edit-strength-bar-2"></span>
-                        <span class="strength-bar" id="edit-strength-bar-3"></span>
-                        <span class="strength-bar" id="edit-strength-bar-4"></span>
-                        <span class="strength-bar" id="edit-strength-bar-5"></span>
-                    </div>
-                </div>
-            </div>
-            <div class="form-group flex">
-                <div class="form-item">
-                    <label for="edit-role">Роль:</label>
-                    <select id="edit-role" name="role" required>
-                        <option value="user">User</option>
-                        <option value="admin">Admin</option>
-                    </select>
                 </div>
             </div>
             <div class="form-group">
@@ -265,7 +293,7 @@
         background-image: url("/static/uploads/{{ bg_filename }}");
     }
 
-    .employee-table-container {
+    .contract-table-container {
         margin: 20px auto;
         max-width: 100%;
         padding: 10px;
@@ -276,15 +304,15 @@
         /* Добавляем горизонтальную прокрутку */
     }
 
-    .employee-table {
+    .contract-table {
         width: 100%;
         border-collapse: collapse;
         table-layout: auto;
         /* Изменяем на auto для адаптивности */
     }
 
-    .employee-table th,
-    .employee-table td {
+    .contract-table th,
+    .contract-table td {
         border: 1px solid #ddd;
         padding: 10px;
         text-align: left;
@@ -293,7 +321,7 @@
         /* Предотвращаем перенос текста */
     }
 
-    .employee-table th {
+    .contract-table th {
         background-color: #00aaff;
         /* Изменяем цвет фона */
         color: white;
@@ -302,7 +330,7 @@
         text-transform: uppercase;
     }
 
-    .employee-table tr:nth-child(even) {
+    .contract-table tr:nth-child(even) {
         background-color: #f9f9f9;
     }
 
@@ -313,7 +341,7 @@
         /* Добавляем отступ для удобства чтения */
     }
 
-    .add-employee-button {
+    .add-contract-button {
         width: 50px;
         height: 50px;
         background-color: #00aaff;
@@ -476,42 +504,47 @@
 
 <script>
     function clearFormFields() {
-        document.getElementById('last-name').value = '';
-        document.getElementById('first-name').value = '';
-        document.getElementById('middle-name').value = '';
-        document.getElementById('position').value = '';
-        document.getElementById('phone').value = '';
-        document.getElementById('email').value = '';
-        document.getElementById('telegram').value = '';
-        document.getElementById('birthdate').value = '';
-        document.getElementById('category').value = '';
-        document.getElementById('specialization').value = '';
+        document.getElementById('contract-code').value = '';
+        document.getElementById('object-name').value = '';
+        document.getElementById('customer').value = '';
+        document.getElementById('executer').value = '';
+        document.getElementById('contract-number').value = '';
+        document.getElementById('status').value = '';
+        document.getElementById('stage').value = '';
+        document.getElementById('contract-scan').value = '';
+        document.getElementById('original-scan').value = '';
+        document.getElementById('percent-complite').value = '';
+        document.getElementById('date-start').value = '';
+        document.getElementById('date-finish').value = '';
+        document.getElementById('cost').value = '';
+        document.getElementById('money-received').value = '';
+        document.getElementById('money-left').value = '';
+        document.getElementById('scan-complited-act').value = '';
+        document.getElementById('original-complited-act').value = '';
+        document.getElementById('volumes').value = '';
         document.getElementById('notes').value = '';
-        document.getElementById('login').value = '';
-        document.getElementById('password').value = '';
-        document.getElementById('role').value = 'user';
     }
 
-    document.getElementById('add-employee-button').addEventListener('click', function () {
+    document.getElementById('add-contract-button').addEventListener('click', function () {
         clearFormFields();
-        document.getElementById('add-employee-modal').style.display = 'block';
+        document.getElementById('add-contract-modal').style.display = 'block';
     });
 
     document.getElementById('close-modal').addEventListener('click', function () {
-        document.getElementById('add-employee-modal').style.display = 'none';
+        document.getElementById('add-contract-modal').style.display = 'none';
     });
 
     document.getElementById('close-edit-modal').addEventListener('click', function () {
-        document.getElementById('edit-employee-modal').style.display = 'none';
+        document.getElementById('edit-contract-modal').style.display = 'none';
     });
 
     window.addEventListener('click', function (event) {
-        var modal = document.getElementById('add-employee-modal');
+        var modal = document.getElementById('add-contract-modal');
         if (event.target == modal) {
             modal.style.display = 'none';
         }
 
-        var editModal = document.getElementById('edit-employee-modal');
+        var editModal = document.getElementById('edit-contract-modal');
         if (event.target == editModal) {
             editModal.style.display = 'none';
         }
@@ -519,43 +552,48 @@
 
     document.querySelectorAll('.edit-button').forEach(button => {
         button.addEventListener('click', function () {
-            const userId = this.getAttribute('data-user-id');
-            fetch(`/users/${userId}/`)
+            const contractId = this.getAttribute('data-contract-id');
+            fetch(`/contracts/${contractId}/`)
                 .then(response => response.json())
-                .then(user => {
-                    if (user.detail) {
-                        alert(user.detail);
+                .then(contract => {
+                    if (contract.detail) {
+                        alert(contract.detail);
                         return;
                     }
-                    document.getElementById('edit-user-id').value = user.id;
-                    document.getElementById('edit-last-name').value = user.last_name;
-                    document.getElementById('edit-first-name').value = user.first_name;
-                    document.getElementById('edit-middle-name').value = user.middle_name;
-                    document.getElementById('edit-position').value = user.position;
-                    document.getElementById('edit-phone').value = user.phone;
-                    document.getElementById('edit-email').value = user.email;
-                    document.getElementById('edit-telegram').value = user.telegram;
-                    document.getElementById('edit-birthdate').value = user.birthdate;
-                    document.getElementById('edit-category').value = user.category;
-                    document.getElementById('edit-specialization').value = user.specialization;
-                    document.getElementById('edit-notes').value = user.notes;
-                    document.getElementById('edit-login').value = user.login;
-                    document.getElementById('edit-password').value = '';
-                    document.getElementById('edit-role').value = user.role;
-                    document.getElementById('edit-employee-modal').style.display = 'block';
+                    document.getElementById('edit-contract-id').value = contract.id;
+                    document.getElementById('edit-contract-code').value = contract.contract_code;
+                    document.getElementById('edit-object-name').value = contract.object_name;
+                    document.getElementById('edit-customer').value = contract.customer;
+                    document.getElementById('edit-executer').value = contract.executer;
+                    document.getElementById('edit-contract-number').value = contract.contract_number;
+                    document.getElementById('edit-status').value = contract.status;
+                    document.getElementById('edit-stage').value = contract.stage;
+                    document.getElementById('edit-contract-scan').value = contract.contract_scan;
+                    document.getElementById('edit-original-scan').value = contract.original_scan;
+                    document.getElementById('edit-percent-complite').value = contract.percent_complite;
+                    document.getElementById('edit-date-start').value = contract.date_start;
+                    document.getElementById('edit-date-finish').value = contract.date_finish;
+                    document.getElementById('edit-cost').value = contract.cost;
+                    document.getElementById('edit-money-received').value = contract.money_received;
+                    document.getElementById('edit-money-left').value = contract.money_left;
+                    document.getElementById('edit-scan-complited-act').value = contract.scan_complited_act;
+                    document.getElementById('edit-original-complited-act').value = contract.original_complited_act;
+                    document.getElementById('edit-volumes').value = contract.volumes;
+                    document.getElementById('edit-notes').value = contract.notes;
+                    document.getElementById('edit-contract-modal').style.display = 'block';
                 })
                 .catch(error => {
-                    console.error('Error fetching user data:', error);
+                    console.error('Error fetching contract data:', error);
                     alert(`Ошибка: ${error.message}`)
                 });
         });
     });
 
-    document.getElementById('edit-employee-form').addEventListener('submit', function (event) {
+    document.getElementById('edit-contract-form').addEventListener('submit', function (event) {
         event.preventDefault();
-        const userId = document.getElementById('edit-user-id').value;
+        const contractId = document.getElementById('edit-contract-id').value;
         const formData = new FormData(this);
-        fetch(`/users/${userId}/edit/`, {
+        fetch(`/contracts/${contractId}/edit/`, {
             method: 'POST',
             body: formData
         }).then(response => {
@@ -574,15 +612,15 @@
 
     document.querySelectorAll('.delete-button').forEach(button => {
         button.addEventListener('click', function () {
-            const userId = this.getAttribute('data-user-id');
-            if (confirm('Вы уверены, что хотите удалить этого сотрудника?')) {
-                fetch(`/users/${userId}/delete/`, {
+            const contractId = this.getAttribute('data-contract-id');
+            if (confirm('Вы уверены, что хотите удалить этот договор?')) {
+                fetch(`/contracts/${contractId}/delete/`, {
                     method: 'POST',
                 }).then(response => {
                     if (response.ok) {
                         window.location.reload();
                     } else {
-                        alert('Ошибка при удалении сотрудника');
+                        alert('Ошибка при удалении договора');
                     }
                 });
             }
