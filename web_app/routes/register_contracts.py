@@ -56,10 +56,9 @@ async def get_contracts(
         )
 
 
-@router.post("/users/{user_id}/edit/")
-async def update_user(
+@router.post("/register_contracts/{contract_id}/edit/")
+async def edit_contract(
     contract_id: int,
-    request: Request,
     contract_code: int = Form(...),
     object_name: str = Form(...),
     customer: str = Form(...),
@@ -82,22 +81,19 @@ async def update_user(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_authenticated_user),
 ):
-    form_data = await request.form()
-    logger.info(f"Form data received: {form_data}")
+    logger.info(f"Editing contract with ID: {contract_id}")
     if isinstance(user, RedirectResponse):
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
-
     try:
         stmt = select(Contract).where(Contract.id == contract_id)
         result = await db.execute(stmt)
         contract = result.scalar_one_or_none()
 
-        if not user:
+        if not contract:
             logger.error(f"Contract not found: {contract_id}")
             return JSONResponse({"detail": "Contract not found"}, status_code=404)
 
-        # Обновляем данные пользователя
         contract.contract_code = contract_code
         contract.object_name = object_name
         contract.customer = customer
@@ -119,13 +115,17 @@ async def update_user(
         contract.notes = notes
 
         await db.commit()
-        logger.info(f"User {contract_id} updated successfully")
+        await db.refresh(contract)
+        logger.info(f"Contract with ID {contract_id} updated successfully")
         return RedirectResponse(url="/register_contracts/", status_code=303)
 
     except SQLAlchemyError as e:
         await db.rollback()
         logger.error(f"Database error: {e}")
-        return JSONResponse({"detail": str(e)}, status_code=500)
+        return JSONResponse(
+            {"detail": "Database error"},
+            status_code=500,
+        )
 
 
 @router.post("/register_contracts/add/")
@@ -200,7 +200,7 @@ async def get_contract(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_authenticated_user),
 ):
-    logger.info(f"Fetching user details for user_id: {contract_id}")
+    logger.info(f"Fetching contract details for contract_id: {contract_id}")
     if isinstance(user, RedirectResponse):
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
@@ -208,8 +208,8 @@ async def get_contract(
     result = await db.execute(stmt)
     contract = result.scalar_one_or_none()
 
-    if not user:
-        logger.error(f"User not found: {contract_id}")
+    if not contract:
+        logger.error(f"Contract not found: {contract_id}")
         return JSONResponse({"detail": "Contract not found"}, status_code=404)
 
     return JSONResponse(
@@ -225,8 +225,12 @@ async def get_contract(
             "contract_scan": contract.contract_scan,
             "original_scan": contract.original_scan,
             "percent_complite": contract.percent_complite,
-            "date_start": contract.date_start,
-            "date_finish": contract.date_finish,
+            "date_start": (
+                contract.date_start.isoformat() if contract.date_start else None
+            ),
+            "date_finish": (
+                contract.date_finish.isoformat() if contract.date_finish else None
+            ),
             "cost": contract.cost,
             "money_received": contract.money_received,
             "money_left": contract.money_left,
