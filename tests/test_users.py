@@ -89,28 +89,61 @@ async def test_get_contract_by_id(db: AsyncSession):
     assert user.last_name == "Ivan"
 
 
-# Тест на обновление контракта
 @pytest.mark.asyncio
-async def test_update_contract(db: AsyncSession):
+@pytest.mark.parametrize(
+    "field, new_value, expected_value",
+    [
+        ("role", "admin", "admin"),
+        ("last_name", "Ivan", "Ivan"),
+        ("first_name", "Updated User", "Updated User"),
+        ("middle_name", "Updated Executor", "Updated Executor"),
+        ("position", "Test", "Test"),
+        ("phone", "+7 (911) 481 00 52", "+7 (911) 481 00 52"),
+        ("email", "ivanov@mail.com", "ivanov@mail.com"),
+        ("telegram", "@ivan", "@ivan"),
+        ("birthdate", date(2024, 1, 1), date(2024, 1, 1)),
+        ("category", "test user", "test user"),
+        ("specialization", "Enginiring", "Enginiring"),
+        ("notes", "test user", "test user"),
+    ],
+)
+async def test_update_user_service_field(
+    db: AsyncSession, field, new_value, expected_value
+):
     await test_add_new_contract(db)  # Добавляем тестовые данные
-    await update_user_service(
-        user_id=1,
-        db=db,
-        role="admin",
-        last_name="Ivan",
-        first_name="Updated User",
-        middle_name="Updated Executor",
-        position="Test",
-        phone="+7 (911) 481 00 52",
-        email="ivanov@mail.com",
-        telegram="@ivan",
-        birthdate=date(2024, 1, 1),
-        category="test user",
-        specialization="Enginiring",
-        notes="test user",
-    )
+
+    # Получаем текущие данные пользователя
+    current_user = await get_user_by_id(1, db)
+
+    # Обновляем только одно поле
+    update_data = {
+        "role": current_user.role,
+        "last_name": current_user.last_name,
+        "first_name": current_user.first_name,
+        "middle_name": current_user.middle_name,
+        "position": current_user.position,
+        "phone": current_user.phone,
+        "email": current_user.email,
+        "telegram": current_user.telegram,
+        "birthdate": current_user.birthdate,
+        "category": current_user.category,
+        "specialization": current_user.specialization,
+        "notes": current_user.notes,
+    }
+    update_data[field] = new_value
+
+    await update_user_service(user_id=1, db=db, **update_data)
+
+    # Получаем обновленные данные пользователя
     updated_user = await get_user_by_id(1, db)
-    assert updated_user.first_name == "Updated User"
+
+    # Проверяем, что обновленное поле имеет ожидаемое значение
+    assert getattr(updated_user, field) == expected_value
+
+    # Проверяем, что остальные поля остались неизменными
+    for key, value in update_data.items():
+        if key != field:
+            assert getattr(updated_user, key) == getattr(current_user, key)
 
 
 # Тест на удаление пользователя
