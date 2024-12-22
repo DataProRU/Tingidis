@@ -17,7 +17,7 @@ async def get_all_contracts(db: AsyncSession = Depends(get_db)) -> list:
     return contracts
 
 
-async def get_contract_by_id(contract_id: int, db: AsyncSession):
+async def get_contract_by_id(contract_id: int, db: AsyncSession) -> Contract | None:
     stmt = select(Contract).where(Contract.id == contract_id)
     result = await db.execute(stmt)
     contract = result.scalar_one_or_none()
@@ -49,7 +49,7 @@ async def update_contract(
     original_complited_act: str,
     volumes: str,
     notes: str,
-):
+) -> None:
     """Update a contract in the database."""
     contract = await get_contract_by_id(contract_id, db)
     if not contract:
@@ -133,7 +133,7 @@ async def add_new_contract(
     return None
 
 
-async def service_delete_contract(contract_id, db: AsyncSession):
+async def service_delete_contract(contract_id, db: AsyncSession) -> None:
     contract = await get_contract_by_id(contract_id, db)
 
     if not contract:

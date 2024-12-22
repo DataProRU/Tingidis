@@ -9,6 +9,12 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 from web_app.services.storage import get_logo, get_bg
+from web_app.services.users_services import (
+    get_all_users,
+    add_new_user,
+    delete_user_service,
+    update_user_service,
+)
 from datetime import date
 
 # Настройка логирования
@@ -37,9 +43,7 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
         logger.warning("Access denied for non-admin user")
         return templates.TemplateResponse("not_access.html", {"request": request})
 
-    stmt = select(WebUser)
-    result = await db.execute(stmt)
-    users_data = result.scalars().all()
+    users_data = await get_all_users(db)
     logo_file = await get_logo()
     bg_file = await get_bg()
 
@@ -89,37 +93,23 @@ async def update_user(
         return templates.TemplateResponse("not_access.html", {"request": request})
 
     try:
-        stmt = select(WebUser).where(WebUser.id == user_id)
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
 
-        if not user:
-            logger.error(f"User not found: {user_id}")
-            return JSONResponse(
-                {"detail": "User not found"}, status_code=status.HTTP_404_NOT_FOUND
-            )
-
-        initials = (
-            f"{first_name[0].upper()}. {middle_name[0].upper()}."
-            if middle_name
-            else f"{first_name[0].upper()}."
+        await update_user_service(
+            user_id,
+            role,
+            last_name,
+            first_name,
+            middle_name,
+            position,
+            phone,
+            email,
+            telegram,
+            birthdate,
+            category,
+            specialization,
+            notes,
+            db,
         )
-        # Обновляем данные пользователя
-        user.role = role
-        user.last_name = last_name
-        user.first_name = first_name
-        user.middle_name = middle_name
-        user.full_name = f"{last_name} {initials}"
-        user.position = position
-        user.phone = phone
-        user.email = email
-        user.telegram = telegram
-        user.birthdate = birthdate
-        user.category = category
-        user.specialization = specialization
-        user.notes = notes
-
-        await db.commit()
         logger.info(f"User {user_id} updated successfully")
         return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -165,36 +155,24 @@ async def add_user(
         return templates.TemplateResponse("not_access.html", {"request": request})
 
     try:
-        hashed_password = pwd_context.hash(password)
-
-        initials = (
-            f"{first_name[0].upper()}. {middle_name[0].upper()}."
-            if middle_name
-            else f"{first_name[0].upper()}."
+        await add_new_user(
+            last_name,
+            first_name,
+            middle_name,
+            position,
+            phone,
+            email,
+            telegram,
+            birthdate,
+            category,
+            specialization,
+            notes,
+            login,
+            password,
+            role,
+            db,
         )
-        new_user = WebUser(
-            username=login,
-            last_name=last_name,
-            first_name=first_name,
-            full_name=f"{last_name} {initials}",
-            middle_name=middle_name,
-            position=position,
-            phone=phone,
-            email=email,
-            telegram=telegram,
-            birthdate=birthdate,
-            category=category,
-            specialization=specialization,
-            notes=notes,
-            login=login,
-            password=hashed_password,
-            role=role,
-        )
-
-        db.add(new_user)
-        await db.commit()
-        await db.refresh(new_user)
-        logger.info(f"New user added: {new_user.username}")
+        logger.info(f"New user added: {login}")
 
         return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
 
@@ -243,17 +221,7 @@ async def get_user(user_id: int, db: AsyncSession = Depends(get_db)):
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
     logger.info(f"Deleting user with user_id: {user_id}")
     try:
-        stmt = select(WebUser).where(WebUser.id == user_id)
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
-
-        if not user:
-            logger.error(f"User not found: {user_id}")
-            return templates.TemplateResponse("not_found.html", {"request": Request()})
-
-        await db.delete(user)
-        await db.commit()
-        logger.info(f"User {user_id} deleted successfully")
+        await delete_user_service(user_id, db)
 
         return RedirectResponse(url="/users/", status_code=status.HTTP_303_SEE_OTHER)
     except SQLAlchemyError as e:
