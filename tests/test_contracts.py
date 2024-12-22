@@ -11,23 +11,29 @@ from web_app.services.contracts_services import (
     service_delete_contract,
 )
 
+
 # Фикстура для создания асинхронного движка
 @pytest.fixture
 async def async_engine():
-    engine = create_async_engine("sqlite+aiosqlite:///:memory:")  # In-memory база данных
+    engine = create_async_engine(
+        "sqlite+aiosqlite:///:memory:"
+    )  # In-memory база данных
     yield engine
     await engine.dispose()
+
 
 # Фикстура для фабрики сессий
 @pytest.fixture
 async def session_factory(async_engine):
     return async_sessionmaker(bind=async_engine, expire_on_commit=False)
 
+
 # Фикстура для подключения к базе данных
 @pytest.fixture
 async def db(session_factory) -> AsyncSession:
     async with session_factory() as session:
         yield session
+
 
 # Фикстура для инициализации базы данных (создает и удаляет таблицы для каждого теста)
 @pytest.fixture(autouse=True)
@@ -37,6 +43,7 @@ async def init_db(async_engine):
     yield
     async with async_engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
+
 
 # Тест на добавление нового контракта
 @pytest.mark.asyncio
@@ -68,6 +75,7 @@ async def test_add_new_contract(db: AsyncSession):
     assert len(result) == 1
     assert result[0].customer == "Customer A"
 
+
 # Тест на получение всех контрактов
 @pytest.mark.asyncio
 async def test_get_all_contracts(db: AsyncSession):
@@ -76,6 +84,7 @@ async def test_get_all_contracts(db: AsyncSession):
     assert len(contracts) == 1
     assert contracts[0].customer == "Customer A"
 
+
 # Тест на получение контракта по ID
 @pytest.mark.asyncio
 async def test_get_contract_by_id(db: AsyncSession):
@@ -83,6 +92,7 @@ async def test_get_contract_by_id(db: AsyncSession):
     contract = await get_contract_by_id(1, db)
     assert contract is not None
     assert contract.contract_code == 1
+
 
 # Тест на обновление контракта
 @pytest.mark.asyncio
@@ -113,6 +123,7 @@ async def test_update_contract(db: AsyncSession):
     )
     updated_contract = await get_contract_by_id(1, db)
     assert updated_contract.customer == "Updated Customer"
+
 
 # Тест на удаление контракта
 @pytest.mark.asyncio

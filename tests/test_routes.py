@@ -26,7 +26,6 @@ async def test_root(client: TestClient):
     assert response.status_code == 200
 
 
-
 @pytest.mark.anyio
 async def test_auth_route(client: TestClient):
     response = client.get("/login")
