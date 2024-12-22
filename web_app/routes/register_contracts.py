@@ -8,6 +8,12 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 from web_app.services.storage import get_bg, get_logo
+from web_app.services.contracts_services import (
+    get_all_contracts,
+    update_contract,
+    add_new_contract,
+    service_delete_contract,
+)
 from web_app.dependencies import get_authenticated_user
 from datetime import date
 
@@ -33,11 +39,9 @@ async def get_contracts(
         return user  # Если пользователь не аутентифицирован
 
     try:
-        stmt = select(Contract)
-        result = await db.execute(stmt)
-        contracts = result.scalars().all()
-        logo_file = get_logo()
-        bg_file = get_bg()
+        contracts = await get_all_contracts(db)
+        logo_file = await get_logo()
+        bg_file = await get_bg()
 
         return templates.TemplateResponse(
             "register_contracts.html",
@@ -86,37 +90,30 @@ async def edit_contract(
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
     try:
-        stmt = select(Contract).where(Contract.id == contract_id)
-        result = await db.execute(stmt)
-        contract = result.scalar_one_or_none()
-
-        if not contract:
-            logger.error(f"Contract not found: {contract_id}")
-            return JSONResponse({"detail": "Contract not found"}, status_code=404)
-
-        contract.contract_code = contract_code
-        contract.object_name = object_name
-        contract.customer = customer
-        contract.executer = executer
-        contract.contract_number = contract_number
-        contract.status = status
-        contract.stage = stage
-        contract.contract_scan = contract_scan
-        contract.original_scan = original_scan
-        contract.percent_complite = percent_complite
-        contract.date_start = date_start
-        contract.date_finish = date_finish
-        contract.cost = cost
-        contract.money_received = money_received
-        contract.money_left = money_left
-        contract.scan_complited_act = scan_complited_act
-        contract.original_complited_act = original_complited_act
-        contract.volumes = volumes
-        contract.notes = notes
-
-        await db.commit()
-        await db.refresh(contract)
-        logger.info(f"Contract with ID {contract_id} updated successfully")
+        await update_contract(
+            contract_id,
+            db,
+            contract_code=contract_code,
+            object_name=object_name,
+            customer=customer,
+            executer=executer,
+            contract_number=contract_number,
+            status=status,
+            stage=stage,
+            contract_scan=contract_scan,
+            original_scan=original_scan,
+            percent_complite=percent_complite,
+            date_start=date_start,
+            date_finish=date_finish,
+            cost=cost,
+            money_received=money_received,
+            money_left=money_left,
+            scan_complited_act=scan_complited_act,
+            original_complited_act=original_complited_act,
+            volumes=volumes,
+            notes=notes,
+        )
+        logger.info(f"Contract with ID {contract_id} updated successfully by route")
         return RedirectResponse(url="/register_contracts/", status_code=303)
 
     except SQLAlchemyError as e:
@@ -158,7 +155,7 @@ async def add_contract(
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
     try:
-        new_contract = Contract(
+        await add_new_contract(
             contract_code=contract_code,
             object_name=object_name,
             customer=customer,
@@ -178,11 +175,9 @@ async def add_contract(
             original_complited_act=original_complited_act,
             volumes=volumes,
             notes=notes,
+            db=db,
         )
-        db.add(new_contract)
-        await db.commit()
-        await db.refresh(new_contract)
-        logger.info(f"New contract added: {new_contract.contract_code}")
+        logger.info(f"New contract added in router")
         return RedirectResponse(url="/register_contracts/", status_code=303)
 
     except SQLAlchemyError as e:
@@ -253,16 +248,7 @@ async def delete_contract(
         return user  # If the user is not authenticated
     logger.info(f"Deleting user with user_id: {contract_id}")
     try:
-        stmt = select(Contract).where(Contract.id == contract_id)
-        result = await db.execute(stmt)
-        contract = result.scalar_one_or_none()
-
-        if not user:
-            logger.error(f"User not found: {contract_id}")
-            return templates.TemplateResponse("not_found.html", {"request": Request()})
-
-        await db.delete(contract)
-        await db.commit()
+        await service_delete_contract(contract_id, db)
         logger.info(f"Contract {contract_id} deleted successfully")
 
         return RedirectResponse(url="/register_contracts/", status_code=303)

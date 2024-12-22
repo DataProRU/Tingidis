@@ -40,8 +40,8 @@ async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     stmt = select(WebUser)
     result = await db.execute(stmt)
     users_data = result.scalars().all()
-    logo_file = get_logo()
-    bg_file = get_bg()
+    logo_file = await get_logo()
+    bg_file = await get_bg()
 
     return templates.TemplateResponse(
         "users.html",

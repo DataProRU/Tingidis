@@ -50,8 +50,8 @@ async def post_register(
 @router.get("/login", response_class=HTMLResponse)
 async def get_login(request: Request):
     logger.info("Accessing login page")
-    logo_file = get_logo()
-    bg_file = get_bg()
+    logo_file = await get_logo()
+    bg_file = await get_bg()
 
     return templates.TemplateResponse(
         request,
@@ -99,8 +99,8 @@ async def welcome(request: Request):
     username = payload.get("sub")
     role = payload.get("role")
 
-    logo_file = get_logo()
-    bg_file = get_bg()
+    logo_file = await get_logo()
+    bg_file = await get_bg()
 
     return templates.TemplateResponse(
         request,
