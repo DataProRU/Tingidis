@@ -8,14 +8,11 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 from web_app.services.storage import get_bg, get_logo
-from web_app.services.contracts_services import (
-    get_all_contracts,
-    update_contract,
-    add_new_contract,
-    service_delete_contract,
-)
+import web_app.services.contracts_services
 from web_app.dependencies import get_authenticated_user
 from datetime import date
+from web_app.schemas.contracts import ContractUpdate, ContractCreate
+from typing import Optional
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -39,7 +36,7 @@ async def get_contracts(
         return user  # Если пользователь не аутентифицирован
 
     try:
-        contracts = await get_all_contracts(db)
+        contracts = await web_app.services.contracts_services.get_all_contracts(db)
         logo_file = await get_logo()
         bg_file = await get_bg()
 
@@ -63,25 +60,25 @@ async def get_contracts(
 @router.post("/register_contracts/{contract_id}/edit/")
 async def edit_contract(
     contract_id: int,
-    contract_code: int = Form(...),
-    object_name: str = Form(...),
-    customer: str = Form(...),
-    executer: str = Form(...),
-    contract_number: int = Form(...),
-    status: str = Form(...),
-    stage: str = Form(...),
-    contract_scan: str = Form(...),
-    original_scan: str = Form(...),
-    percent_complite: int = Form(...),
-    date_start: date = Form(...),
-    date_finish: date = Form(...),
-    cost: int = Form(...),
-    money_received: int = Form(...),
-    money_left: int = Form(...),
-    scan_complited_act: str = Form(...),
-    original_complited_act: str = Form(...),
-    volumes: str = Form(...),
-    notes: str = Form(...),
+    contract_code: Optional[int] = Form(None),
+    object_name: Optional[str] = Form(None),
+    customer: Optional[str] = Form(None),
+    executer: Optional[str] = Form(None),
+    contract_number: Optional[int] = Form(None),  # Keep as int for form data
+    status: Optional[str] = Form(None),
+    stage: Optional[str] = Form(None),
+    contract_scan: Optional[str] = Form(None),
+    original_scan: Optional[str] = Form(None),
+    percent_complite: Optional[int] = Form(None),
+    date_start: Optional[date] = Form(None),
+    date_finish: Optional[date] = Form(None),
+    cost: Optional[int] = Form(None),
+    money_received: Optional[int] = Form(None),
+    money_left: Optional[int] = Form(None),
+    scan_complited_act: Optional[str] = Form(None),
+    original_complited_act: Optional[str] = Form(None),
+    volumes: Optional[str] = Form(None),
+    notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_authenticated_user),
 ):
@@ -90,14 +87,17 @@ async def edit_contract(
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
     try:
-        await update_contract(
-            contract_id,
-            db,
+        # Convert contract_number to string
+        contract_number_str = (
+            str(contract_number) if contract_number is not None else None
+        )
+
+        contract_data = ContractUpdate(
             contract_code=contract_code,
             object_name=object_name,
             customer=customer,
             executer=executer,
-            contract_number=contract_number,
+            contract_number=contract_number_str,  # Use the string version
             status=status,
             stage=stage,
             contract_scan=contract_scan,
@@ -112,6 +112,9 @@ async def edit_contract(
             original_complited_act=original_complited_act,
             volumes=volumes,
             notes=notes,
+        )
+        await web_app.services.contracts_services.edit_contract(
+            contract_id, db, contract_data=contract_data
         )
         logger.info(f"Contract with ID {contract_id} updated successfully by route")
         return RedirectResponse(url="/register_contracts/", status_code=303)
@@ -132,21 +135,21 @@ async def add_contract(
     object_name: str = Form(...),
     customer: str = Form(...),
     executer: str = Form(...),
-    contract_number: int = Form(...),
+    contract_number: str = Form(...),
     status: str = Form(...),
     stage: str = Form(...),
     contract_scan: str = Form(...),
     original_scan: str = Form(...),
     percent_complite: int = Form(...),
     date_start: date = Form(...),
-    date_finish: date = Form(...),
-    cost: int = Form(...),
-    money_received: int = Form(...),
-    money_left: int = Form(...),
+    date_finish: Optional[date] = Form(None),
+    cost: Optional[int] = Form(None),
+    money_received: Optional[int] = Form(None),
+    money_left: Optional[int] = Form(None),
     scan_complited_act: str = Form(...),
     original_complited_act: str = Form(...),
     volumes: str = Form(...),
-    notes: str = Form(...),
+    notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_authenticated_user),
 ):
@@ -155,7 +158,7 @@ async def add_contract(
         logger.warning("Unauthenticated user access attempt")
         return user  # If the user is not authenticated
     try:
-        await add_new_contract(
+        contract_data = ContractCreate(
             contract_code=contract_code,
             object_name=object_name,
             customer=customer,
@@ -175,7 +178,10 @@ async def add_contract(
             original_complited_act=original_complited_act,
             volumes=volumes,
             notes=notes,
-            db=db,
+        )
+
+        await web_app.services.contracts_services.add_contract(
+            contract_data=contract_data, db=db
         )
         logger.info(f"New contract added in router")
         return RedirectResponse(url="/register_contracts/", status_code=303)
@@ -248,7 +254,7 @@ async def delete_contract(
         return user  # If the user is not authenticated
     logger.info(f"Deleting user with user_id: {contract_id}")
     try:
-        await service_delete_contract(contract_id, db)
+        await web_app.services.contracts_services.delete_contract(contract_id, db)
         logger.info(f"Contract {contract_id} deleted successfully")
 
         return RedirectResponse(url="/register_contracts/", status_code=303)

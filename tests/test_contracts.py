@@ -6,7 +6,7 @@ from web_app.database import Base, Contract  # Импорт моделей и б
 from web_app.services.contracts_services import (
     get_all_contracts,
     get_contract_by_id,
-    update_contract,
+    edit_contract,
     add_new_contract,
     service_delete_contract,
 )
@@ -53,7 +53,7 @@ async def test_add_new_contract(db: AsyncSession):
         object_name="Test Object",
         customer="Customer A",
         executer="Executor A",
-        contract_number=12345,
+        contract_number="12345",
         status="New",
         stage="Start",
         contract_scan="scan_1.pdf",
@@ -77,7 +77,7 @@ async def test_add_new_contract(db: AsyncSession):
     assert result[0].object_name == "Test Object"
     assert result[0].customer == "Customer A"
     assert result[0].executer == "Executor A"
-    assert result[0].contract_number == 12345
+    assert result[0].contract_number == "12345"
     assert result[0].status == "New"
     assert result[0].stage == "Start"
     assert result[0].contract_scan == "scan_1.pdf"
@@ -115,14 +115,14 @@ async def test_get_contract_by_id(db: AsyncSession):
 @pytest.mark.asyncio
 async def test_update_contract_code(db: AsyncSession):
     await test_add_new_contract(db)  # Добавляем тестовые данные
-    await update_contract(
+    await edit_contract(
         contract_id=1,
         db=db,
         contract_code=2,
         object_name="Updated Object",
         customer="Updated Customer",
         executer="Updated Executor",
-        contract_number=54321,
+        contract_number="54321",
         status="Updated",
         stage="End",
         contract_scan="updated_scan.pdf",
@@ -150,7 +150,7 @@ async def test_update_contract_code(db: AsyncSession):
         ("object_name", "Updated Object", "Updated Object"),
         ("customer", "Updated Customer", "Updated Customer"),
         ("executer", "Updated Executor", "Updated Executor"),
-        ("contract_number", 54321, 54321),
+        ("contract_number", "54321", "54321"),
         ("status", "Updated", "Updated"),
         ("stage", "End", "End"),
         ("contract_scan", "updated_scan.pdf", "updated_scan.pdf"),
@@ -231,7 +231,7 @@ async def test_update_customer(db: AsyncSession):
         object_name="Object",
         customer="Updated Customer",
         executer="Executor",
-        contract_number=12345,
+        contract_number="12345",
         status="Status",
         stage="Stage",
         contract_scan="scan.pdf",

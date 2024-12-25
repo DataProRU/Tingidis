@@ -51,7 +51,7 @@ class Contract(Base):
     object_name = Column(String, nullable=False)
     customer = Column(String, nullable=False)
     executer = Column(String, nullable=False)
-    contract_number = Column(Integer, nullable=False)
+    contract_number = Column(String, nullable=False)
     status = Column(String, nullable=False)
     stage = Column(String, nullable=False)
     contract_scan = Column(String, nullable=False)
