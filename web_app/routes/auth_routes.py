@@ -1,6 +1,6 @@
 import logging
 from fastapi import APIRouter, Request, Depends, Form, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse, JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.security import OAuth2PasswordRequestForm
 from web_app.services.auth_service import login_user, register_user
@@ -21,10 +21,10 @@ router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
 
 
-@router.get("/register", response_class=HTMLResponse)
+@router.get("/register", response_class=JSONResponse)
 async def get_register(request: Request):
     logger.info("Accessing registration page")
-    return templates.TemplateResponse(request, "register.html", {"request": request})
+    return {"request": str(request.url)}
 
 
 @router.post("/register")
@@ -47,25 +47,21 @@ async def post_register(
     return RedirectResponse(url="/users", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/login", response_class=HTMLResponse)
+@router.get("/login", response_class=JSONResponse)
 async def get_login(request: Request):
     logger.info("Accessing login page")
     logo_file = await get_logo()
     bg_file = await get_bg()
 
-    return templates.TemplateResponse(
-        request,
-        "login.html",
-        {
-            "request": request,
-            "error": None,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
-        },
-    )
+    return {
+        "request": str(request.url),
+        "error": None,
+        "bg_filename": bg_file,
+        "logo_file": logo_file,
+    }
 
 
-@router.post("/login", response_class=HTMLResponse)
+@router.post("/login", response_class=JSONResponse)
 async def login(
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
@@ -81,19 +77,21 @@ async def login(
         )
 
 
-@router.get("/welcome", response_class=HTMLResponse)
-@router.get("/", response_class=HTMLResponse)
+@router.get("/welcome", response_class=JSONResponse)
+@router.get("/", response_class=JSONResponse)
 async def welcome(request: Request):
     logger.info("Accessing welcome page")
     token = get_token_from_cookie(request)
     if isinstance(token, RedirectResponse):
         logger.warning("Unauthorized access attempt")
-        return token
+        return JSONResponse(
+            content={"error": "Unauthorized access attempt"}, status_code=401
+        )
 
     payload = get_current_user(token)
     if isinstance(payload, RedirectResponse):
         logger.warning("Invalid token")
-        return payload
+        return JSONResponse(content={"error": "Invalid token"}, status_code=401)
 
     # Extract user information
     username = payload.get("sub")
@@ -102,20 +100,16 @@ async def welcome(request: Request):
     logo_file = await get_logo()
     bg_file = await get_bg()
 
-    return templates.TemplateResponse(
-        request,
-        "welcome.html",
-        {
-            "request": request,
-            "username": username,
-            "role": role,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
-        },
-    )
+    return {
+        "request": str(request.url),
+        "username": username,
+        "role": role,
+        "bg_filename": bg_file,
+        "logo_file": logo_file,
+    }
 
 
-@router.get("/confirm", response_class=HTMLResponse)
+@router.get("/confirm", response_class=JSONResponse)
 async def confirm(
     request: Request,
     user: dict = Depends(get_authenticated_user),
@@ -123,30 +117,33 @@ async def confirm(
     logger.info("Accessing confirmation page")
     if isinstance(user, RedirectResponse):
         logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+        return JSONResponse(
+            content={"error": "Unauthenticated user access attempt"}, status_code=401
+        )
 
-    return templates.TemplateResponse(request, "confirm.html", {"request": request})
+    return {"request": str(request.url)}
 
 
-@router.get("/access", response_class=HTMLResponse)
+@router.get("/access", response_class=JSONResponse)
 async def access(request: Request):
     logger.info("Accessing access page")
     token = get_token_from_cookie(request)
     if isinstance(token, RedirectResponse):
         logger.warning("Unauthorized access attempt")
-        return token
+        return JSONResponse(
+            content={"error": "Unauthorized access attempt"}, status_code=401
+        )
+
     payload = get_current_user(token)
     if isinstance(payload, RedirectResponse):
         logger.warning("Invalid token")
-        return payload
+        return JSONResponse(content={"error": "Invalid token"}, status_code=401)
+
     username = payload.get("sub")
     role = payload.get("role")
-    return templates.TemplateResponse(
-        request,
-        "access.html",
-        {
-            "request": request,
-            "username": username,
-            "role": role,
-        },
-    )
+
+    return {
+        "request": str(request.url),
+        "username": username,
+        "role": role,
+    }

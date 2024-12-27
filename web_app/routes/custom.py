@@ -1,8 +1,7 @@
 import logging
-from fastapi import FastAPI, File, UploadFile, Request, APIRouter, status
-from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi import APIRouter, File, UploadFile, Request, status
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 import shutil
 import os
 
@@ -14,7 +13,6 @@ router = APIRouter()
 
 # Настройка статических файлов и шаблонов
 router.mount("/static", StaticFiles(directory="web_app/static"), name="static")
-templates = Jinja2Templates(directory="web_app/templates")
 
 # Путь для сохранения загруженных изображений
 UPLOAD_DIRECTORY = "web_app/static/uploads"
@@ -22,7 +20,7 @@ LOGO_DIRECTORY = "web_app/static/img"
 os.makedirs(UPLOAD_DIRECTORY, exist_ok=True)
 
 
-@router.get("/customaze", response_class=HTMLResponse)
+@router.get("/customaze", response_class=JSONResponse)
 async def read_root(request: Request):
     logger.info("Accessing customization page")
     # Получаем последнее загруженное изображение
@@ -39,10 +37,11 @@ async def read_root(request: Request):
         logo_file = None
         bg_file = None
 
-    return templates.TemplateResponse(
-        "custom.html",  # template name
-        {"request": request, "bg_filename": bg_file, "logo_file": logo_file},
-    )
+    return {
+        "request": str(request.url),
+        "bg_filename": bg_file,
+        "logo_file": logo_file,
+    }
 
 
 @router.post("/upload_image/")
@@ -52,7 +51,10 @@ async def upload_image(file: UploadFile = File(...)):
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     logger.info(f"Image uploaded successfully: {file.filename}")
-    return RedirectResponse(url="/customaze", status_code=status.HTTP_303_SEE_OTHER)
+    return JSONResponse(
+        content={"message": "Image uploaded successfully"},
+        status_code=status.HTTP_200_OK,
+    )
 
 
 @router.post("/upload-logo/")
@@ -62,4 +64,7 @@ async def upload_logo(file: UploadFile = File(...)):
     with open(file_location, "wb") as buffer:
         shutil.copyfileobj(file.file, buffer)
     logger.info(f"Logo uploaded successfully: {file.filename}")
-    return RedirectResponse(url="/customaze", status_code=status.HTTP_303_SEE_OTHER)
+    return JSONResponse(
+        content={"message": "Logo uploaded successfully"},
+        status_code=status.HTTP_200_OK,
+    )
