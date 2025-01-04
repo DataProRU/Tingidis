@@ -9,7 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 from web_app.services.storage import get_bg, get_logo
 import web_app.services.contracts_services
-from web_app.dependencies import get_authenticated_user
 from datetime import date
 from web_app.schemas.contracts import ContractUpdate, ContractCreate
 from typing import Optional
@@ -28,7 +27,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def get_contracts(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.info("Accessing contracts registration page")
 
@@ -77,7 +75,6 @@ async def edit_contract(
     volumes: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.info(f"Editing contract with ID: {contract_id}")
 
@@ -146,7 +143,6 @@ async def add_contract(
     volumes: str = Form(...),
     notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.warning("open")
 
@@ -192,7 +188,6 @@ async def add_contract(
 async def get_contract(
     contract_id: int,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.info(f"Fetching contract details for contract_id: {contract_id}")
 
@@ -238,7 +233,6 @@ async def get_contract(
 async def delete_contract(
     contract_id: int,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
 
     logger.info(f"Deleting user with user_id: {contract_id}")

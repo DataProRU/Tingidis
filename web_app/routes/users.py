@@ -2,12 +2,12 @@ import logging
 from fastapi import APIRouter, Request, Form, Depends, status
 from web_app.database import WebUser, get_db
 from fastapi.templating import Jinja2Templates
-from web_app.dependencies import get_token_from_cookie, get_current_user
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
+
 from web_app.services.storage import get_logo, get_bg
 from web_app.services.users_services import (
     get_all_users,
