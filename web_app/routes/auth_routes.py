@@ -1,31 +1,67 @@
-import logging
-from fastapi import APIRouter, Request, Depends, Form, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.security import OAuth2PasswordRequestForm
-from web_app.services.auth_service import login_user, register_user
-from web_app.dependencies import (
-    get_authenticated_user,
-    get_current_user,
-    get_token_from_cookie,
-)
-from web_app.database import get_db
+from fastapi import FastAPI, Depends, HTTPException, APIRouter, Request, Form, status
+from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
-from web_app.services.storage import get_bg, get_logo
+from sqlalchemy.future import select
+from jose import jwt, JWTError
+from passlib.context import CryptContext
+from datetime import datetime, timedelta
+from pydantic import BaseModel
+from sqlalchemy import update
+from web_app.database import async_session, WebUser
+from web_app.database import get_db
+from web_app.services.auth_service import  register_user
+from fastapi.responses import HTMLResponse, RedirectResponse
+import logging
+from fastapi.templating import Jinja2Templates
 
-# Настройка логирования
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
+# Конфигурация
+SECRET_KEY = "your_secret_key"
+REFRESH_SECRET_KEY = "your_refresh_secret_key"
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+REFRESH_TOKEN_EXPIRE_DAYS = 3
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+
+# Модели
+class Token(BaseModel):
+    access_token: str
+    refresh_token: str
+    token_type: str
+
+class TokenData(BaseModel):
+    username: str | None = None
+    roles: list[str] | None = None
+
+# Утилиты
+async def get_user_by_login(session: AsyncSession, login: str):
+    query = select(WebUser).where(WebUser.login == login)
+    result = await session.execute(query)
+    return result.scalar_one_or_none()
+
+async def verify_password(plain_password, hashed_password):
+    return pwd_context.verify(plain_password, hashed_password)
+
+async def authenticate_user(session: AsyncSession, login: str, password: str):
+    user = await get_user_by_login(session, login)
+    if not user or not await verify_password(password, user.password):
+        return None
+    return user
+
+def create_token(data: dict, expires_delta: timedelta, secret_key: str):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, secret_key, algorithm=ALGORITHM)
+
+
 router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
-
-
-@router.get("/register", response_class=HTMLResponse)
-async def get_register(request: Request):
-    logger.info("Accessing registration page")
-    return templates.TemplateResponse(request, "register.html", {"request": request})
-
 
 @router.post("/register")
 async def post_register(
@@ -46,107 +82,74 @@ async def post_register(
     logger.info(f"User {username} registered successfully")
     return RedirectResponse(url="/users", status_code=status.HTTP_303_SEE_OTHER)
 
+@router.post("/login", response_model=Token)
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: AsyncSession = Depends(async_session)):
+    user = await authenticate_user(session, form_data.username, form_data.password)
+    if not user:
+        raise HTTPException(status_code=400, detail="Incorrect username or password")
 
-@router.get("/login", response_class=HTMLResponse)
-async def get_login(request: Request):
-    logger.info("Accessing login page")
-    logo_file = await get_logo()
-    bg_file = await get_bg()
-
-    return templates.TemplateResponse(
-        request,
-        "login.html",
-        {
-            "request": request,
-            "error": None,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
-        },
+    # Генерация токенов
+    access_token = create_token(
+        data={"sub": user.login, "roles": [user.role]},
+        expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
+        secret_key=SECRET_KEY,
+    )
+    refresh_token = create_token(
+        data={"sub": user.login},
+        expires_delta=timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS),
+        secret_key=REFRESH_SECRET_KEY,
     )
 
+    # Обновление refresh-токена в базе
+    await session.execute(
+        update(WebUser).where(WebUser.id == user.id).values(refresh_token=refresh_token)
+    )
+    await session.commit()
 
-@router.post("/login", response_class=HTMLResponse)
-async def login(
-    request: Request,
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
-):
-    logger.info(f"Logging in user: {form_data.username}")
+    return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
+
+@router.get("/users/me")
+async def read_users_me(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(async_session)):
+    credentials_exception = HTTPException(status_code=401, detail="Could not validate credentials")
     try:
-        return await login_user(request, form_data, db, templates)
-    except Exception as e:
-        logger.error(f"Login failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
-        )
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        login: str = payload.get("sub")
+        roles: list[str] = payload.get("roles", [])
+        if not login:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
 
+    user = await get_user_by_login(session, login)
+    if not user:
+        raise credentials_exception
 
-@router.get("/welcome", response_class=HTMLResponse)
-@router.get("/", response_class=HTMLResponse)
-async def welcome(request: Request):
-    logger.info("Accessing welcome page")
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
+    return {
+        "username": user.login,
+        "roles": roles,
+        "email": user.email,
+        "full_name": user.full_name,
+    }
 
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
+@router.post("/logout")
+async def logout(token: str = Depends(oauth2_scheme), session: AsyncSession = Depends(async_session)):
+    credentials_exception = HTTPException(status_code=401, detail="Could not validate credentials")
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        login: str = payload.get("sub")
+        if not login:
+            raise credentials_exception
+    except JWTError:
+        raise credentials_exception
 
-    # Extract user information
-    username = payload.get("sub")
-    role = payload.get("role")
+    user = await get_user_by_login(session, login)
+    if not user:
+        raise credentials_exception
 
-    logo_file = await get_logo()
-    bg_file = await get_bg()
-
-    return templates.TemplateResponse(
-        request,
-        "welcome.html",
-        {
-            "request": request,
-            "username": username,
-            "role": role,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
-        },
+    # Очистка refresh-токена в базе
+    await session.execute(
+        update(WebUser).where(WebUser.id == user.id).values(refresh_token=None)
     )
+    await session.commit()
 
-
-@router.get("/confirm", response_class=HTMLResponse)
-async def confirm(
-    request: Request,
-    user: dict = Depends(get_authenticated_user),
-):
-    logger.info("Accessing confirmation page")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
-
-    return templates.TemplateResponse(request, "confirm.html", {"request": request})
-
-
-@router.get("/access", response_class=HTMLResponse)
-async def access(request: Request):
-    logger.info("Accessing access page")
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
-    username = payload.get("sub")
-    role = payload.get("role")
-    return templates.TemplateResponse(
-        request,
-        "access.html",
-        {
-            "request": request,
-            "username": username,
-            "role": role,
-        },
-    )
+    return {"message": "Successfully logged out"}

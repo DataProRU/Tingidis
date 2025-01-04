@@ -31,9 +31,6 @@ async def get_contracts(
     user: dict = Depends(get_authenticated_user),
 ):
     logger.info("Accessing contracts registration page")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # Если пользователь не аутентифицирован
 
     try:
         contracts = await web_app.services.contracts_services.get_all_contracts(db)
@@ -83,9 +80,7 @@ async def edit_contract(
     user: dict = Depends(get_authenticated_user),
 ):
     logger.info(f"Editing contract with ID: {contract_id}")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     try:
         # Convert contract_number to string
         contract_number_str = (
@@ -154,9 +149,7 @@ async def add_contract(
     user: dict = Depends(get_authenticated_user),
 ):
     logger.warning("open")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     try:
         contract_data = ContractCreate(
             contract_code=contract_code,
@@ -202,9 +195,7 @@ async def get_contract(
     user: dict = Depends(get_authenticated_user),
 ):
     logger.info(f"Fetching contract details for contract_id: {contract_id}")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     stmt = select(Contract).where(Contract.id == contract_id)
     result = await db.execute(stmt)
     contract = result.scalar_one_or_none()
@@ -249,9 +240,7 @@ async def delete_contract(
     db: AsyncSession = Depends(get_db),
     user: dict = Depends(get_authenticated_user),
 ):
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     logger.info(f"Deleting user with user_id: {contract_id}")
     try:
         await web_app.services.contracts_services.delete_contract(contract_id, db)
