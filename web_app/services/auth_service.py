@@ -5,13 +5,16 @@ import jwt
 from web_app.database import WebUser, TokenBlacklist
 from fastapi import HTTPException, status
 from sqlalchemy import select
+import os
+from dotenv import load_dotenv
 
 # Настройка для хэширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+load_dotenv()
 # Секретный ключ и алгоритм для JWT
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 
 # Функция для создания токенов

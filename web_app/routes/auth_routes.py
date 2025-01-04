@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Body
 from datetime import timedelta
 from sqlalchemy import select
 from web_app.database import WebUser, async_session, TokenBlacklist
@@ -15,19 +15,28 @@ router = APIRouter()
 
 
 @router.post("/register")
-async def register_user(user: UserCreate):
-    # Проверка на отсутствие необходимых данных
-    missing_fields = [
-        field for field in ["username", "password", "role"] if not getattr(user, field)
-    ]
+async def register_user(user: UserCreate = Body(...)):
+    """
+    Регистрация нового пользователя.
+    """
+
+    # Проверяем, есть ли данные в теле запроса
+    if not user.dict():
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Тело запроса не должно быть пустым.",
+        )
+
+    # Определяем отсутствующие обязательные поля
+    missing_fields = [field for field in ["username", "password", "role"] if not getattr(user, field, None)]
     if missing_fields:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail=f"Отсутствуют обязательные поля: {', '.join(missing_fields)}",
         )
 
+    # Создаём сессию для работы с базой данных
     async with async_session() as session:
-        # Проверка, существует ли пользователь с таким логином
         if await get_user_by_username(user.username, session):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
@@ -37,7 +46,7 @@ async def register_user(user: UserCreate):
         # Хэшируем пароль
         hashed_password = pwd_context.hash(user.password)
 
-        # Создаем нового пользователя с обязательными полями
+        # Создаем нового пользователя
         new_user = WebUser(
             username=user.username,
             password=hashed_password,
@@ -45,26 +54,18 @@ async def register_user(user: UserCreate):
             last_name=user.username,  # Используем username как last_name по умолчанию
             first_name=user.username,  # Используем username как first_name по умолчанию
             full_name=user.username,  # Используем username как full_name
-            email=f"{user.username}@example.com",  # Генерируем email
+            email=f"{user.username}@example.com",  # Генерируем email по умолчанию
             login=user.username,  # Используем username как login
         )
         session.add(new_user)
         await session.commit()
 
+        # Возвращаем данные пользователя и токены
         return {
-            "access_token": create_access_token(
-                {"sub": user.username, "role": user.role}
-            ),
-            "refresh_token": create_access_token(
-                {"sub": user.username, "role": user.role}, timedelta(days=7)
-            ),
-            "user": {
-                "username": new_user.username,
-                "role": new_user.role,
-                "id": new_user.id,
-            },
+            "access_token": create_access_token({"sub": user.username, "role": user.role}),
+            "refresh_token": create_access_token({"sub": user.username, "role": user.role}, timedelta(days=7)),
+            "user": {"username": new_user.username, "role": new_user.role, "id": new_user.id},
         }
-
 
 @router.post("/login")
 async def login_user(user: UserLogin):

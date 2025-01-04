@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class UserCreate(BaseModel):
-    username: str
-    password: str
-    role: str
+    username: str = Field(..., title="Имя пользователя", example="testuser")
+    password: str = Field(..., title="Пароль", example="password123")
+    role: str = Field(..., title="Роль пользователя", example="user")
 
 
 # Модель запроса для входа
