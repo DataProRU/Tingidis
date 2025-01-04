@@ -28,7 +28,11 @@ async def register_user(user: UserCreate = Body(...)):
         )
 
     # Определяем отсутствующие обязательные поля
-    missing_fields = [field for field in ["username", "password", "role"] if not getattr(user, field, None)]
+    missing_fields = [
+        field
+        for field in ["username", "password", "role"]
+        if not getattr(user, field, None)
+    ]
     if missing_fields:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
@@ -62,10 +66,19 @@ async def register_user(user: UserCreate = Body(...)):
 
         # Возвращаем данные пользователя и токены
         return {
-            "access_token": create_access_token({"sub": user.username, "role": user.role}),
-            "refresh_token": create_access_token({"sub": user.username, "role": user.role}, timedelta(days=7)),
-            "user": {"username": new_user.username, "role": new_user.role, "id": new_user.id},
+            "access_token": create_access_token(
+                {"sub": user.username, "role": user.role}
+            ),
+            "refresh_token": create_access_token(
+                {"sub": user.username, "role": user.role}, timedelta(days=7)
+            ),
+            "user": {
+                "username": new_user.username,
+                "role": new_user.role,
+                "id": new_user.id,
+            },
         }
+
 
 @router.post("/login")
 async def login_user(user: UserLogin):
