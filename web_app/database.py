@@ -43,6 +43,10 @@ class WebUser(Base):
     password = Column(String, nullable=False)  # Здесь требуется хэширование
     role = Column(String, nullable=False, server_default="user")
 
+class TokenBlacklist(Base):
+    __tablename__ = "token_blacklist"
+
+    token = Column(String, primary_key=True, index=True)
 
 class Contract(Base):
     __tablename__ = "contract"
