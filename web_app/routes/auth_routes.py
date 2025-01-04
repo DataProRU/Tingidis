@@ -1,117 +1,117 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from sqlalchemy.ext.asyncio import AsyncSession
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
-import jwt
-from web_app.database import WebUser, async_session, TokenBlacklist
+from fastapi import APIRouter, HTTPException, status
+from datetime import timedelta
 from sqlalchemy import select
-
+from web_app.database import WebUser, async_session, TokenBlacklist
+from web_app.schemas.users import UserLogin, UserCreate
+from web_app.services.auth_service import (
+    pwd_context,
+    create_access_token,
+    get_user_by_username,
+    decode_token,
+    add_token_to_blacklist,
+)
 
 router = APIRouter()
 
-# Настройка для хэширования паролей
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-# Секретный ключ и алгоритм для JWT
-SECRET_KEY = "your_secret_key"
-ALGORITHM = "HS256"
-
-# Модель запроса для регистрации
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    role: str
-
-# Модель запроса для входа
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-# Функция для создания токенов
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 @router.post("/register")
 async def register_user(user: UserCreate):
-    # Создаем сессию базы данных вручную
-    async with async_session() as session:
-        # Проверяем, существует ли пользователь с таким логином
-        result = await session.execute(
-            select(WebUser).filter_by(username=user.username)
+    # Проверка на отсутствие необходимых данных
+    missing_fields = [
+        field for field in ["username", "password", "role"] if not getattr(user, field)
+    ]
+    if missing_fields:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail=f"Отсутствуют обязательные поля: {', '.join(missing_fields)}",
         )
-        existing_user = result.scalar_one_or_none()  # Вернет None, если пользователь не найден
-        if existing_user:
-            raise HTTPException(status_code=400, detail="User already exists")
+
+    async with async_session() as session:
+        # Проверка, существует ли пользователь с таким логином
+        if await get_user_by_username(user.username, session):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Пользователь уже существует",
+            )
 
         # Хэшируем пароль
         hashed_password = pwd_context.hash(user.password)
 
-        # Создаем нового пользователя
+        # Создаем нового пользователя с обязательными полями
         new_user = WebUser(
             username=user.username,
             password=hashed_password,
             role=user.role,
-            last_name="",
-            first_name="",
-            full_name=user.username,  # Заполняем как минимум полное имя
-            email=f"{user.username}@example.com",  # Заполнение примерным email
-            login=user.username  # Добавлено поле login
+            last_name=user.username,  # Используем username как last_name по умолчанию
+            first_name=user.username,  # Используем username как first_name по умолчанию
+            full_name=user.username,  # Используем username как full_name
+            email=f"{user.username}@example.com",  # Генерируем email
+            login=user.username,  # Используем username как login
         )
         session.add(new_user)
         await session.commit()
 
-        # Создаем токены с ролью пользователя в payload
-        access_token = create_access_token(data={"sub": user.username, "role": user.role})
-        refresh_token = create_access_token(data={"sub": user.username, "role": user.role}, expires_delta=timedelta(days=7))
+        return {
+            "access_token": create_access_token(
+                {"sub": user.username, "role": user.role}
+            ),
+            "refresh_token": create_access_token(
+                {"sub": user.username, "role": user.role}, timedelta(days=7)
+            ),
+            "user": {
+                "username": new_user.username,
+                "role": new_user.role,
+                "id": new_user.id,
+            },
+        }
 
-    return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/login")
 async def login_user(user: UserLogin):
-    # Создаем сессию базы данных вручную
     async with async_session() as session:
-        # Ищем пользователя в базе данных
-        result = await session.execute(
-            select(WebUser).filter_by(username=user.username)
-        )
-        existing_user = result.scalar_one_or_none()  # Вернет None, если пользователь не найден
-        if not existing_user:
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+        db_user = await get_user_by_username(user.username, session)
+        if not db_user or not pwd_context.verify(user.password, db_user.password):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Неверные учетные данные",
+            )
 
-        # Проверяем, совпадает ли введенный пароль с хэшированным
-        if not pwd_context.verify(user.password, existing_user.password):
-            raise HTTPException(status_code=401, detail="Invalid credentials")
+        return {
+            "access_token": create_access_token(
+                {"sub": db_user.username, "role": db_user.role}
+            ),
+            "refresh_token": create_access_token(
+                {"sub": db_user.username, "role": db_user.role}, timedelta(days=7)
+            ),
+            "user": {
+                "username": db_user.username,
+                "role": db_user.role,
+                "id": db_user.id,
+            },
+        }
 
-        # Создаем токены с ролью пользователя в payload
-        access_token = create_access_token(data={"sub": user.username, "role": existing_user.role})
-        refresh_token = create_access_token(data={"sub": user.username, "role": existing_user.role}, expires_delta=timedelta(days=7))
-
-    return {"access_token": access_token, "refresh_token": refresh_token}
 
 @router.post("/logout")
 async def logout_user(access_token: str):
-    try:
-        # Декодируем токен, чтобы проверить его действительность
-        payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
+    payload = decode_token(access_token)
+    async with async_session() as session:
+        await add_token_to_blacklist(access_token, session)
+    return {"message": "Успешно вышли из системы"}
 
-        if username is None:
-            raise HTTPException(status_code=401, detail="Invalid token")
 
-        # Создаем сессию базы данных вручную
-        async with async_session() as session:
-            # Добавляем токен в черный список
-            blacklisted_token = TokenBlacklist(token=access_token)
-            session.add(blacklisted_token)
-            await session.commit()
+@router.post("/refresh")
+async def refresh_token(refresh_token: str):
+    payload = decode_token(refresh_token)
+    username, role = payload.get("sub"), payload.get("role")
 
-        return {"message": "Successfully logged out"}
+    async with async_session() as session:
+        blacklisted_token = await session.execute(
+            select(TokenBlacklist).filter_by(token=refresh_token)
+        )
+        if blacklisted_token.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Токен обновлён и не является действительным",
+            )
 
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(status_code=401, detail="Token has expired")
-    except jwt.JWTError:
-        raise HTTPException(status_code=401, detail="Invalid token")
+    return {"access_token": create_access_token({"sub": username, "role": role})}
