@@ -211,7 +211,7 @@ async def refresh_token(request: Request, response: Response):
         }
 
 
-@router.get("/logout")
+@router.post("/logout")
 async def logout_user(request: Request, response: Response):
     refresh_token = request.cookies.get("refresh_token")
 
