@@ -173,7 +173,7 @@ async def refresh_token(request: Request, response: Response):
     async with async_session() as session:
         refresh_token = request.cookies.get("refresh_token")
         if not refresh_token:
-            raise HTTPException(status_code=403, detail="Refresh token невалидный")
+            raise HTTPException(status_code=401, detail="Пользователь не авторизован")
         # Декодируем refresh token из cookies
         user_data = validate_refresh_token(refresh_token)
         # Ищем токен в бд
@@ -182,7 +182,7 @@ async def refresh_token(request: Request, response: Response):
         )
         token_data = token_query.scalar_one_or_none()
         if not user_data or not token_data:
-            raise HTTPException(status_code=403, detail="Refresh token невалидный")
+            raise HTTPException(status_code=401, detail="Пользователь не авторизован")
 
         user_id = token_data.user_id
 
