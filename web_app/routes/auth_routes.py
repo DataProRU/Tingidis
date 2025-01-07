@@ -126,7 +126,15 @@ async def register_user(user: UserCreate, response: Response):
 
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
-    return {"access_token": access_token, "refresh_token": refresh_token}
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {
+            "username": new_user.username,
+            "role": new_user.role,
+            "id": new_user.id,
+        },
+    }
 
 @router.post("/login")
 async def login_user(user: UserLogin, response: Response):
@@ -150,7 +158,15 @@ async def login_user(user: UserLogin, response: Response):
         await save_token(existing_user.id, refresh_token)
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
-    return {"access_token": access_token, "refresh_token": refresh_token}
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {
+            "username": existing_user.username,
+            "role": existing_user.role,
+            "id": existing_user.id,
+        },
+    }
 
 @router.get("/refresh")
 async def refresh_token(request: Request, response: Response):
@@ -184,7 +200,15 @@ async def refresh_token(request: Request, response: Response):
         await save_token(user.id, refresh_token)
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
-        return {"access_token": access_token, "refresh_token": refresh_token}
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "username": user.username,
+                "role": user.role,
+                "id": user.id,
+            },
+        }
 
 
 @router.get("/logout")
