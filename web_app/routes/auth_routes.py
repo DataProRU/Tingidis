@@ -15,6 +15,7 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 # Секретный ключ и алгоритм для JWT
 SECRET_KEY = "your_secret_key"
+REFRESH_KEY = "yor_secret"
 ALGORITHM = "HS256"
 
 # Модель запроса для регистрации
