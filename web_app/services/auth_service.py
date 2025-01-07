@@ -1,50 +1,78 @@
-from passlib.context import CryptContext
-from datetime import datetime, timedelta
-from sqlalchemy.ext.asyncio import AsyncSession
-import jwt
-from web_app.database import WebUser, TokenBlacklist
-from fastapi import HTTPException, status
-from sqlalchemy import select
 import os
+from datetime import datetime, timedelta
+from sqlalchemy import select
+
 from dotenv import load_dotenv
+import jwt
 
-# Настройка для хэширования паролей
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+from web_app.database import async_session, TokenSchema
 
+# Загружаем переменные окружения
 load_dotenv()
+
+
 # Секретный ключ и алгоритм для JWT
 SECRET_KEY = os.getenv("SECRET_KEY")
+REFRESH_KEY = os.getenv("REFRESH_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
-
 # Функция для создания токенов
-def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=15)):
+def create_token(data: dict, expires_delta: timedelta = timedelta(minutes=1)):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-# Общие функции
-async def get_user_by_username(username: str, session: AsyncSession):
-    result = await session.execute(select(WebUser).filter_by(username=username))
-    return result.scalar_one_or_none()
+async def save_token(user_id, refresh_token):
+    async with async_session() as session:
+        async with session.begin():
+            # Query for the existing token
+            token_query = await session.execute(
+                select(TokenSchema).filter_by(user_id=user_id)
+            )
+            existing_token = token_query.scalar_one_or_none()
+
+            if existing_token:
+                # Update the existing token's refresh_token
+                existing_token.refresh_token = refresh_token
+            else:
+                # Create a new TokenSchema instance if no existing token is found
+                new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
+                session.add(new_token)
+
+        # Commit the transaction
+        await session.commit()
 
 
-async def add_token_to_blacklist(token: str, session: AsyncSession):
-    session.add(TokenBlacklist(token=token))
-    await session.commit()
+async def remove_token(refresh_token):
+    async with async_session() as session:
+        async with session.begin():
+            # Query for the token to be deleted
+            token_query = await session.execute(
+                select(TokenSchema).filter_by(refresh_token=refresh_token)
+            )
+            token_to_delete = token_query.scalar_one_or_none()
+
+            if token_to_delete:
+                # Delete the token if it exists
+                await session.delete(token_to_delete)
+
+        # Commit the transaction
+        await session.commit()
 
 
-def decode_token(token: str):
+def validate_access_token(access_token):
     try:
-        return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-    except jwt.ExpiredSignatureError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Срок действия токена истек",
-        )
-    except jwt.JWTError:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED, detail="Неверный токен"
-        )
+        user_data = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        return user_data
+    except Exception as e:
+        return None
+
+
+def validate_refresh_token(refresh_token):
+    try:
+        user_data = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        return user_data
+    except Exception as e:
+        return None

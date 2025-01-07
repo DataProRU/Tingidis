@@ -1,94 +1,20 @@
-from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException, Response, Request
 from passlib.context import CryptContext
-from datetime import datetime, timedelta
-import jwt
+from datetime import  timedelta
+
 from web_app.database import WebUser, async_session, TokenSchema
 from sqlalchemy import select
-from fastapi import Response, Request
-
+from web_app.schemas.users import UserCreate, UserLogin
+from web_app.services.auth_service import create_token, save_token, validate_refresh_token, remove_token
 
 router = APIRouter()
 
 # Настройка для хэширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Секретный ключ и алгоритм для JWT
-SECRET_KEY = "your_secret_key"
-REFRESH_KEY = "yor_secret"
-ALGORITHM = "HS256"
-
-# Модель запроса для регистрации
-class UserCreate(BaseModel):
-    username: str
-    password: str
-    role: str
-
-# Модель запроса для входа
-class UserLogin(BaseModel):
-    username: str
-    password: str
-
-# Функция для создания токенов
-def create_tokens(data: dict, expires_delta: timedelta = timedelta(minutes=1)):
-    to_encode = data.copy()
-    expire = datetime.utcnow() + expires_delta
-    to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def save_token(user_id, refresh_token):
-    async with async_session() as session:
-        async with session.begin():
-            # Query for the existing token
-            token_query = await session.execute(
-                select(TokenSchema).filter_by(user_id=user_id)
-            )
-            existing_token = token_query.scalar_one_or_none()
 
-            if existing_token:
-                # Update the existing token's refresh_token
-                existing_token.refresh_token = refresh_token
-            else:
-                # Create a new TokenSchema instance if no existing token is found
-                new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
-                session.add(new_token)
-
-        # Commit the transaction
-        await session.commit()
-
-
-async def remove_token(refresh_token):
-    async with async_session() as session:
-        async with session.begin():
-            # Query for the token to be deleted
-            token_query = await session.execute(
-                select(TokenSchema).filter_by(refresh_token=refresh_token)
-            )
-            token_to_delete = token_query.scalar_one_or_none()
-
-            if token_to_delete:
-                # Delete the token if it exists
-                await session.delete(token_to_delete)
-
-        # Commit the transaction
-        await session.commit()
-
-
-def validate_access_token(access_token):
-    try:
-        user_data = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
-        return user_data
-    except Exception as e:
-        return None
-
-
-def validate_refresh_token(refresh_token):
-    try:
-        user_data = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
-        return user_data
-    except Exception as e:
-        return None
 
 @router.post("/register")
 async def register_user(user: UserCreate, response: Response):
@@ -120,8 +46,8 @@ async def register_user(user: UserCreate, response: Response):
         await session.commit()
 
         # Создаем токены с ролью пользователя в payload
-        access_token = create_tokens(data={"sub": user.username, "role": user.role})
-        refresh_token = create_tokens(data={"sub": user.username, "role": user.role}, expires_delta=timedelta(days=7))
+        access_token = create_token(data={"sub": user.username, "role": user.role})
+        refresh_token = create_token(data={"sub": user.username, "role": user.role}, expires_delta=timedelta(days=7))
 
         await save_token(new_user.id, refresh_token)
 
@@ -154,8 +80,8 @@ async def login_user(user: UserLogin, response: Response):
             raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
         # Создаем токены с ролью пользователя в payload
-        access_token = create_tokens(data={"sub": user.username, "role": existing_user.role})
-        refresh_token = create_tokens(data={"sub": user.username, "role": existing_user.role}, expires_delta=timedelta(days=7))
+        access_token = create_token(data={"sub": user.username, "role": existing_user.role})
+        refresh_token = create_token(data={"sub": user.username, "role": existing_user.role}, expires_delta=timedelta(days=7))
         await save_token(existing_user.id, refresh_token)
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
@@ -195,8 +121,8 @@ async def refresh_token(request: Request, response: Response):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        access_token = create_tokens(data={"sub": user.username, "role": user.role})
-        refresh_token = create_tokens(data={"sub": user.username, "role": user.role},
+        access_token = create_token(data={"sub": user.username, "role": user.role})
+        refresh_token = create_token(data={"sub": user.username, "role": user.role},
                                       expires_delta=timedelta(days=7))
         await save_token(user.id, refresh_token)
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
