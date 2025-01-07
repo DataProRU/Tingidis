@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Request, Depends
-from sqlalchemy import Column, Integer, String, Date, Text, DateTime
-from sqlalchemy.orm import declarative_base  # Updated import
+from sqlalchemy import Column, Integer, String, Date, Text, DateTime, ForeignKey
+from sqlalchemy.orm import declarative_base, relationship  # Updated import
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
@@ -25,7 +25,9 @@ Base = declarative_base()  # Now uses sqlalchemy.orm.declarative_base
 # Определение модели WebUser с использованием SQLAlchemy
 class WebUser(Base):
     __tablename__ = "web_user"
+
     id = Column(Integer, primary_key=True, autoincrement=True)
+
     username = Column(String, unique=True, nullable=False)
     last_name = Column(String, nullable=False)
     first_name = Column(String, nullable=False)
@@ -43,11 +45,17 @@ class WebUser(Base):
     password = Column(String, nullable=False)  # Здесь требуется хэширование
     role = Column(String, nullable=False, server_default="user")
 
+    tokens = relationship("TokenSchema", back_populates="user")
 
-class TokenBlacklist(Base):
-    __tablename__ = "token_blacklist"
 
-    token = Column(String, primary_key=True, index=True)
+class TokenSchema(Base):
+    __tablename__ = "token_schema"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+
+    user_id = Column(Integer, ForeignKey('web_user.id'), nullable=False)
+    refresh_token = Column(String)
+
+    user = relationship("WebUser", back_populates="tokens")
 
 
 class Contract(Base):
