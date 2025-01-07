@@ -1,27 +1,17 @@
-import os
 from datetime import datetime, timedelta
 from sqlalchemy import select
 
-from dotenv import load_dotenv
 import jwt
 
 from web_app.database import async_session, TokenSchema
 
-# Загружаем переменные окружения
-load_dotenv()
-
-
-# Секретный ключ и алгоритм для JWT
-SECRET_KEY = os.getenv("SECRET_KEY")
-REFRESH_KEY = os.getenv("REFRESH_KEY")
-ALGORITHM = os.getenv("ALGORITHM")
 
 # Функция для создания токенов
-def create_token(data: dict, expires_delta: timedelta = timedelta(minutes=1)):
+def create_token(data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=1)):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})
-    return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return jwt.encode(to_encode, key, algorithm=algoritm)
 
 
 async def save_token(user_id, refresh_token):
@@ -62,17 +52,17 @@ async def remove_token(refresh_token):
         await session.commit()
 
 
-def validate_access_token(access_token):
+def validate_access_token(access_token, key, algoritm):
     try:
-        user_data = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_data = jwt.decode(access_token, key, algorithms=[algoritm])
         return user_data
     except Exception as e:
         return None
 
 
-def validate_refresh_token(refresh_token):
+def validate_refresh_token(refresh_token, key, algoritm):
     try:
-        user_data = jwt.decode(refresh_token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_data = jwt.decode(refresh_token, key, algorithms=[algoritm])
         return user_data
     except Exception as e:
         return None

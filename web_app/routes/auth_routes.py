@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, HTTPException, Response, Request
 from passlib.context import CryptContext
 from datetime import  timedelta
@@ -7,13 +9,22 @@ from sqlalchemy import select
 from web_app.schemas.users import UserCreate, UserLogin
 from web_app.services.auth_service import create_token, save_token, validate_refresh_token, remove_token
 
+from dotenv import load_dotenv
+
 router = APIRouter()
 
 # Настройка для хэширования паролей
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
+# Загружаем переменные окружения
+load_dotenv()
 
+
+# Секретный ключ и алгоритм для JWT
+SECRET_KEY = os.getenv("SECRET_KEY")
+REFRESH_KEY = os.getenv("REFRESH_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 
 @router.post("/register")
@@ -46,8 +57,8 @@ async def register_user(user: UserCreate, response: Response):
         await session.commit()
 
         # Создаем токены с ролью пользователя в payload
-        access_token = create_token(data={"sub": user.username, "role": user.role})
-        refresh_token = create_token(data={"sub": user.username, "role": user.role}, expires_delta=timedelta(days=7))
+        access_token = create_token(data={"sub": user.username, "role": user.role}, key=SECRET_KEY, algoritm=ALGORITHM)
+        refresh_token = create_token(data={"sub": user.username, "role": user.role},key=REFRESH_KEY, algoritm=ALGORITHM, expires_delta=timedelta(days=7))
 
         await save_token(new_user.id, refresh_token)
 
@@ -80,8 +91,8 @@ async def login_user(user: UserLogin, response: Response):
             raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
         # Создаем токены с ролью пользователя в payload
-        access_token = create_token(data={"sub": user.username, "role": existing_user.role})
-        refresh_token = create_token(data={"sub": user.username, "role": existing_user.role}, expires_delta=timedelta(days=7))
+        access_token = create_token(data={"sub": existing_user.username, "role": existing_user.role}, key=SECRET_KEY, algoritm=ALGORITHM)
+        refresh_token = create_token(data={"sub": existing_user.username, "role": existing_user.role},key=REFRESH_KEY, algoritm=ALGORITHM, expires_delta=timedelta(days=7))
         await save_token(existing_user.id, refresh_token)
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
@@ -102,7 +113,7 @@ async def refresh_token(request: Request, response: Response):
         if not refresh_token:
             raise HTTPException(status_code=401, detail="Пользователь не авторизован")
         # Декодируем refresh token из cookies
-        user_data = validate_refresh_token(refresh_token)
+        user_data = validate_refresh_token(refresh_token, REFRESH_KEY, ALGORITHM)
         # Ищем токен в бд
         token_query = await session.execute(
             select(TokenSchema).filter_by(refresh_token=refresh_token)
@@ -121,9 +132,8 @@ async def refresh_token(request: Request, response: Response):
         if not user:
             raise HTTPException(status_code=404, detail="User not found")
 
-        access_token = create_token(data={"sub": user.username, "role": user.role})
-        refresh_token = create_token(data={"sub": user.username, "role": user.role},
-                                      expires_delta=timedelta(days=7))
+        access_token = create_token(data={"sub": user.username, "role": user.role}, key=SECRET_KEY, algoritm=ALGORITHM)
+        refresh_token = create_token(data={"sub": user.username, "role": user.role},key=REFRESH_KEY, algoritm=ALGORITHM, expires_delta=timedelta(days=7))
         await save_token(user.id, refresh_token)
         response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
