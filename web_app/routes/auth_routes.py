@@ -113,7 +113,7 @@ async def register_user(user: UserCreate, response: Response):
             first_name="",
             full_name=user.username,  # Заполняем как минимум полное имя
             email=f"{user.username}@example.com",  # Заполнение примерным email
-            login=user.username  # Добавлено поле login
+            login=user.username  # Заполнение  login
         )
         session.add(new_user)
         await session.commit()
