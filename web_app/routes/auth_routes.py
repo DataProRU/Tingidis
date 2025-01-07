@@ -1,152 +1,172 @@
-import logging
-from fastapi import APIRouter, Request, Depends, Form, HTTPException, status
-from fastapi.responses import HTMLResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
-from fastapi.security import OAuth2PasswordRequestForm
-from web_app.services.auth_service import login_user, register_user
-from web_app.dependencies import (
-    get_authenticated_user,
-    get_current_user,
-    get_token_from_cookie,
-)
-from web_app.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
-from web_app.services.storage import get_bg, get_logo
+import os
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+from fastapi import APIRouter, HTTPException, Response, Request
+from passlib.context import CryptContext
+from datetime import  timedelta
+
+from web_app.database import WebUser, async_session, TokenSchema
+from sqlalchemy import select
+from web_app.schemas.users import UserCreate, UserLogin
+from web_app.services.auth_service import create_token, save_token, validate_refresh_token, remove_token
+
+from dotenv import load_dotenv
 
 router = APIRouter()
-templates = Jinja2Templates(directory="web_app/templates")
+
+# Настройка для хэширования паролей
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@router.get("/register", response_class=HTMLResponse)
-async def get_register(request: Request):
-    logger.info("Accessing registration page")
-    return templates.TemplateResponse(request, "register.html", {"request": request})
+# Загружаем переменные окружения
+load_dotenv()
+
+
+# Секретный ключ и алгоритм для JWT
+SECRET_KEY = os.getenv("SECRET_KEY")
+REFRESH_KEY = os.getenv("REFRESH_KEY")
+ALGORITHM = os.getenv("ALGORITHM")
 
 
 @router.post("/register")
-async def post_register(
-    request: Request,
-    username: str = Form(...),
-    password: str = Form(...),
-    role: str = Form(),
-    db: AsyncSession = Depends(get_db),
-):
-    logger.info(f"Registering new user: {username}")
-    try:
-        await register_user(request, username, password, role, db, templates)
-    except Exception as e:
-        logger.error(f"Registration failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+async def register_user(user: UserCreate, response: Response):
+    # Создаем сессию базы данных вручную
+    async with async_session() as session:
+        # Проверяем, существует ли пользователь с таким логином
+        result = await session.execute(
+            select(WebUser).filter_by(username=user.username)
         )
-    logger.info(f"User {username} registered successfully")
-    return RedirectResponse(url="/users", status_code=status.HTTP_303_SEE_OTHER)
+        existing_user = result.scalar_one_or_none()  # Вернет None, если пользователь не найден
+        if existing_user:
+            raise HTTPException(status_code=400, detail="Пользователь существует")
 
+        # Хэшируем пароль
+        hashed_password = pwd_context.hash(user.password)
 
-@router.get("/login", response_class=HTMLResponse)
-async def get_login(request: Request):
-    logger.info("Accessing login page")
-    logo_file = await get_logo()
-    bg_file = await get_bg()
-
-    return templates.TemplateResponse(
-        request,
-        "login.html",
-        {
-            "request": request,
-            "error": None,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
-        },
-    )
-
-
-@router.post("/login", response_class=HTMLResponse)
-async def login(
-    request: Request,
-    form_data: OAuth2PasswordRequestForm = Depends(),
-    db: AsyncSession = Depends(get_db),
-):
-    logger.info(f"Logging in user: {form_data.username}")
-    try:
-        return await login_user(request, form_data, db, templates)
-    except Exception as e:
-        logger.error(f"Login failed: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e)
+        # Создаем нового пользователя
+        new_user = WebUser(
+            username=user.username,
+            password=hashed_password,
+            role=user.role,
+            last_name="",
+            first_name="",
+            full_name=user.username,  # Заполняем как минимум полное имя
+            email=f"{user.username}@example.com",  # Заполнение примерным email
+            login=user.username  # Заполнение  login
         )
+        session.add(new_user)
+        await session.commit()
 
+        # Создаем токены с ролью пользователя в payload
+        access_token = create_token(data={"sub": user.username, "role": user.role}, key=SECRET_KEY, algoritm=ALGORITHM)
+        refresh_token = create_token(data={"sub": user.username, "role": user.role},key=REFRESH_KEY, algoritm=ALGORITHM, expires_delta=timedelta(days=7))
 
-@router.get("/welcome", response_class=HTMLResponse)
-@router.get("/", response_class=HTMLResponse)
-async def welcome(request: Request):
-    logger.info("Accessing welcome page")
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
+        await save_token(new_user.id, refresh_token)
 
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
+        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
-    # Extract user information
-    username = payload.get("sub")
-    role = payload.get("role")
-
-    logo_file = await get_logo()
-    bg_file = await get_bg()
-
-    return templates.TemplateResponse(
-        request,
-        "welcome.html",
-        {
-            "request": request,
-            "username": username,
-            "role": role,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {
+            "username": new_user.username,
+            "role": new_user.role,
+            "id": new_user.id,
         },
-    )
+    }
 
+@router.post("/login")
+async def login_user(user: UserLogin, response: Response):
+    # Создаем сессию базы данных вручную
+    async with async_session() as session:
+        # Ищем пользователя в базе данных
+        result = await session.execute(
+            select(WebUser).filter_by(username=user.username)
+        )
+        existing_user = result.scalar_one_or_none()  # Вернет None, если пользователь не найден
+        if not existing_user:
+            raise HTTPException(status_code=401, detail="Пользователь не найден")
 
-@router.get("/confirm", response_class=HTMLResponse)
-async def confirm(
-    request: Request,
-    user: dict = Depends(get_authenticated_user),
-):
-    logger.info("Accessing confirmation page")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+        # Проверяем, совпадает ли введенный пароль с хэшированным
+        if not pwd_context.verify(user.password, existing_user.password):
+            raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
-    return templates.TemplateResponse(request, "confirm.html", {"request": request})
+        # Создаем токены с ролью пользователя в payload
+        access_token = create_token(data={"sub": existing_user.username, "role": existing_user.role}, key=SECRET_KEY, algoritm=ALGORITHM)
+        refresh_token = create_token(data={"sub": existing_user.username, "role": existing_user.role},key=REFRESH_KEY, algoritm=ALGORITHM, expires_delta=timedelta(days=7))
+        await save_token(existing_user.id, refresh_token)
+        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
 
-
-@router.get("/access", response_class=HTMLResponse)
-async def access(request: Request):
-    logger.info("Accessing access page")
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
-    username = payload.get("sub")
-    role = payload.get("role")
-    return templates.TemplateResponse(
-        request,
-        "access.html",
-        {
-            "request": request,
-            "username": username,
-            "role": role,
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {
+            "username": existing_user.username,
+            "role": existing_user.role,
+            "id": existing_user.id,
         },
-    )
+    }
+
+@router.get("/refresh")
+async def refresh_token(request: Request, response: Response):
+    async with async_session() as session:
+        refresh_token = request.cookies.get("refresh_token")
+        if not refresh_token:
+            raise HTTPException(status_code=401, detail="Пользователь не авторизован")
+        # Декодируем refresh token из cookies
+        user_data = validate_refresh_token(refresh_token, REFRESH_KEY, ALGORITHM)
+        # Ищем токен в бд
+        token_query = await session.execute(
+            select(TokenSchema).filter_by(refresh_token=refresh_token)
+        )
+        token_data = token_query.scalar_one_or_none()
+        if not user_data or not token_data:
+            raise HTTPException(status_code=401, detail="Пользователь не авторизован")
+
+        user_id = token_data.user_id
+
+        user_query = await session.execute(
+            select(WebUser).filter_by(id=user_id)
+        )
+        user = user_query.scalar_one_or_none()
+
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        access_token = create_token(data={"sub": user.username, "role": user.role}, key=SECRET_KEY, algoritm=ALGORITHM)
+        refresh_token = create_token(data={"sub": user.username, "role": user.role},key=REFRESH_KEY, algoritm=ALGORITHM, expires_delta=timedelta(days=7))
+        await save_token(user.id, refresh_token)
+        response.set_cookie(key="refresh_token", value=refresh_token, httponly=True, max_age=604800)
+
+        return {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "user": {
+                "username": user.username,
+                "role": user.role,
+                "id": user.id,
+            },
+        }
+
+
+@router.post("/logout")
+async def logout_user(request: Request, response: Response):
+    refresh_token = request.cookies.get("refresh_token")
+
+    if refresh_token:
+        await remove_token(refresh_token)
+
+    # Delete the refresh_token cookie
+    response.delete_cookie(key="refresh_token")
+
+    # Return the refresh_token in the JSON response
+    return {"refresh_token": refresh_token}
+
+
+@router.get("/tokens", response_model=None)
+async def get_all_tokens():
+    async with async_session() as session:
+        # Query to get all tokens
+        result = await session.execute(select(TokenSchema))
+        tokens = result.scalars().all()  # Get all token records
+
+    return tokens

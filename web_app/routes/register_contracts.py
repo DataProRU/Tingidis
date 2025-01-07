@@ -9,7 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 from web_app.services.storage import get_bg, get_logo
 import web_app.services.contracts_services
-from web_app.dependencies import get_authenticated_user
 from datetime import date
 from web_app.schemas.contracts import ContractUpdate, ContractCreate
 from typing import Optional
@@ -28,12 +27,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 async def get_contracts(
     request: Request,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.info("Accessing contracts registration page")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # Если пользователь не аутентифицирован
 
     try:
         contracts = await web_app.services.contracts_services.get_all_contracts(db)
@@ -80,12 +75,9 @@ async def edit_contract(
     volumes: Optional[str] = Form(None),
     notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.info(f"Editing contract with ID: {contract_id}")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     try:
         # Convert contract_number to string
         contract_number_str = (
@@ -151,12 +143,9 @@ async def add_contract(
     volumes: str = Form(...),
     notes: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.warning("open")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     try:
         contract_data = ContractCreate(
             contract_code=contract_code,
@@ -199,12 +188,9 @@ async def add_contract(
 async def get_contract(
     contract_id: int,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
     logger.info(f"Fetching contract details for contract_id: {contract_id}")
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     stmt = select(Contract).where(Contract.id == contract_id)
     result = await db.execute(stmt)
     contract = result.scalar_one_or_none()
@@ -247,11 +233,8 @@ async def get_contract(
 async def delete_contract(
     contract_id: int,
     db: AsyncSession = Depends(get_db),
-    user: dict = Depends(get_authenticated_user),
 ):
-    if isinstance(user, RedirectResponse):
-        logger.warning("Unauthenticated user access attempt")
-        return user  # If the user is not authenticated
+
     logger.info(f"Deleting user with user_id: {contract_id}")
     try:
         await web_app.services.contracts_services.delete_contract(contract_id, db)

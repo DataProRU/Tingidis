@@ -36,6 +36,7 @@ pytz
 pytest
 httpx
 pytest
-redis
+pyjwt
+python-dotenv
 
 

@@ -1,82 +1,68 @@
-import logging
-from fastapi import Request, status
-from fastapi.responses import RedirectResponse
-from web_app.services.auth import (
-    verify_password,
-    get_password_hash,
-    create_access_token,
-)
-from sqlalchemy.future import select
-from sqlalchemy.ext.asyncio import AsyncSession
-from web_app.database import WebUser  # Assuming you have a User model
-from datetime import datetime
+from datetime import datetime, timedelta
+from sqlalchemy import select
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+import jwt
+
+from web_app.database import async_session, TokenSchema
 
 
-async def register_user(request, username, password, role, db, templates):
-    try:
-        logger.info(f"Registering user: {username}, role: {role}")
-        new_user = WebUser(
-            username=username,
-            password=get_password_hash(password),
-            last_name="Default Last Name",
-            first_name="Default First Name",
-            middle_name="Default Middle Name",
-            full_name="Default Full Name",
-            position="Default Position",
-            phone="12345677",
-            email="default@example.com",
-            telegram="default_telegram",
-            birthdate=datetime.strptime("2001-06-26", "%Y-%m-%d").date(),
-            category="Default Category",
-            specialization="Default Specialization",
-            notes="Default Notes",
-            role=role,
-            login="Pavel",
-        )
-
-        db.add(new_user)
-        await db.commit()
-        await db.refresh(new_user)
-
-        logger.info(f"User {username} registered successfully")
-        return RedirectResponse("/users", status_code=303)
-    except Exception as e:
-        logger.error(f"Error during user registration: {e}")
-        return templates.TemplateResponse(
-            "register.html", {"request": request, "error": str(e)}
-        )
+# Функция для создания токенов
+def create_token(data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=1)):
+    to_encode = data.copy()
+    expire = datetime.utcnow() + expires_delta
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, key, algorithm=algoritm)
 
 
-async def login_user(request: Request, form_data, db: AsyncSession, templates):
-    try:
-        logger.info(f"Logging in user: {form_data.username}")
-        stmt = select(WebUser).where(WebUser.username == form_data.username)
-        result = await db.execute(stmt)
-        user = result.scalar_one_or_none()
-
-        # Проверка, найден ли пользователь и совпадает ли пароль
-        if user and verify_password(form_data.password, user.password):
-            logger.info(f"User {form_data.username} authenticated successfully")
-            # Генерация токена и установка куки
-            token = create_access_token({"sub": form_data.username, "role": user.role})
-            response = RedirectResponse(
-                url="/welcome", status_code=status.HTTP_303_SEE_OTHER
+async def save_token(user_id, refresh_token):
+    async with async_session() as session:
+        async with session.begin():
+            # Query for the existing token
+            token_query = await session.execute(
+                select(TokenSchema).filter_by(user_id=user_id)
             )
-            response.set_cookie(key="token", value=token, httponly=True)
-            return response
+            existing_token = token_query.scalar_one_or_none()
 
-        # Ошибка авторизации
-        logger.warning(f"Authentication failed for user: {form_data.username}")
-        return templates.TemplateResponse(
-            "login.html", {"request": request, "error": "Invalid username or password"}
-        )
+            if existing_token:
+                # Update the existing token's refresh_token
+                existing_token.refresh_token = refresh_token
+            else:
+                # Create a new TokenSchema instance if no existing token is found
+                new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
+                session.add(new_token)
 
+        # Commit the transaction
+        await session.commit()
+
+
+async def remove_token(refresh_token):
+    async with async_session() as session:
+        async with session.begin():
+            # Query for the token to be deleted
+            token_query = await session.execute(
+                select(TokenSchema).filter_by(refresh_token=refresh_token)
+            )
+            token_to_delete = token_query.scalar_one_or_none()
+
+            if token_to_delete:
+                # Delete the token if it exists
+                await session.delete(token_to_delete)
+
+        # Commit the transaction
+        await session.commit()
+
+
+def validate_access_token(access_token, key, algoritm):
+    try:
+        user_data = jwt.decode(access_token, key, algorithms=[algoritm])
+        return user_data
     except Exception as e:
-        logger.error(f"Error logging in: {e}")
-        return templates.TemplateResponse(
-            "login.html", {"request": request, "error": "An error occurred"}
-        )
+        return None
+
+
+def validate_refresh_token(refresh_token, key, algoritm):
+    try:
+        user_data = jwt.decode(refresh_token, key, algorithms=[algoritm])
+        return user_data
+    except Exception as e:
+        return None

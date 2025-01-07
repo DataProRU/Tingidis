@@ -2,12 +2,12 @@ import logging
 from fastapi import APIRouter, Request, Form, Depends, status
 from web_app.database import WebUser, get_db
 from fastapi.templating import Jinja2Templates
-from web_app.dependencies import get_token_from_cookie, get_current_user
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
+
 from web_app.services.storage import get_logo, get_bg
 from web_app.services.users_services import (
     get_all_users,
@@ -29,19 +29,6 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 @router.get("/users/")
 async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
     logger.info("Fetching users list")
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
-
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
-
-    if payload.get("role") != "admin":
-        logger.warning("Access denied for non-admin user")
-        return templates.TemplateResponse("not_access.html", {"request": request})
 
     users_data = await get_all_users(db)
     logo_file = await get_logo()
@@ -78,19 +65,6 @@ async def update_user(
 ):
     form_data = await request.form()
     logger.info(f"Form data received: {form_data}")
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
-
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
-
-    if payload.get("role") != "admin":
-        logger.warning("Access denied for non-admin user")
-        return templates.TemplateResponse("not_access.html", {"request": request})
 
     try:
 
@@ -140,19 +114,6 @@ async def add_user(
     role: str = Form("admin"),
     db: AsyncSession = Depends(get_db),
 ):
-    token = get_token_from_cookie(request)
-    if isinstance(token, RedirectResponse):
-        logger.warning("Unauthorized access attempt")
-        return token
-
-    payload = get_current_user(token)
-    if isinstance(payload, RedirectResponse):
-        logger.warning("Invalid token")
-        return payload
-
-    if payload.get("role") != "admin":
-        logger.warning("Access denied for non-admin user")
-        return templates.TemplateResponse("not_access.html", {"request": request})
 
     try:
         await add_new_user(
