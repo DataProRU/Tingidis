@@ -7,7 +7,9 @@ from web_app.database import async_session, TokenSchema
 
 
 # Функция для создания токенов
-def create_token(data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=1)):
+def create_token(
+    data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=1)
+):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
     to_encode.update({"exp": expire})

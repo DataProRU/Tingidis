@@ -52,7 +52,7 @@ class TokenSchema(Base):
     __tablename__ = "token_schema"
     id = Column(Integer, primary_key=True, autoincrement=True)
 
-    user_id = Column(Integer, ForeignKey('web_user.id'), nullable=False)
+    user_id = Column(Integer, ForeignKey("web_user.id"), nullable=False)
     refresh_token = Column(String)
 
     user = relationship("WebUser", back_populates="tokens")

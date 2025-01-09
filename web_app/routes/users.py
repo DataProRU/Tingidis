@@ -1,5 +1,5 @@
 import logging
-from fastapi import APIRouter, Request, Form, Depends, status
+from fastapi import APIRouter, Request, Form, Depends, status, Header, HTTPException
 from web_app.database import WebUser, get_db
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -8,7 +8,8 @@ from sqlalchemy.future import select
 from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 
-from web_app.services.storage import get_logo, get_bg
+
+from web_app.services.auth_middleware import token_verification_dependency
 from web_app.services.users_services import (
     get_all_users,
     add_new_user,
@@ -26,23 +27,42 @@ templates = Jinja2Templates(directory="web_app/templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
-@router.get("/users/")
-async def get_users(request: Request, db: AsyncSession = Depends(get_db)):
-    logger.info("Fetching users list")
+@router.get("/users/", response_model=list[dict])
+async def get_users_json(
+    db: AsyncSession = Depends(get_db),
+    user_data: dict = Depends(token_verification_dependency),
+):
+    logger.info("Fetching users list in JSON format")
 
-    users_data = await get_all_users(db)
-    logo_file = await get_logo()
-    bg_file = await get_bg()
+    # Получение данных из базы
+    result = await db.execute(select(WebUser))
+    users = result.scalars().all()
 
-    return templates.TemplateResponse(
-        "users.html",
+    # Преобразование объектов в словари
+    users_data = [
         {
-            "request": request,
-            "users": users_data,
-            "bg_filename": bg_file,
-            "logo_file": logo_file,
-        },
-    )
+            "id": user.id,
+            "username": user.username,
+            "last_name": user.last_name,
+            "first_name": user.first_name,
+            "middle_name": user.middle_name,
+            "full_name": user.full_name,
+            "position": user.position,
+            "phone": user.phone,
+            "email": user.email,
+            "telegram": user.telegram,
+            "birthdate": str(user.birthdate) if user.birthdate else None,
+            "category": user.category,
+            "specialization": user.specialization,
+            "notes": user.notes,
+            "login": user.login,
+            "role": user.role,
+            "password": user.password,
+        }
+        for user in users
+    ]
+
+    return JSONResponse(content=users_data)
 
 
 @router.post("/users/{user_id}/edit/")
