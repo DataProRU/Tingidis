@@ -9,8 +9,6 @@ from sqlalchemy.exc import SQLAlchemyError
 from passlib.context import CryptContext
 
 
-
-
 from web_app.services.auth_middleware import token_verification_dependency
 from web_app.services.users_services import (
     get_all_users,
@@ -28,12 +26,11 @@ router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+
 @router.get("/users/", response_model=list[dict])
-
-
 async def get_users_json(
-        db: AsyncSession = Depends(get_db),
-        user_data: dict = Depends(token_verification_dependency)
+    db: AsyncSession = Depends(get_db),
+    user_data: dict = Depends(token_verification_dependency),
 ):
     logger.info("Fetching users list in JSON format")
 
@@ -60,6 +57,7 @@ async def get_users_json(
             "notes": user.notes,
             "login": user.login,
             "role": user.role,
+            "password": user.password,
         }
         for user in users
     ]
