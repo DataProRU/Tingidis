@@ -21,6 +21,19 @@ async def get_objects(
     return objects
 
 
+@router.get("/objects/{object_id}", response_model=ObjectResponse)
+async def get_object_by_id(
+    object_id: int,
+    db: AsyncSession = Depends(get_db),
+    user_data: dict = Depends(token_verification_dependency),
+):
+    result = await db.execute(select(ObjectModel).filter(ObjectModel.id == object_id))
+    obj = result.scalar_one_or_none()
+    if not obj:
+        raise HTTPException(status_code=404, detail="Обьект не найден")
+    return obj
+
+
 @router.post("/objects", response_model=ObjectResponse)
 async def create_object(
     object_data: ObjectCreate,
