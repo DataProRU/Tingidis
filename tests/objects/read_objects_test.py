@@ -2,8 +2,8 @@ import pytest
 
 
 
-def test_get_objects(authorized_api_client):
-    response = authorized_api_client.get("/objects")
+async def test_get_objects(client):
+    response = client.get("/objects")
     assert response.status_code == 200
 
 
