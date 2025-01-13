@@ -1,4 +1,5 @@
-from web_app.database import Contract, get_db
+from web_app.schemas.contracts import Contract
+from web_app.database import get_db
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import Depends

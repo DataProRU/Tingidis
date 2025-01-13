@@ -3,8 +3,8 @@ from sqlalchemy import select
 
 import jwt
 
-from web_app.database import async_session, TokenSchema
-
+from web_app.database import async_session
+from web_app.schemas.token import TokenSchema
 
 # Функция для создания токенов
 def create_token(
