@@ -1,4 +1,3 @@
-
 def test_delete_objects(client, sample_object):
     object = sample_object
     response = client.delete(f"/objects/{object.id}")

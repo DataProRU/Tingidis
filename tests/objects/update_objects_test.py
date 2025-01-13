@@ -1,4 +1,3 @@
-
 def test_update_object(client, sample_object):
     object = sample_object
     payload = {"code": "123458", "name": "newtest object", "comment": "new comment"}
