@@ -3,7 +3,7 @@ from datetime import date
 import pytest
 
 from web_app.database import WebUser
-
+from web_app.routes.auth_routes import pwd_context
 
 @pytest.fixture
 async def sample_user(async_session_test):
@@ -24,7 +24,7 @@ async def sample_user(async_session_test):
             specialization="Engineering",
             notes="test user",
             login="user",
-            password="123456789",  # Обязательно хэшируйте пароли в реальном коде!
+            password=pwd_context.hash("123456789"),  # Обязательно хэшируйте пароли в реальном коде!
             role="user",
         )
         db.add(new_user)

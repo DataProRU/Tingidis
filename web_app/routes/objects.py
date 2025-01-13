@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, APIRouter, Depends
+from fastapi import FastAPI, HTTPException, APIRouter, Depends, status
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
@@ -34,7 +34,9 @@ async def get_object_by_id(
     return obj
 
 
-@router.post("/objects", response_model=ObjectResponse)
+@router.post(
+    "/objects", response_model=ObjectResponse, status_code=status.HTTP_201_CREATED
+)
 async def create_object(
     object_data: ObjectCreate,
     db: AsyncSession = Depends(get_db),
@@ -67,7 +69,7 @@ async def update_object(
     return obj
 
 
-@router.delete("/objects/{object_id}")
+@router.delete("/objects/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_object(
     object_id: int,
     db: AsyncSession = Depends(get_db),
