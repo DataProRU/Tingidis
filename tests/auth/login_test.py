@@ -1,12 +1,15 @@
+import pytest
+
+
+@pytest.mark.skip(reason="TODO")
 def test_login_user(client):
-    pass
-    # client.headers = {}
-    # payload = {
-    #     "username": "user",
-    #     "password": "123456789",
-    # }
-    # response = client.post("/login", json=payload)
-    # assert response.status_code == 200
+    client.headers = {}
+    payload = {
+        "username": "user",
+        "password": "123456789",
+    }
+    response = client.post("/login", json=payload)
+    assert response.status_code == 200
 
 
 def test_login_with_incorrect_data(client):
