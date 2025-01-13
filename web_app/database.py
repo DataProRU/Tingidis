@@ -4,6 +4,7 @@ from sqlalchemy.orm import declarative_base, relationship  # Updated import
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
+from sqlalchemy.testing.fixtures import TestBase
 from sqlalchemy.types import Enum
 import os
 
@@ -12,7 +13,7 @@ templates = Jinja2Templates(directory="templates")
 
 # Строка подключения к базе данных
 DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://testuser:testpass@localhost:5432/testdb"
+    "DATABASE_URL", "postgresql+asyncpg://admin:2606QWmg@localhost:5432/users"
 )
 
 async_engine = create_async_engine(DATABASE_URL, echo=True)
@@ -23,7 +24,7 @@ Base = declarative_base()  # Now uses sqlalchemy.orm.declarative_base
 
 
 # Определение модели WebUser с использованием SQLAlchemy
-class WebUser(Base):
+class WebUser(Base, TestBase):
     __tablename__ = "web_user"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -48,7 +49,7 @@ class WebUser(Base):
     tokens = relationship("TokenSchema", back_populates="user")
 
 
-class TokenSchema(Base):
+class TokenSchema(Base, TestBase):
     __tablename__ = "token_schema"
     id = Column(Integer, primary_key=True, autoincrement=True)
 
@@ -58,7 +59,7 @@ class TokenSchema(Base):
     user = relationship("WebUser", back_populates="tokens")
 
 
-class Contract(Base):
+class Contract(Base, TestBase):
     __tablename__ = "contract"
     id = Column(Integer, primary_key=True, autoincrement=True)
     contract_code = Column(Integer, unique=True, nullable=False)
