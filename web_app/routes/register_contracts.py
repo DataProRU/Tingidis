@@ -1,6 +1,7 @@
 import logging
 from fastapi import APIRouter, Request, Form, Depends, status
-from web_app.database import Contract, get_db
+from web_app.schemas.contracts import Contract
+from web_app.database import get_db
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
