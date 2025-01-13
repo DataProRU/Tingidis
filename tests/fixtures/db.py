@@ -7,12 +7,13 @@ from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker, declarative_base
 from starlette.testclient import TestClient
+from web_app.database import Base
 
 from web_app.database import get_db
 from web_app.main import app
 
 CLEAN_TABLES = [
-    "users",
+    "web_user",
 ]
 
 TEST_DATABASE_URL = os.getenv(
@@ -33,15 +34,15 @@ async def async_session_test(async_engine):
 
 
 @pytest.fixture(scope="function", autouse=True)
-async def clean_tables(async_session_test, async_engine):
-    TestBase = declarative_base()
+async def clean_tables(async_engine, async_session_test):
     async with async_engine.begin() as conn:
-        await conn.run_sync(TestBase.metadata.create_all)
-    """Clean data in all tables before running test function"""
+        # Создаем таблицы на основе базового класса моделей
+        await conn.run_sync(Base.metadata.create_all)
+    yield  # Для выполнения после теста (если потребуется дополнительная очистка)
     async with async_session_test() as session:
         async with session.begin():
             for table_for_cleaning in CLEAN_TABLES:
-                await session.execute(text(f"TRUNCATE TABLE {table_for_cleaning};"))
+                await session.execute(text(f"TRUNCATE TABLE {table_for_cleaning} CASCADE;;"))
 
 
 

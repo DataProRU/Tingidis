@@ -33,6 +33,8 @@ async def get_users_json(
     user_data: dict = Depends(token_verification_dependency),
 ):
     logger.info("Fetching users list in JSON format")
+    print("work")
+    print(user_data)
 
     # Получение данных из базы
     result = await db.execute(select(WebUser))
@@ -57,7 +59,8 @@ async def get_users_json(
             "notes": user.notes,
             "login": user.login,
             "role": user.role,
-            "password": user.password,
+            # Пароль отображается только для администратора
+            "password": user.password if user_data.get("role") == "admin" else None,
         }
         for user in users
     ]

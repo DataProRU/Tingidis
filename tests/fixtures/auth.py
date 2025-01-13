@@ -29,12 +29,9 @@ async def authorized_api_client(sample_user):
         )
 
         # Add the token to client headers
-        client.headers = {
-            "Authorization": f"Bearer {token}"
-        }
+        client.headers = {"Authorization": f"Bearer {token}"}
 
         yield client
-
 
 
 @pytest.fixture

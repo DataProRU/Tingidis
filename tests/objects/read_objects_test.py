@@ -1,7 +1,6 @@
 import pytest
 
 
-
 async def test_get_objects(client):
     response = client.get("/objects")
     assert response.status_code == 200
