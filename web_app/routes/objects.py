@@ -59,7 +59,7 @@ async def update_object(
     result = await db.execute(select(ObjectModel).filter(ObjectModel.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
-        raise HTTPException(status_code=404, detail="Object not found")
+        raise HTTPException(status_code=404, detail="Обьект не найден")
 
     for key, value in object_data.dict(exclude_unset=True).items():
         setattr(obj, key, value)
@@ -79,7 +79,7 @@ async def delete_object(
     result = await db.execute(select(ObjectModel).filter(ObjectModel.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
-        raise HTTPException(status_code=404, detail="Object not found")
+        raise HTTPException(status_code=404, detail="Обьект не найден")
 
     # Удаление объекта
     await db.delete(obj)
