@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from web_app.database import WebUser
+from web_app.schemas.users import WebUser
 from web_app.routes.auth_routes import pwd_context
 
 

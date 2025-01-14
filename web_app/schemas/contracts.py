@@ -1,6 +1,33 @@
 from pydantic import BaseModel, Field, constr
 from datetime import date
 from typing import Optional
+from web_app.database import Base
+from sqlalchemy.testing.fixtures import TestBase
+from sqlalchemy import Column, Integer, String, Date, Text, DateTime, ForeignKey
+
+
+class Contract(Base, TestBase):
+    __tablename__ = "contract"
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    contract_code = Column(Integer, unique=True, nullable=False)
+    object_name = Column(String, nullable=False)
+    customer = Column(String, nullable=False)
+    executer = Column(String, nullable=False)
+    contract_number = Column(String, nullable=False)
+    status = Column(String, nullable=False)
+    stage = Column(String, nullable=False)
+    contract_scan = Column(String, nullable=False)
+    original_scan = Column(String, nullable=False)
+    percent_complite = Column(Integer, nullable=False)
+    date_start = Column(Date, nullable=False)
+    date_finish = Column(Date)
+    cost = Column(Integer)
+    money_received = Column(Integer)
+    money_left = Column(Integer)
+    scan_complited_act = Column(String, nullable=False)
+    original_complited_act = Column(String, nullable=False)
+    volumes = Column(Text, nullable=False)
+    notes = Column(Text, nullable=True)
 
 
 class ContractCreate(BaseModel):

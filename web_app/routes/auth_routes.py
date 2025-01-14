@@ -4,7 +4,9 @@ from fastapi import APIRouter, HTTPException, Response, Request, Depends
 from passlib.context import CryptContext
 from datetime import timedelta
 
-from web_app.database import WebUser, async_session, TokenSchema
+from web_app.database import async_session
+from web_app.schemas.users import WebUser
+from web_app.schemas.token import TokenSchema
 from sqlalchemy import select
 from web_app.schemas.users import UserCreate, UserLogin
 from web_app.services.auth_service import (
