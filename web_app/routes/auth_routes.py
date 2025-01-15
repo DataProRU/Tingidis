@@ -2,7 +2,7 @@ import os
 
 from fastapi import APIRouter, HTTPException, Response, Request, Depends
 from passlib.context import CryptContext
-from datetime import timedelta
+from datetime import timedelta, date
 
 from web_app.database import async_session
 from web_app.schemas.users import WebUser
@@ -58,9 +58,16 @@ async def register_user(user: UserCreate, response: Response):
             role=user.role,
             last_name="",
             first_name="",
+            father_name="",
+            position="",
+            phone="",
+            telegram="",
+            birthday=date.today(),
+            category="",
+            specialization="",
+            notes="",
             full_name=user.username,  # Заполняем как минимум полное имя
             email=f"{user.username}@example.com",  # Заполнение примерным email
-            login=user.username,  # Заполнение  login
         )
         session.add(new_user)
         await session.commit()
