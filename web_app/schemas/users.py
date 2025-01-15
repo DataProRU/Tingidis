@@ -33,7 +33,6 @@ class WebUser(Base, TestBase):
 
 
 class WebUserResponse(BaseModel):
-    id: int
 
     first_name: str
     last_name: str
@@ -53,7 +52,6 @@ class WebUserResponse(BaseModel):
 
 
 class WebUserCreate(BaseModel):
-    id: int
 
     first_name: str
     last_name: str

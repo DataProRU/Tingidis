@@ -57,7 +57,7 @@ async def create_user(
     return user
 
 
-@router.patch("/users/{users_id}", response_model=WebUserResponse)
+@router.patch("/users/{user_id}", response_model=WebUserResponse)
 async def update_user(
     user_id: int,
     web_user_data: WebUserCreate,
@@ -81,7 +81,7 @@ async def update_user(
 async def delete_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),
-    # user_data: dict = Depends(token_verification_dependency),
+    user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
     result = await db.execute(select(WebUser).filter(WebUser.id == user_id))
