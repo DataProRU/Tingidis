@@ -15,7 +15,7 @@ def test_update_user(client, sample_user):
         "username": "user_alex_new",
         "password": "123456789qqFF_999",
         "notes": "another test user_new",
-        "role": "admin"
+        "role": "admin",
     }
     response = client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 200
@@ -54,7 +54,7 @@ def test_unauthenticated_user_cannot_update_user(client, sample_user):
         "username": "user_alex_new",
         "password": "123456789qqFF_999",
         "notes": "another test user_new",
-        "role": "admin"
+        "role": "admin",
     }
     response = client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 401

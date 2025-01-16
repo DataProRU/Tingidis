@@ -1,6 +1,5 @@
-import logging
+"""import logging
 from fastapi import APIRouter, Request, Form, Depends, status
-from web_app.schemas.contracts import Contract
 from web_app.database import get_db
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import RedirectResponse, JSONResponse
@@ -11,7 +10,7 @@ from passlib.context import CryptContext
 from web_app.services.storage import get_bg, get_logo
 import web_app.services.contracts_services
 from datetime import date
-from web_app.schemas.contracts import ContractUpdate, ContractCreate
+from web_app.schemas.contracts import ContractUpdate, ContractCreate, ContractsModel
 from typing import Optional
 
 # Настройка логирования
@@ -249,3 +248,4 @@ async def delete_contract(
             {"detail": "Database error"},
             status_code=505,
         )
+"""

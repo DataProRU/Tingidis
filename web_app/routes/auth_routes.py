@@ -1,10 +1,12 @@
 import os
 
-from fastapi import APIRouter, HTTPException, Response, Request, Depends
+from fastapi import APIRouter, HTTPException, Response, Request, Depends, status
 from passlib.context import CryptContext
 from datetime import timedelta, date
 
-from web_app.database import async_session
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from web_app.database import async_session, get_db
 from web_app.schemas.users import WebUser
 from web_app.schemas.token import TokenSchema
 from sqlalchemy import select
@@ -34,62 +36,49 @@ REFRESH_KEY = os.getenv("REFRESH_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
 
-@router.post("/register")
-async def register_user(user: UserCreate, response: Response):
+@router.post("/register", status_code=status.HTTP_201_CREATED)
+async def register_user(
+    user: UserCreate, response: Response, db: AsyncSession = Depends(get_db)
+):
     # Создаем сессию базы данных вручную
-    async with async_session() as session:
-        # Проверяем, существует ли пользователь с таким логином
-        result = await session.execute(
-            select(WebUser).filter_by(username=user.username)
-        )
-        existing_user = (
-            result.scalar_one_or_none()
-        )  # Вернет None, если пользователь не найден
-        if existing_user:
-            raise HTTPException(status_code=400, detail="Пользователь существует")
+    result = await db.execute(select(WebUser).filter_by(username=user.username))
 
-        # Хэшируем пароль
-        hashed_password = pwd_context.hash(user.password)
+    existing_user = (
+        result.scalar_one_or_none()
+    )  # Вернет None, если пользователь не найден
+    if existing_user:
+        raise HTTPException(status_code=400, detail="Пользователь существует")
 
-        # Создаем нового пользователя
-        new_user = WebUser(
-            username=user.username,
-            password=hashed_password,
-            role=user.role,
-            last_name="",
-            first_name="",
-            father_name="",
-            position="",
-            phone="",
-            telegram="",
-            birthday=date.today(),
-            category="",
-            specialization="",
-            notes="",
-            full_name=user.username,  # Заполняем как минимум полное имя
-            email="",  # Заполнение примерным email
-        )
-        session.add(new_user)
-        await session.commit()
+    # Хэшируем пароль
+    hashed_password = pwd_context.hash(user.password)
 
-        # Создаем токены с ролью пользователя в payload
-        access_token = create_token(
-            data={"sub": user.username, "role": user.role},
-            key=SECRET_KEY,
-            algoritm=ALGORITHM,
-        )
-        refresh_token = create_token(
-            data={"sub": user.username, "role": user.role},
-            key=REFRESH_KEY,
-            algoritm=ALGORITHM,
-            expires_delta=timedelta(days=7),
-        )
+    # Создаем нового пользователя
+    new_user = WebUser(
+        username=user.username,
+        password=hashed_password,
+        role=user.role,
+    )
+    db.add(new_user)
+    await db.commit()
 
-        await save_token(new_user.id, refresh_token)
+    # Создаем токены с ролью пользователя в payload
+    access_token = create_token(
+        data={"sub": user.username, "role": user.role},
+        key=SECRET_KEY,
+        algoritm=ALGORITHM,
+    )
+    refresh_token = create_token(
+        data={"sub": user.username, "role": user.role},
+        key=REFRESH_KEY,
+        algoritm=ALGORITHM,
+        expires_delta=timedelta(days=7),
+    )
 
-        response.set_cookie(
-            key="refresh_token", value=refresh_token, httponly=True, max_age=604800
-        )
+    await save_token(new_user.id, refresh_token, db)
+
+    response.set_cookie(
+        key="refresh_token", value=refresh_token, httponly=True, max_age=604800
+    )
 
     return {
         "access_token": access_token,
@@ -103,39 +92,38 @@ async def register_user(user: UserCreate, response: Response):
 
 
 @router.post("/login")
-async def login_user(user: UserLogin, response: Response):
+async def login_user(
+    user: UserLogin, response: Response, db: AsyncSession = Depends(get_db)
+):
     # Создаем сессию базы данных вручную
-    async with async_session() as session:
-        # Ищем пользователя в базе данных
-        result = await session.execute(
-            select(WebUser).filter_by(username=user.username)
-        )
-        existing_user = (
-            result.scalar_one_or_none()
-        )  # Вернет None, если пользователь не найден
-        if not existing_user:
-            raise HTTPException(status_code=401, detail="Пользователь не найден")
+    # Ищем пользователя в базе данных
+    result = await db.execute(select(WebUser).filter_by(username=user.username))
+    existing_user = (
+        result.scalar_one_or_none()
+    )  # Вернет None, если пользователь не найден
+    if not existing_user:
+        raise HTTPException(status_code=401, detail="Пользователь не найден")
 
-        # Проверяем, совпадает ли введенный пароль с хэшированным
-        if not pwd_context.verify(user.password, existing_user.password):
-            raise HTTPException(status_code=401, detail="Неверный логин или пароль")
+    # Проверяем, совпадает ли введенный пароль с хэшированным
+    if not pwd_context.verify(user.password, existing_user.password):
+        raise HTTPException(status_code=401, detail="Неверный логин или пароль")
 
-        # Создаем токены с ролью пользователя в payload
-        access_token = create_token(
-            data={"sub": existing_user.username, "role": existing_user.role},
-            key=SECRET_KEY,
-            algoritm=ALGORITHM,
-        )
-        refresh_token = create_token(
-            data={"sub": existing_user.username, "role": existing_user.role},
-            key=REFRESH_KEY,
-            algoritm=ALGORITHM,
-            expires_delta=timedelta(days=7),
-        )
-        await save_token(existing_user.id, refresh_token)
-        response.set_cookie(
-            key="refresh_token", value=refresh_token, httponly=True, max_age=604800
-        )
+    # Создаем токены с ролью пользователя в payload
+    access_token = create_token(
+        data={"sub": existing_user.username, "role": existing_user.role},
+        key=SECRET_KEY,
+        algoritm=ALGORITHM,
+    )
+    refresh_token = create_token(
+        data={"sub": existing_user.username, "role": existing_user.role},
+        key=REFRESH_KEY,
+        algoritm=ALGORITHM,
+        expires_delta=timedelta(days=7),
+    )
+    await save_token(existing_user.id, refresh_token, db)
+    response.set_cookie(
+        key="refresh_token", value=refresh_token, httponly=True, max_age=604800
+    )
 
     return {
         "access_token": access_token,
@@ -149,62 +137,63 @@ async def login_user(user: UserLogin, response: Response):
 
 
 @router.get("/refresh")
-async def refresh_token(request: Request, response: Response):
-    async with async_session() as session:
-        refresh_token = request.cookies.get("refresh_token")
-        if not refresh_token:
-            raise HTTPException(status_code=401, detail="Пользователь не авторизован")
-        # Декодируем refresh token из cookies
-        user_data = validate_refresh_token(refresh_token, REFRESH_KEY, ALGORITHM)
-        # Ищем токен в бд
-        token_query = await session.execute(
-            select(TokenSchema).filter_by(refresh_token=refresh_token)
-        )
-        token_data = token_query.scalar_one_or_none()
-        if not user_data or not token_data:
-            raise HTTPException(status_code=401, detail="Пользователь не авторизован")
+async def refresh_token(
+    request: Request, response: Response, db: AsyncSession = Depends(get_db)
+):
+    refresh_token = request.cookies.get("refresh_token")
+    if not refresh_token:
+        raise HTTPException(status_code=401, detail="Пользователь не авторизован")
+    # Декодируем refresh token из cookies
+    user_data = validate_refresh_token(refresh_token, REFRESH_KEY, ALGORITHM)
+    # Ищем токен в бд
+    token_query = await db.execute(
+        select(TokenSchema).filter_by(refresh_token=refresh_token)
+    )
+    token_data = token_query.scalar_one_or_none()
+    if not user_data or not token_data:
+        raise HTTPException(status_code=401, detail="Пользователь не авторизован")
 
-        user_id = token_data.user_id
+    user_id = token_data.user_id
 
-        user_query = await session.execute(select(WebUser).filter_by(id=user_id))
-        user = user_query.scalar_one_or_none()
+    user_query = await db.execute(select(WebUser).filter_by(id=user_id))
+    user = user_query.scalar_one_or_none()
 
-        if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
 
-        access_token = create_token(
-            data={"sub": user.username, "role": user.role},
-            key=SECRET_KEY,
-            algoritm=ALGORITHM,
-        )
-        refresh_token = create_token(
-            data={"sub": user.username, "role": user.role},
-            key=REFRESH_KEY,
-            algoritm=ALGORITHM,
-            expires_delta=timedelta(days=7),
-        )
-        await save_token(user.id, refresh_token)
-        response.set_cookie(
-            key="refresh_token", value=refresh_token, httponly=True, max_age=604800
-        )
+    access_token = create_token(
+        data={"sub": user.username, "role": user.role},
+        key=SECRET_KEY,
+        algoritm=ALGORITHM,
+    )
+    refresh_token = create_token(
+        data={"sub": user.username, "role": user.role},
+        key=REFRESH_KEY,
+        algoritm=ALGORITHM,
+        expires_delta=timedelta(days=7),
+    )
+    await save_token(user.id, refresh_token, db)
+    response.set_cookie(
+        key="refresh_token", value=refresh_token, httponly=True, max_age=604800
+    )
 
-        return {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "user": {
-                "username": user.username,
-                "role": user.role,
-                "id": user.id,
-            },
-        }
+    return {
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "user": {
+            "username": user.username,
+            "role": user.role,
+            "id": user.id,
+        },
+    }
 
 
 @router.post("/logout")
-async def logout_user(request: Request, response: Response):
+async def logout_user(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
     refresh_token = request.cookies.get("refresh_token")
 
     if refresh_token:
-        await remove_token(refresh_token)
+        await remove_token(refresh_token, db)
 
     # Delete the refresh_token cookie
     response.delete_cookie(key="refresh_token")

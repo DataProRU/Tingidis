@@ -1,20 +1,20 @@
 def test_create_user(client):
     payload = {
-    "first_name": "Alex",
-    "last_name": "Alexeev",
-    "father_name" : "Ivanovich",
-    "full_name": "Alex Ivanovich",
-    "position" : "Worker",
-    "phone" : "+3 (911) 181 00 32",
-    "email" : "alex@mail.com",
-    "telegram" : "@alex",
-    "birthday" : "2001-02-02",
-    "category" :"test user",
-    "specialization" : "Working",
-    "username" : "user_alex",
-    "password"  : "123456789qqFF_",
-    "notes" : "another test user",
-    "role" : "user"
+        "first_name": "Alex",
+        "last_name": "Alexeev",
+        "father_name": "Ivanovich",
+        "full_name": "Alex Ivanovich",
+        "position": "Worker",
+        "phone": "+3 (911) 181 00 32",
+        "email": "alex@mail.com",
+        "telegram": "@alex",
+        "birthday": "2001-02-02",
+        "category": "test user",
+        "specialization": "Working",
+        "username": "user_alex",
+        "password": "123456789qqFF_",
+        "notes": "another test user",
+        "role": "user",
     }
     response = client.post("/users", json=payload)
     assert response.status_code == 201
@@ -34,6 +34,7 @@ def test_create_user(client):
     assert result["notes"] == "another test user"
     assert result["role"] == "user"
 
+
 def test_unauthenticated_user_cannot_create_user(client):
     client.headers = {}
     payload = {
@@ -51,16 +52,14 @@ def test_unauthenticated_user_cannot_create_user(client):
         "username": "user_alex",
         "password": "123456789qqFF_",
         "notes": "another test user",
-        "role": "user"
+        "role": "user",
     }
     response = client.post("/users", json=payload)
     assert response.status_code == 401
     assert response.json() == {"detail": "Отсутствует токен"}
 
+
 def test_cannot_create_user_with_empty_field(client):
-    payload = {
-        "first_name": "Alex"
-    }
+    payload = {"first_name": "Alex"}
     response = client.post("/users", json=payload)
     assert response.status_code == 422
-
