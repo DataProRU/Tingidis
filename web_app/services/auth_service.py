@@ -6,6 +6,7 @@ import jwt
 from web_app.database import async_session
 from web_app.schemas.token import TokenSchema
 
+
 # Функция для создания токенов
 def create_token(
     data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=15)
