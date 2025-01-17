@@ -17,7 +17,7 @@ jobs:
     # Устанавливаем переменные окружения
     env:
       SECRET_KEY: "your_super_secret_key_123"  # Замените на ваш токен или используйте GitHub Secrets
-      DATABASE_URL: postgresql+asyncpg://testuser:testpass@localhost:5432/testdb
+      DATABASE_URL: postgresql+asyncpg://admin:2606QWmg@localhost:5432/users
       PYTHON_VERSION: "3.12"
 
     steps:
