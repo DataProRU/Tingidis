@@ -58,11 +58,18 @@ jobs:
           pwd
           ls -la
 
-      - name: Check Database Connection
+      - name: Set up Docker Compose
+        uses: docker/setup-compose-action@v3
+
+      - name: Run Application with Docker Compose
+        run: docker-compose up --build -d
+
+      - name: Wait for Application to Start
         run: |
-          psql -h localhost -p 5432 -U testuser -d testdb -c "SELECT 1;"
-        env:
-          PGPASSWORD: testpass
+          until curl -s http://localhost:8000/health-check; do
+            echo "Waiting for application to start..."
+            sleep 2
+          done
 
       - name: Run Tests
         run: pytest tests
