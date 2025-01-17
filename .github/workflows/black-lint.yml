@@ -23,6 +23,11 @@ jobs:
           POSTGRES_USER: testuser
           POSTGRES_PASSWORD: testpass
           POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -53,7 +58,13 @@ jobs:
           pwd
           ls -la
 
+      - name: Check Database Connection
+        run: |
+          psql -h localhost -p 5432 -U testuser -d testdb -c "SELECT 1;"
+        env:
+          PGPASSWORD: testpass
+
       - name: Run Tests
         run: pytest tests
         env:
-          DATABASE_URL: postgresql+asyncpg://admin:2606QWmg@localhost:5432/users
+          DATABASE_URL: postgresql+asyncpg://testuser:testpass@localhost:5432/testdb
