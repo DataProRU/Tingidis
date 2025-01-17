@@ -56,4 +56,4 @@ jobs:
       - name: Run Tests
         run: pytest tests
         env:
-          DATABASE_URL: postgresql+asyncpg://testuser:testpass@localhost:5432/testdb
+          DATABASE_URL: postgresql+asyncpg://admin:2606QWmg@localhost:5432/users
