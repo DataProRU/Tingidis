@@ -189,7 +189,9 @@ async def refresh_token(
 
 
 @router.post("/logout")
-async def logout_user(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+async def logout_user(
+    request: Request, response: Response, db: AsyncSession = Depends(get_db)
+):
     refresh_token = request.cookies.get("refresh_token")
 
     if refresh_token:

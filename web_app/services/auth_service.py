@@ -18,37 +18,35 @@ def create_token(
 
 
 async def save_token(user_id, refresh_token, db):
-        # Query for the existing token
-        token_query = await db.execute(
-            select(TokenSchema).filter_by(user_id=user_id)
-        )
-        existing_token = token_query.scalar_one_or_none()
+    # Query for the existing token
+    token_query = await db.execute(select(TokenSchema).filter_by(user_id=user_id))
+    existing_token = token_query.scalar_one_or_none()
 
-        if existing_token:
-            # Update the existing token's refresh_token
-            existing_token.refresh_token = refresh_token
-        else:
-            # Create a new TokenSchema instance if no existing token is found
-            new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
-            db.add(new_token)
+    if existing_token:
+        # Update the existing token's refresh_token
+        existing_token.refresh_token = refresh_token
+    else:
+        # Create a new TokenSchema instance if no existing token is found
+        new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
+        db.add(new_token)
 
-        # Commit the transaction
-        await db.commit()
+    # Commit the transaction
+    await db.commit()
 
 
 async def remove_token(refresh_token, db):
-        # Query for the token to be deleted
-        token_query = await db.execute(
-            select(TokenSchema).filter_by(refresh_token=refresh_token)
-        )
-        token_to_delete = token_query.scalar_one_or_none()
+    # Query for the token to be deleted
+    token_query = await db.execute(
+        select(TokenSchema).filter_by(refresh_token=refresh_token)
+    )
+    token_to_delete = token_query.scalar_one_or_none()
 
-        if token_to_delete:
-            # Delete the token if it exists
-            await db.delete(token_to_delete)
+    if token_to_delete:
+        # Delete the token if it exists
+        await db.delete(token_to_delete)
 
-        # Commit the transaction
-        await db.commit()
+    # Commit the transaction
+    await db.commit()
 
 
 def validate_access_token(access_token, key, algoritm):
