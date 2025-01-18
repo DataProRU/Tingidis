@@ -6,6 +6,7 @@ import jwt
 from web_app.database import async_session
 from web_app.schemas.token import TokenSchema
 
+
 # Функция для создания токенов
 def create_token(
     data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=15)
@@ -16,42 +17,38 @@ def create_token(
     return jwt.encode(to_encode, key, algorithm=algoritm)
 
 
-async def save_token(user_id, refresh_token):
-    async with async_session() as session:
-        async with session.begin():
-            # Query for the existing token
-            token_query = await session.execute(
-                select(TokenSchema).filter_by(user_id=user_id)
-            )
-            existing_token = token_query.scalar_one_or_none()
+async def save_token(user_id, refresh_token, db):
+        # Query for the existing token
+        token_query = await db.execute(
+            select(TokenSchema).filter_by(user_id=user_id)
+        )
+        existing_token = token_query.scalar_one_or_none()
 
-            if existing_token:
-                # Update the existing token's refresh_token
-                existing_token.refresh_token = refresh_token
-            else:
-                # Create a new TokenSchema instance if no existing token is found
-                new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
-                session.add(new_token)
+        if existing_token:
+            # Update the existing token's refresh_token
+            existing_token.refresh_token = refresh_token
+        else:
+            # Create a new TokenSchema instance if no existing token is found
+            new_token = TokenSchema(user_id=user_id, refresh_token=refresh_token)
+            db.add(new_token)
 
         # Commit the transaction
-        await session.commit()
+        await db.commit()
 
 
-async def remove_token(refresh_token):
-    async with async_session() as session:
-        async with session.begin():
-            # Query for the token to be deleted
-            token_query = await session.execute(
-                select(TokenSchema).filter_by(refresh_token=refresh_token)
-            )
-            token_to_delete = token_query.scalar_one_or_none()
+async def remove_token(refresh_token, db):
+        # Query for the token to be deleted
+        token_query = await db.execute(
+            select(TokenSchema).filter_by(refresh_token=refresh_token)
+        )
+        token_to_delete = token_query.scalar_one_or_none()
 
-            if token_to_delete:
-                # Delete the token if it exists
-                await session.delete(token_to_delete)
+        if token_to_delete:
+            # Delete the token if it exists
+            await db.delete(token_to_delete)
 
         # Commit the transaction
-        await session.commit()
+        await db.commit()
 
 
 def validate_access_token(access_token, key, algoritm):

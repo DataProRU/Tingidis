@@ -22,8 +22,6 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 REFRESH_KEY = os.getenv("REFRESH_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
-CLEAN_TABLES = ["web_user", "objects", "token_schema"]
-
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL", "postgresql+asyncpg://admin:2606QWmg@localhost:5433/tests"
 )
@@ -54,15 +52,11 @@ async def async_session_test(async_engine):
 @pytest.fixture(scope="function", autouse=True)
 async def clean_tables(async_engine, async_session_test):
     async with async_engine.begin() as conn:
-        # Создаем таблицы на основе базового класса моделей
         await conn.run_sync(Base.metadata.create_all)
-    yield  # Для выполнения после теста (если потребуется дополнительная очистка)
-    async with async_session_test() as session:
-        async with session.begin():
-            for table_for_cleaning in CLEAN_TABLES:
-                await session.execute(
-                    text(f"TRUNCATE TABLE {table_for_cleaning} CASCADE;;")
-                )
+    yield
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def _get_test_db():
