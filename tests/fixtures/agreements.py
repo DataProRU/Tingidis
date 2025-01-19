@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from web_app.schemas.agreements import AgreementsModel
+from web_app.models.agreements import AgreementsModel
 
 
 @pytest.fixture

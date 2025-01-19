@@ -1,8 +1,6 @@
-from datetime import date
-
 import pytest
 
-from web_app.schemas.objects import ObjectModel
+from web_app.models.objects import ObjectModel
 
 
 @pytest.fixture

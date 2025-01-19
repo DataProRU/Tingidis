@@ -1,8 +1,6 @@
-from datetime import date
-
 import pytest
 
-from web_app.schemas.customers import CustomerModel
+from web_app.models.customers import CustomerModel
 
 
 @pytest.fixture

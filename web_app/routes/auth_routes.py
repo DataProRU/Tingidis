@@ -7,8 +7,8 @@ from datetime import timedelta, date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from web_app.database import async_session, get_db
-from web_app.schemas.users import WebUser
-from web_app.schemas.token import TokenSchema
+from web_app.models.users import WebUser
+from web_app.models.token import TokenSchema
 from sqlalchemy import select
 from web_app.schemas.users import UserCreate, UserLogin
 from web_app.services.auth_service import (
@@ -189,7 +189,9 @@ async def refresh_token(
 
 
 @router.post("/logout")
-async def logout_user(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+async def logout_user(
+    request: Request, response: Response, db: AsyncSession = Depends(get_db)
+):
     refresh_token = request.cookies.get("refresh_token")
 
     if refresh_token:

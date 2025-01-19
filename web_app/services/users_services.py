@@ -1,5 +1,5 @@
 from web_app.database import get_db
-from web_app.schemas.users import WebUser
+from web_app.models.users import WebUser
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import Depends

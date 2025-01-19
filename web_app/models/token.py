@@ -1,7 +1,7 @@
 from web_app.database import Base
 from sqlalchemy.testing.fixtures import TestBase
 from sqlalchemy import Column, Integer, String, ForeignKey
-from sqlalchemy.orm import declarative_base, relationship
+from sqlalchemy.orm import relationship
 
 
 class TokenSchema(Base, TestBase):

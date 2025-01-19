@@ -1,4 +1,4 @@
-from web_app.schemas.contracts import ContractsModel
+from web_app.models.contracts import ContractsModel
 import pytest
 from datetime import datetime
 from decimal import Decimal

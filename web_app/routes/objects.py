@@ -3,7 +3,8 @@ from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from sqlalchemy.future import select
-from web_app.schemas.objects import ObjectCreate, ObjectResponse, ObjectModel
+from web_app.schemas.objects import ObjectCreate, ObjectResponse
+from web_app.models.objects import ObjectModel
 from web_app.services.auth_middleware import token_verification_dependency
 
 router = APIRouter()

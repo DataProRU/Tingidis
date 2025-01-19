@@ -1,13 +1,11 @@
 # Фикстура для создания асинхронного движка
 import asyncio
 import os
-from typing import Generator, Any, AsyncGenerator
 
 import pytest
 from dotenv import load_dotenv
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 from web_app.database import Base
 
