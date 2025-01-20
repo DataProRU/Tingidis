@@ -1,7 +1,7 @@
 from fastapi import Depends, Request, HTTPException
 
-from web_app.routes.auth_routes import SECRET_KEY, ALGORITHM
-from web_app.services.auth_service import validate_access_token
+from web_app.routes.auth import SECRET_KEY, ALGORITHM
+from web_app.services.auth import validate_access_token
 
 
 async def token_verification_dependency(request: Request):

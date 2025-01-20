@@ -1,5 +1,6 @@
 import pytest
 
+
 def test_logout_by_authorized(client, sample_user):
     user = sample_user
     client.headers = {}

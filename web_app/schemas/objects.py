@@ -5,15 +5,6 @@ from pydantic import Field, constr
 from typing import Optional
 
 
-class ObjectModel(Base):
-    __tablename__ = "objects"
-
-    id = Column(Integer, primary_key=True, index=True)
-    code = Column(String(6), nullable=False)
-    name = Column(String(30), nullable=False)
-    comment = Column(Text, nullable=True)
-
-
 # Schema
 class ObjectCreate(BaseModel):
     code: constr(min_length=1, max_length=6)

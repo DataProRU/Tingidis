@@ -1,5 +1,5 @@
 from web_app.database import get_db
-from web_app.schemas.users import WebUser
+from web_app.schemas.users import Users
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from fastapi import Depends
@@ -12,15 +12,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
 async def get_all_users(db: AsyncSession = Depends(get_db)) -> list:
-    stmt = select(WebUser)
+    stmt = select(Users)
     result = await db.execute(stmt)
     users = result.scalars().all()
 
     return users
 
 
-async def get_user_by_id(user_id: int, db: AsyncSession) -> WebUser | None:
-    stmt = select(WebUser).where(WebUser.id == user_id)
+async def get_user_by_id(user_id: int, db: AsyncSession) -> Users | None:
+    stmt = select(Users).where(Users.id == user_id)
     result = await db.execute(stmt)
     user = result.scalar_one_or_none()
     if not user:
@@ -100,7 +100,7 @@ async def add_new_user(
         if middle_name
         else f"{first_name[0].upper()}."
     )
-    new_user = WebUser(
+    new_user = Users(
         username=login,
         last_name=last_name,
         first_name=first_name,

@@ -1,4 +1,4 @@
-from web_app.schemas.contracts import ContractsModel
+from web_app.models.contracts import Contracts
 import pytest
 from datetime import datetime
 from decimal import Decimal
@@ -7,7 +7,7 @@ from decimal import Decimal
 @pytest.fixture
 async def sample_contract(async_session_test, sample_object):
     async with async_session_test() as db:
-        contract = ContractsModel(
+        contract = Contracts(
             code=sample_object.id,  # Используем id созданного объекта
             name="new_test_name",
             number="123456",
@@ -25,7 +25,7 @@ async def sample_contract(async_session_test, sample_object):
 @pytest.fixture
 async def another_contract(async_session_test, another_object):
     async with async_session_test() as db:
-        contract = ContractsModel(
+        contract = Contracts(
             code=another_object.id,  # Используем id созданного объекта
             name="test_name",
             number="654321",
