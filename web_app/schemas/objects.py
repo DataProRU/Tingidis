@@ -1,6 +1,4 @@
-from sqlalchemy import Column, Integer, String, Text, create_engine
 from pydantic import BaseModel
-from web_app.database import Base
 from pydantic import Field, constr
 from typing import Optional
 

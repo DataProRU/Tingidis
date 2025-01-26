@@ -1,5 +1,3 @@
-from datetime import date
-
 import pytest
 
 from web_app.models.objects import Objects
