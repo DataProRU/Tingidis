@@ -2,31 +2,31 @@ from datetime import date
 
 import pytest
 
-from web_app.schemas.users import WebUser
-from web_app.routes.auth_routes import pwd_context
+from web_app.models.users import Users
+from web_app.routes.auth import pwd_context
 
 
 @pytest.fixture
 async def sample_user(async_session_test):
     async with async_session_test() as db:
         # Создаем нового пользователя
-        new_user = WebUser(
-            first_name="Ivanov",
-            last_name="Ivan",
-            father_name="Ivanovich",
-            full_name="Ivan Ivanovich",
-            position="Engineer",
-            phone="+7 (911) 481 00 52",
-            email="ivanov@mail.com",
-            telegram="@ivan",
-            birthday=date(2024, 1, 1),
-            category="test user",
-            specialization="Engineering",
+        new_user = Users(
+            first_name=None,
+            last_name=None,
+            father_name=None,
+            full_name=None,
+            position=None,
+            phone=None,
+            email=None,
+            telegram=None,
+            birthday=None,
+            category=None,
+            specialization=None,
             username="user",
             password=pwd_context.hash(
                 "123456789"
             ),  # Обязательно хэшируйте пароли в реальном коде!
-            notes="test user",
+            notes=None,
             role="user",
         )
         db.add(new_user)
@@ -38,7 +38,7 @@ async def sample_user(async_session_test):
 @pytest.fixture
 async def another_user(async_session_test):
     async with async_session_test() as db:
-        user = WebUser(
+        user = Users(
             first_name="Alex",
             last_name="Alexeev",
             father_name="Ivanovich",
@@ -61,3 +61,32 @@ async def another_user(async_session_test):
         await db.commit()
         await db.refresh(user)
         return user
+
+
+@pytest.fixture
+async def admin_user(async_session_test):
+    async with async_session_test() as db:
+        # Создаем нового пользователя
+        new_user = Users(
+            first_name=None,
+            last_name=None,
+            father_name=None,
+            full_name=None,
+            position=None,
+            phone=None,
+            email=None,
+            telegram=None,
+            birthday=None,
+            category=None,
+            specialization=None,
+            username="admin_user",
+            password=pwd_context.hash(
+                "123456789"
+            ),  # Обязательно хэшируйте пароли в реальном коде!
+            notes=None,
+            role="admin",
+        )
+        db.add(new_user)
+        await db.commit()
+        await db.refresh(new_user)
+        return new_user

@@ -1,10 +1,11 @@
-from fastapi import FastAPI, HTTPException, APIRouter, Depends, status
+from fastapi import HTTPException, APIRouter, Depends, status
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from sqlalchemy.future import select
-from web_app.schemas.objects import ObjectCreate, ObjectResponse, ObjectModel
-from web_app.services.auth_middleware import token_verification_dependency
+from web_app.models.objects import Objects
+from web_app.schemas.objects import ObjectCreate, ObjectResponse
+from web_app.middlewares.auth_middleware import token_verification_dependency
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ async def get_objects(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    stmt = select(ObjectModel)
+    stmt = select(Objects)
     result = await db.execute(stmt)
     objects = result.scalars().all()
     return objects
@@ -27,7 +28,7 @@ async def get_object_by_id(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(select(ObjectModel).filter(ObjectModel.id == object_id))
+    result = await db.execute(select(Objects).filter(Objects.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Обьект не найден")
@@ -42,7 +43,7 @@ async def create_object(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    obj = ObjectModel(**object_data.dict())
+    obj = Objects(**object_data.dict())
     db.add(obj)
     await db.commit()
     await db.refresh(obj)
@@ -56,7 +57,7 @@ async def update_object(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(select(ObjectModel).filter(ObjectModel.id == object_id))
+    result = await db.execute(select(Objects).filter(Objects.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Обьект не найден")
@@ -76,7 +77,7 @@ async def delete_object(
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(select(ObjectModel).filter(ObjectModel.id == object_id))
+    result = await db.execute(select(Objects).filter(Objects.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Обьект не найден")

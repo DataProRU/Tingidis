@@ -1,14 +1,14 @@
-from fastapi import FastAPI, HTTPException, APIRouter, Depends, status
+from fastapi import HTTPException, APIRouter, Depends, status
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from sqlalchemy.future import select
+from web_app.models import Agreements
 from web_app.schemas.agreements import (
     AgreementsResponse,
     AgreementsCreate,
-    AgreementsModel,
 )
-from web_app.services.auth_middleware import token_verification_dependency
+from web_app.middlewares.auth_middleware import token_verification_dependency
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ async def get_agreements(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    stmt = select(AgreementsModel)
+    stmt = select(Agreements)
     result = await db.execute(stmt)
     agreements = result.scalars().all()
     return agreements
@@ -30,9 +30,7 @@ async def get_agreements_by_id(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(
-        select(AgreementsModel).filter(AgreementsModel.id == agreements_id)
-    )
+    result = await db.execute(select(Agreements).filter(Agreements.id == agreements_id))
     agreement = result.scalar_one_or_none()
     if not agreement:
         raise HTTPException(status_code=404, detail="Соглашение не найдено")
@@ -49,7 +47,7 @@ async def create_agreement(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    agreement = AgreementsModel(**agreement_data.dict())
+    agreement = Agreements(**agreement_data.dict())
     db.add(agreement)
     await db.commit()
     await db.refresh(agreement)
@@ -63,9 +61,7 @@ async def update_agreement(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(
-        select(AgreementsModel).filter(AgreementsModel.id == agreement_id)
-    )
+    result = await db.execute(select(Agreements).filter(Agreements.id == agreement_id))
     agreement = result.scalar_one_or_none()
     if not agreement:
         raise HTTPException(status_code=404, detail="Соглашение не найдено")
@@ -85,9 +81,7 @@ async def delete_agreement(
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(
-        select(AgreementsModel).filter(AgreementsModel.id == agreement_id)
-    )
+    result = await db.execute(select(Agreements).filter(Agreements.id == agreement_id))
     agreement = result.scalar_one_or_none()
     if not agreement:
         raise HTTPException(status_code=404, detail="Соглашение не найдено")

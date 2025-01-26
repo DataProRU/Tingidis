@@ -7,11 +7,11 @@ from datetime import timedelta, date
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from web_app.database import async_session, get_db
-from web_app.schemas.users import WebUser
-from web_app.schemas.token import TokenSchema
+from web_app.models.users import Users
+from web_app.models.token import Tokens
 from sqlalchemy import select
 from web_app.schemas.users import UserCreate, UserLogin
-from web_app.services.auth_service import (
+from web_app.services.auth import (
     create_token,
     save_token,
     validate_refresh_token,
@@ -41,7 +41,7 @@ async def register_user(
     user: UserCreate, response: Response, db: AsyncSession = Depends(get_db)
 ):
     # Создаем сессию базы данных вручную
-    result = await db.execute(select(WebUser).filter_by(username=user.username))
+    result = await db.execute(select(Users).filter_by(username=user.username))
 
     existing_user = (
         result.scalar_one_or_none()
@@ -53,7 +53,7 @@ async def register_user(
     hashed_password = pwd_context.hash(user.password)
 
     # Создаем нового пользователя
-    new_user = WebUser(
+    new_user = Users(
         username=user.username,
         password=hashed_password,
         role=user.role,
@@ -97,7 +97,7 @@ async def login_user(
 ):
     # Создаем сессию базы данных вручную
     # Ищем пользователя в базе данных
-    result = await db.execute(select(WebUser).filter_by(username=user.username))
+    result = await db.execute(select(Users).filter_by(username=user.username))
     existing_user = (
         result.scalar_one_or_none()
     )  # Вернет None, если пользователь не найден
@@ -147,7 +147,7 @@ async def refresh_token(
     user_data = validate_refresh_token(refresh_token, REFRESH_KEY, ALGORITHM)
     # Ищем токен в бд
     token_query = await db.execute(
-        select(TokenSchema).filter_by(refresh_token=refresh_token)
+        select(Tokens).filter_by(refresh_token=refresh_token)
     )
     token_data = token_query.scalar_one_or_none()
     if not user_data or not token_data:
@@ -155,7 +155,7 @@ async def refresh_token(
 
     user_id = token_data.user_id
 
-    user_query = await db.execute(select(WebUser).filter_by(id=user_id))
+    user_query = await db.execute(select(Users).filter_by(id=user_id))
     user = user_query.scalar_one_or_none()
 
     if not user:
@@ -189,7 +189,9 @@ async def refresh_token(
 
 
 @router.post("/logout")
-async def logout_user(request: Request, response: Response, db: AsyncSession = Depends(get_db)):
+async def logout_user(
+    request: Request, response: Response, db: AsyncSession = Depends(get_db)
+):
     refresh_token = request.cookies.get("refresh_token")
 
     if refresh_token:
@@ -206,7 +208,7 @@ async def logout_user(request: Request, response: Response, db: AsyncSession = D
 async def get_all_tokens():
     async with async_session() as session:
         # Query to get all tokens
-        result = await session.execute(select(TokenSchema))
+        result = await session.execute(select(Tokens))
         tokens = result.scalars().all()  # Get all token records
 
     return tokens
