@@ -1,19 +1,17 @@
 # Фикстура для создания асинхронного движка
 import asyncio
 import os
-from typing import Generator, Any, AsyncGenerator
 
 import pytest
 from dotenv import load_dotenv
-from sqlalchemy import text
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
-from sqlalchemy.orm import sessionmaker, declarative_base
+from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
 from web_app.database import Base
 
 from web_app.database import get_db
 from web_app.main import app
-from web_app.services.auth_service import create_token
+from web_app.services.auth import create_token
 
 load_dotenv()
 
@@ -21,8 +19,6 @@ load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 REFRESH_KEY = os.getenv("REFRESH_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-
-CLEAN_TABLES = ["web_user", "objects", "token_schema"]
 
 TEST_DATABASE_URL = os.getenv(
     "TEST_DATABASE_URL", "postgresql+asyncpg://admin:2606QWmg@localhost:5433/tests"
@@ -54,15 +50,11 @@ async def async_session_test(async_engine):
 @pytest.fixture(scope="function", autouse=True)
 async def clean_tables(async_engine, async_session_test):
     async with async_engine.begin() as conn:
-        # Создаем таблицы на основе базового класса моделей
         await conn.run_sync(Base.metadata.create_all)
-    yield  # Для выполнения после теста (если потребуется дополнительная очистка)
-    async with async_session_test() as session:
-        async with session.begin():
-            for table_for_cleaning in CLEAN_TABLES:
-                await session.execute(
-                    text(f"TRUNCATE TABLE {table_for_cleaning} CASCADE;;")
-                )
+    yield
+    async with async_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
 
 
 async def _get_test_db():
@@ -83,6 +75,19 @@ def client(sample_user):
     client = TestClient(app)
     token = create_token(
         data={"sub": sample_user.username, "role": sample_user.role},
+        key=SECRET_KEY,
+        algoritm=ALGORITHM,
+    )
+    client.headers = {"Authorization": f"Bearer {token}"}
+    return client
+
+
+@pytest.fixture(scope="function")
+def admin_client(admin_user):
+    app.dependency_overrides[get_db] = _get_test_db
+    client = TestClient(app)
+    token = create_token(
+        data={"sub": admin_user.username, "role": admin_user.role},
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )

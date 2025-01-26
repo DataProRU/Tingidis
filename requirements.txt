@@ -39,5 +39,5 @@ httpx
 pytest
 pyjwt
 python-dotenv
-
+pydantic[email]
 
