@@ -1,24 +1,7 @@
 def test_create_user(client):
     payload = {
-<<<<<<< HEAD
-        "first_name": "Alex",
-        "last_name": "Alexeev",
-        "father_name": "Ivanovich",
-        "full_name": "Alex Ivanovich",
-        "position": "Worker",
-        "phone": "+3 (911) 181 00 32",
-        "email": "alex@mail.com",
-        "telegram": "@alex",
-        "birthday": "2001-02-02",
-        "category": "test user",
-        "specialization": "Working",
         "username": "user_alex",
         "password": "123456789qqFF_",
-        "notes": "another test user",
-=======
-        "username": "user_alex",
-        "password": "123456789qqFF_",
->>>>>>> main
         "role": "user",
     }
     response = client.post("/users", json=payload)
@@ -40,8 +23,6 @@ def test_create_user_by_admin(admin_client):
     assert result["role"] == "user"
 
 
-<<<<<<< HEAD
-=======
 def test_create_same_users(admin_client, sample_user):
     payload = {
         "username": sample_user.username,
@@ -55,16 +36,11 @@ def test_create_same_users(admin_client, sample_user):
     assert response.json() == {"detail": "Пользователь с таким username уже существует"}
 
 
->>>>>>> main
 def test_unauthenticated_user_cannot_create_user(client):
     client.headers = {}
     payload = {
         "username": "user_alex",
         "password": "123456789qqFF_",
-<<<<<<< HEAD
-        "notes": "another test user",
-=======
->>>>>>> main
         "role": "user",
     }
     response = client.post("/users", json=payload)

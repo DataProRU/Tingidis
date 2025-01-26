@@ -1,12 +1,3 @@
-<<<<<<< HEAD
-"""def test_get_empty_user(client):
-    response = client.get("/users/")
-    assert response.status_code == 200
-    assert response.json() == []"""
-
-
-=======
->>>>>>> main
 def test_unauthenticated_user_cannot_read_users(client):
     client.headers = {}
     response = client.get("/users/")
@@ -43,11 +34,7 @@ def test_get_user(client, another_user):
     assert response.json() == expected_response
 
 
-<<<<<<< HEAD
-def test_get_user(client, sample_user):
-=======
 def test_get_user_by_admin(admin_client, sample_user):
->>>>>>> main
     user = sample_user
     response = admin_client.get(f"/users/{user.id}")
     assert response.status_code == 200
@@ -73,8 +60,6 @@ def test_get_user_by_admin(admin_client, sample_user):
     }
 
 
-<<<<<<< HEAD
-=======
 def test_get_all_users_by_admin(admin_client, admin_user, sample_user, another_user):
     response = admin_client.get("/users")
     assert response.status_code == 200
@@ -209,7 +194,6 @@ def test_get_all_users_by_user_role(client, admin_user, sample_user, another_use
     ]
 
 
->>>>>>> main
 def test_unauthenticated_user_cannot_read_user(client, sample_user):
     client.headers = {}
     user = sample_user
