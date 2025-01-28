@@ -32,7 +32,7 @@ def test_get_customers(client, sample_customer, another_customer):
     ]
 
 
-def test_get_object(client, sample_customer):
+def test_get_customer(client, sample_customer):
     customer = sample_customer
     response = client.get(f"/customers/{customer.id}")
     assert response.status_code == 200

@@ -38,7 +38,7 @@ async def get_form_of_ownership_by_id(
     )
     form_of_ownership = result.scalar_one_or_none()
     if not form_of_ownership:
-        raise HTTPException(status_code=404, detail="Форма владения не найдена")
+        raise HTTPException(status_code=404, detail="Форма собственности не найдена")
     return form_of_ownership
 
 
@@ -73,7 +73,7 @@ async def update_form_of_ownership(
     )
     form_of_ownership = result.scalar_one_or_none()
     if not form_of_ownership:
-        raise HTTPException(status_code=404, detail="Форма не найдена")
+        raise HTTPException(status_code=404, detail="Форма собственности не найдена")
 
     for key, value in object_data.dict(exclude_unset=True).items():
         setattr(form_of_ownership, key, value)
@@ -97,12 +97,12 @@ async def delete_form_of_ownership(
     )
     form_of_ownership = result.scalar_one_or_none()
     if not form_of_ownership:
-        raise HTTPException(status_code=404, detail="Форма не найдена")
+        raise HTTPException(status_code=404, detail="Форма собственности не найдена")
 
     # Удаление объекта
     await db.delete(form_of_ownership)
     await db.commit()
     return {
-        "message": "Форма успешно удалена",
+        "message": "Форма собственности успешно удалена",
         "form_of_ownership_id": form_of_ownership,
     }

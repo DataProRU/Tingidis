@@ -38,7 +38,7 @@ def test_get_form(client, sample_form):
     }
 
 
-def test_unauthenticated_user_cannot_read_fomrs(client, sample_form):
+def test_unauthenticated_user_cannot_read_fomr(client, sample_form):
     client.headers = {}
     object = sample_form
     response = client.get(f"/form-of-ownership/{object.id}")

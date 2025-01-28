@@ -6,4 +6,4 @@ class FormOfOwnerships(Base):
     __tablename__ = "form_of_ownership"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(30), nullable=False)
+    name = Column(String(30))

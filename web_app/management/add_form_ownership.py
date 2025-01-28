@@ -1,15 +1,15 @@
-"""from sqlalchemy.orm import Session
-from app.database import SessionLocal
-from app import models
+from sqlalchemy.ext.asyncio import AsyncSession
+from web_app.models.form_of_ownerships import FormOfOwnerships
+from web_app.database import get_db
 
-def add_initial_forms_of_ownership():
-    db = SessionLocal()
+
+async def add_initial_forms_of_ownership():
     forms = ["ООО", "ЗАО", "ИП"]
-    for form_name in forms:
-        db_form = models.FormOfOwnership(name=form_name)
-        db.add(db_form)
-    db.commit()
-    db.close()
 
-if __name__ == "__main__":
-    add_initial_forms_of_ownership()"""
+    # Используем async with для получения сессии
+    async for db in get_db():
+        for form_name in forms:
+            db_form = FormOfOwnerships(name=form_name)
+            db.add(db_form)
+        await db.commit()
+        await db.close()
