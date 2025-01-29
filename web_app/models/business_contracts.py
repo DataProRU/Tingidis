@@ -10,8 +10,8 @@ from sqlalchemy import (
 )
 
 
-class Contracts(Base):
-    __tablename__ = "contracts"
+class BusinessContracts(Base):
+    __tablename__ = "business_contracts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     code = Column(Integer, ForeignKey("objects.id"))
