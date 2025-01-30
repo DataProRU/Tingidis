@@ -5,13 +5,15 @@ from decimal import Decimal
 
 
 @pytest.fixture
-async def sample_business_contract(async_session_test, sample_object, sample_customer, sample_user):
+async def sample_business_contract(
+    async_session_test, sample_object, sample_customer, sample_user
+):
     async with async_session_test() as db:
         contract = BusinessContracts(
             code=sample_object.id,
             name="new_test_name",
-            customer = sample_customer.id,
-            executor = sample_user.id,
+            customer=sample_customer.id,
+            executor=sample_user.id,
             number="123456",
             sign_date=datetime(2024, 1, 1),
             price=Decimal("2000.21"),
@@ -25,7 +27,9 @@ async def sample_business_contract(async_session_test, sample_object, sample_cus
 
 
 @pytest.fixture
-async def another_business_contract(async_session_test, another_object, another_customer, another_user):
+async def another_business_contract(
+    async_session_test, another_object, another_customer, another_user
+):
     async with async_session_test() as db:
         contract = BusinessContracts(
             code=another_object.id,  # Используем id созданного объекта

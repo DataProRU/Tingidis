@@ -16,7 +16,7 @@ def test_get_objects(client, sample_object, another_object):
     object_2 = another_object
     response = client.get("/objects")
     assert response.status_code == 200
-    expected_result  = [
+    expected_result = [
         {
             "code": object_1.code,
             "comment": object_1.comment,

@@ -10,7 +10,7 @@ from web_app.routes import (
     form_of_ownerships,
     customers,
     person_contracts,
-    busines_contracts
+    busines_contracts,
 )
 from web_app.database import init_db
 from fastapi.middleware.cors import CORSMiddleware

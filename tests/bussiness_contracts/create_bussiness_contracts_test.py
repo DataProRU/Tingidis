@@ -4,11 +4,11 @@ def test_create_business_contracts(client, sample_object, sample_customer, sampl
         "name": "test contract name",
         "customer": str(sample_customer.id),
         "executor": str(sample_user.id),
-        "number" : "123456",
+        "number": "123456",
         "sign_date": "2001-02-01",
-        "price" : "2000.21",
-        "theme":"test",
-        "evolution":"test evolution"
+        "price": "2000.21",
+        "theme": "test",
+        "evolution": "test evolution",
     }
     response = client.post("/business-contracts", json=payload)
     assert response.status_code == 201
@@ -24,8 +24,9 @@ def test_create_business_contracts(client, sample_object, sample_customer, sampl
     assert result["evolution"] == "test evolution"
 
 
-
-def test_unauthenticated_user_cannot_create_business_contracts(client, sample_object, sample_customer, sample_user):
+def test_unauthenticated_user_cannot_create_business_contracts(
+    client, sample_object, sample_customer, sample_user
+):
     client.headers = {}
     payload = {
         "code": str(sample_object.id),
@@ -36,14 +37,17 @@ def test_unauthenticated_user_cannot_create_business_contracts(client, sample_ob
         "sign_date": "2001-02-01",
         "price": "2000.21",
         "theme": "test",
-        "evolution": "test evolution"
+        "evolution": "test evolution",
     }
     response = client.post("/business-contracts", json=payload)
     assert response.status_code == 401
     assert response.json() == {"detail": "Отсутствует токен"}
 
 
-def test_cannot_create_business_contracts_with_empty_field(client, sample_object,):
+def test_cannot_create_business_contracts_with_empty_field(
+    client,
+    sample_object,
+):
     payload = {
         "code": str(sample_object.id),
     }

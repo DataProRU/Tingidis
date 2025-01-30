@@ -1,4 +1,6 @@
-def test_update_business_contract(client, sample_object, sample_customer, sample_user, sample_business_contract):
+def test_update_business_contract(
+    client, sample_object, sample_customer, sample_user, sample_business_contract
+):
     payload = {
         "code": str(sample_object.id),
         "name": "test contract name",
@@ -8,9 +10,11 @@ def test_update_business_contract(client, sample_object, sample_customer, sample
         "sign_date": "2001-02-01",
         "price": "2000.21",
         "theme": "test",
-        "evolution": "test evolution"
+        "evolution": "test evolution",
     }
-    response = client.patch(f"/business-contracts/{sample_business_contract.id}", json=payload)
+    response = client.patch(
+        f"/business-contracts/{sample_business_contract.id}", json=payload
+    )
     assert response.status_code == 200
     result = response.json()
     assert result["code"] == sample_object.id
@@ -24,7 +28,9 @@ def test_update_business_contract(client, sample_object, sample_customer, sample
     assert result["evolution"] == "test evolution"
 
 
-def test_unauthenticated_user_cannot_update_business_contract(client, sample_object, sample_customer, sample_user,sample_business_contract):
+def test_unauthenticated_user_cannot_update_business_contract(
+    client, sample_object, sample_customer, sample_user, sample_business_contract
+):
 
     client.headers = {}
     payload = {
@@ -36,8 +42,10 @@ def test_unauthenticated_user_cannot_update_business_contract(client, sample_obj
         "sign_date": "2001-02-01",
         "price": "2000.21",
         "theme": "test",
-        "evolution": "test evolution"
+        "evolution": "test evolution",
     }
-    response = client.patch(f"/business-contracts/{sample_business_contract.id}", json=payload)
+    response = client.patch(
+        f"/business-contracts/{sample_business_contract.id}", json=payload
+    )
     assert response.status_code == 401
     assert response.json() == {"detail": "Отсутствует токен"}

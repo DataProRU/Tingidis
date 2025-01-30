@@ -19,6 +19,7 @@ class BusinessContractsCreate(BaseModel):
     class Config:
         orm_mode = True
 
+
 class BusinessContractsResponse(BaseModel):
     id: int
     code: int
