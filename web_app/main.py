@@ -10,6 +10,7 @@ from web_app.routes import (
     form_of_ownerships,
     customers,
     person_contracts,
+    busines_contracts
 )
 from web_app.database import init_db
 from fastapi.middleware.cors import CORSMiddleware
@@ -41,6 +42,7 @@ app.include_router(agreements.router)
 app.include_router(form_of_ownerships.router)
 app.include_router(customers.router)
 app.include_router(person_contracts.router)
+app.include_router(busines_contracts.router)
 
 origins = [
     "http://localhost:3000",  # React production server

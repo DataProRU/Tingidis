@@ -4,7 +4,7 @@ from pydantic import Field, constr
 
 # Schema
 class PersonContractCreate(BaseModel):
-    first_name: constr(min_length=1, max_length=6)
+    first_name: constr(min_length=1, max_length=30)
     last_name: constr(min_length=1, max_length=30)
     father_name: constr(min_length=1, max_length=30)
 
