@@ -4,6 +4,7 @@ def test_create_agreement(client, sample_contract):
     agreement_payload = {
         "name": "test_agreement",
         "number": "1234567890",
+        "price": 1000,
         "deadline": "2001-02-02",
         "notes": "test notes",
         "contract": contract_id,
@@ -15,6 +16,7 @@ def test_create_agreement(client, sample_contract):
     assert result["name"] == "test_agreement"
     assert result["number"] == "1234567890"
     assert result["deadline"] == "2001-02-02"
+    assert result["price"] == 1000
     assert result["notes"] == "test notes"
     assert result["contract"] == contract_id
 
@@ -25,6 +27,7 @@ def test_unauthenticated_user_cannot_create_agreement(client, sample_contract):
     agreement_payload = {
         "name": "test_agreement",
         "number": "1234567890",
+        "price": 1000,
         "deadline": "2001-02-02",
         "notes": "test notes",
         "contract": contract_id,
