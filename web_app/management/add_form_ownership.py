@@ -1,4 +1,3 @@
-from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.models.form_of_ownerships import FormOfOwnerships
 from web_app.database import get_db
 

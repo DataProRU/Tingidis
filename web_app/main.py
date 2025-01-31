@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from web_app.management.add_form_ownership import add_initial_forms_of_ownership
+from web_app.management.add_projects_statuses import add_initial_project_statuses
 from web_app.routes import (
     custom,
     auth,
@@ -23,6 +24,7 @@ from pathlib import Path
 async def lifespan(app: FastAPI):
     await init_db()
     await add_initial_forms_of_ownership()
+    await add_initial_project_statuses()
     yield
 
 
