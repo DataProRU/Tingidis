@@ -1,12 +1,12 @@
 import pytest
 
-from web_app.models.person_contacts import PersonContracts
+from web_app.models.contacts import Contacts
 
 
 @pytest.fixture
-async def sample_person_contract(async_session_test, sample_customer):
+async def sample_contact(async_session_test, sample_customer):
     async with async_session_test() as db:
-        person_contract = PersonContracts(
+        contact = Contacts(
             first_name="Ivan",
             last_name="Ivanov",
             father_name="Ivanovich",
@@ -14,16 +14,16 @@ async def sample_person_contract(async_session_test, sample_customer):
             position="worker",
             customer=sample_customer.id,
         )
-        db.add(person_contract)
+        db.add(contact)
         await db.commit()
-        await db.refresh(person_contract)
-        return person_contract
+        await db.refresh(contact)
+        return contact
 
 
 @pytest.fixture
-async def another_person_contract(async_session_test, another_customer):
+async def another_contact(async_session_test, another_customer):
     async with async_session_test() as db:
-        person_contract = PersonContracts(
+        contact = Contacts(
             first_name="Alex",
             last_name="Alexeev",
             father_name="Alexeevich",
@@ -31,7 +31,7 @@ async def another_person_contract(async_session_test, another_customer):
             position="engineer",
             customer=another_customer.id,
         )
-        db.add(person_contract)
+        db.add(contact)
         await db.commit()
-        await db.refresh(person_contract)
-        return person_contract
+        await db.refresh(contact)
+        return contact

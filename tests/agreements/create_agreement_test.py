@@ -1,5 +1,5 @@
-def test_create_agreement(client, sample_business_contract):
-    contract_id = sample_business_contract.id
+def test_create_agreement(client, sample_contract):
+    contract_id = sample_contract.id
 
     agreement_payload = {
         "name": "test_agreement",
@@ -19,9 +19,9 @@ def test_create_agreement(client, sample_business_contract):
     assert result["contract"] == contract_id
 
 
-def test_unauthenticated_user_cannot_create_agreement(client, sample_business_contract):
+def test_unauthenticated_user_cannot_create_agreement(client, sample_contract):
     client.headers = {}
-    contract_id = sample_business_contract.id
+    contract_id = sample_contract.id
     agreement_payload = {
         "name": "test_agreement",
         "number": "1234567890",

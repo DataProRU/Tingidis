@@ -3,7 +3,7 @@ from pydantic import Field, constr
 
 
 # Schema
-class PersonContractCreate(BaseModel):
+class ContactCreate(BaseModel):
     first_name: constr(min_length=1, max_length=30)
     last_name: constr(min_length=1, max_length=30)
     father_name: constr(min_length=1, max_length=30)
@@ -14,7 +14,7 @@ class PersonContractCreate(BaseModel):
     customer: int
 
 
-class PersonContractResponse(BaseModel):
+class ContactResponse(BaseModel):
     id: int
 
     first_name: str

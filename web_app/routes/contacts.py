@@ -3,10 +3,10 @@ from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from sqlalchemy.future import select
-from web_app.models.person_contacts import PersonContracts
-from web_app.schemas.person_contracts import (
-    PersonContractCreate,
-    PersonContractResponse,
+from web_app.models.contacts import Contacts
+from web_app.schemas.contacts import (
+    ContactCreate,
+    ContactResponse,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
 
@@ -14,63 +14,55 @@ router = APIRouter()
 
 
 # Endpoints
-@router.get("/person-contracts", response_model=List[PersonContractResponse])
-async def get_person_contracts(
+@router.get("/contacts", response_model=List[ContactResponse])
+async def get_contacts(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    stmt = select(PersonContracts)
+    stmt = select(Contacts)
     result = await db.execute(stmt)
-    objects = result.scalars().all()
-    return objects
+    contacts = result.scalars().all()
+    return contacts
 
 
-@router.get(
-    "/person-contracts/{person_contract_id}", response_model=PersonContractResponse
-)
-async def get_person_contract_by_id(
-    person_contract_id: int,
+@router.get("/contacts/{contact_id}", response_model=ContactResponse)
+async def get_contact_by_id(
+    contact_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(
-        select(PersonContracts).filter(PersonContracts.id == person_contract_id)
-    )
+    result = await db.execute(select(Contacts).filter(Contacts.id == contact_id))
     obj = result.scalar_one_or_none()
     if not obj:
-        raise HTTPException(status_code=404, detail="Контракт не найден")
+        raise HTTPException(status_code=404, detail="Контакт не найден")
     return obj
 
 
 @router.post(
-    "/person-contracts",
-    response_model=PersonContractResponse,
+    "/contacts",
+    response_model=ContactResponse,
     status_code=status.HTTP_201_CREATED,
 )
-async def create_person_contract(
-    person_contract_data: PersonContractCreate,
+async def create_contact(
+    contact_data: ContactCreate,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    obj = PersonContracts(**person_contract_data.dict())
+    obj = Contacts(**contact_data.dict())
     db.add(obj)
     await db.commit()
     await db.refresh(obj)
     return obj
 
 
-@router.patch(
-    "/person-contracts/{person_contract_id}", response_model=PersonContractResponse
-)
-async def update_person_contract(
-    person_contract_id: int,
-    object_data: PersonContractCreate,
+@router.patch("/contacts/{contact_id}", response_model=ContactResponse)
+async def update_contact(
+    contact_id: int,
+    object_data: ContactCreate,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(
-        select(PersonContracts).filter(PersonContracts.id == person_contract_id)
-    )
+    result = await db.execute(select(Contacts).filter(Contacts.id == contact_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Контракт не найден")
@@ -83,18 +75,14 @@ async def update_person_contract(
     return obj
 
 
-@router.delete(
-    "/person-contracts/{person_contract_id}", status_code=status.HTTP_204_NO_CONTENT
-)
-async def delete_object(
-    person_contract_id: int,
+@router.delete("/contacts/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_contact(
+    contact_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(
-        select(PersonContracts).filter(PersonContracts.id == person_contract_id)
-    )
+    result = await db.execute(select(Contacts).filter(Contacts.id == contact_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Контракт не найден")
@@ -104,5 +92,5 @@ async def delete_object(
     await db.commit()
     return {
         "message": "Контракт успешно удален",
-        "person_contract_id": person_contract_id,
+        "contact_id": contact_id,
     }

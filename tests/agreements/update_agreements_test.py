@@ -1,5 +1,5 @@
-def test_update_agreement(client, another_business_contract, sample_agreement):
-    contract_id = another_business_contract.id
+def test_update_agreement(client, another_contract, sample_agreement):
+    contract_id = another_contract.id
     agreement = sample_agreement
     agreement_payload = {
         "name": "test_agreement",
@@ -19,10 +19,10 @@ def test_update_agreement(client, another_business_contract, sample_agreement):
 
 
 def test_unauthenticated_user_cannot_update_agreement(
-    client, another_business_contract, sample_agreement
+    client, another_contract, sample_agreement
 ):
     client.headers = {}
-    contract_id = another_business_contract.id
+    contract_id = another_contract.id
     agreement = sample_agreement
     agreement_payload = {
         "name": "test_agreement",

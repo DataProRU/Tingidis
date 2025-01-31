@@ -19,4 +19,4 @@ class Agreements(Base):
     price = Column(Decimal)
     deadline = Column(Date)
     notes = Column(Text, nullable=True)
-    contract = Column(Integer, ForeignKey("business_contracts.id"))
+    contract = Column(Integer, ForeignKey("contracts.id"))

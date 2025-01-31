@@ -8,7 +8,7 @@ def test_unauthenticated_user_cannot_read_agreements(client):
     client.headers = {}
     response = client.get("/agreements")
     assert response.status_code == 401
-    assert response.json() == {"detail": "Пользователь не авторизован"}
+    assert response.json() == {"detail": "Отсутствует токен"}
 
 
 def test_get_agreements(client, sample_agreement, another_agreement):
@@ -60,12 +60,3 @@ def test_get_agreement(client, sample_agreement):
     }
 
     assert response.json() == expected_response
-
-
-def test_unauthenticated_user_cannot_read_agreements(client, another_agreement):
-    client.headers = {}
-    agreement = another_agreement
-    assert another_agreement.id == 1
-    response = client.get(f"/agreements/{agreement.id}")
-    assert response.status_code == 401
-    assert response.json() == {"detail": "Отсутствует токен"}

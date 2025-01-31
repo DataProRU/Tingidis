@@ -1,4 +1,4 @@
-def test_create_person_contract(client, another_customer):
+def test_update_contacts(client, sample_contact, another_customer):
     payload = {
         "first_name": "Alex",
         "last_name": "Alexeev",
@@ -7,8 +7,8 @@ def test_create_person_contract(client, another_customer):
         "position": "engineer",
         "customer": str(another_customer.id),
     }
-    response = client.post("/person-contracts", json=payload)
-    assert response.status_code == 201
+    response = client.patch(f"/contacts/{sample_contact.id}", json=payload)
+    assert response.status_code == 200
     result = response.json()
     assert result["first_name"] == "Alex"
     assert result["last_name"] == "Alexeev"
@@ -18,7 +18,9 @@ def test_create_person_contract(client, another_customer):
     assert result["customer"] == another_customer.id
 
 
-def test_unauthenticated_user_cannot_create_person_contracts(client, another_customer):
+def test_unauthenticated_user_cannot_update_contact(
+    client, sample_contact, another_customer
+):
     client.headers = {}
     payload = {
         "first_name": "Alex",
@@ -28,18 +30,6 @@ def test_unauthenticated_user_cannot_create_person_contracts(client, another_cus
         "position": "engineer",
         "customer": str(another_customer.id),
     }
-    response = client.post("/person-contracts", json=payload)
+    response = client.patch(f"/contacts/{sample_contact.id}", json=payload)
     assert response.status_code == 401
     assert response.json() == {"detail": "Отсутствует токен"}
-
-
-def test_cannot_create_object_with_empty_field(client):
-    payload = {
-        "first_name": "Alex",
-        "last_name": "Alexeev",
-        "father_name": "Alexeevich",
-        "email": "aled@mail.com",
-        "position": "engineer",
-    }
-    response = client.post("/person-contracts", json=payload)
-    assert response.status_code == 422

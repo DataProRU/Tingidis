@@ -1,4 +1,4 @@
-def test_update_person_contracts(client, sample_person_contract, another_customer):
+def test_create_contact(client, another_customer):
     payload = {
         "first_name": "Alex",
         "last_name": "Alexeev",
@@ -7,10 +7,8 @@ def test_update_person_contracts(client, sample_person_contract, another_custome
         "position": "engineer",
         "customer": str(another_customer.id),
     }
-    response = client.patch(
-        f"/person-contracts/{sample_person_contract.id}", json=payload
-    )
-    assert response.status_code == 200
+    response = client.post("/contacts", json=payload)
+    assert response.status_code == 201
     result = response.json()
     assert result["first_name"] == "Alex"
     assert result["last_name"] == "Alexeev"
@@ -20,9 +18,7 @@ def test_update_person_contracts(client, sample_person_contract, another_custome
     assert result["customer"] == another_customer.id
 
 
-def test_unauthenticated_user_cannot_update_object(
-    client, sample_person_contract, another_customer
-):
+def test_unauthenticated_user_cannot_create_contacts(client, another_customer):
     client.headers = {}
     payload = {
         "first_name": "Alex",
@@ -32,8 +28,18 @@ def test_unauthenticated_user_cannot_update_object(
         "position": "engineer",
         "customer": str(another_customer.id),
     }
-    response = client.patch(
-        f"/person-contracts/{sample_person_contract.id}", json=payload
-    )
+    response = client.post("/contacts", json=payload)
     assert response.status_code == 401
     assert response.json() == {"detail": "Отсутствует токен"}
+
+
+def test_cannot_create_contact_with_empty_field(client):
+    payload = {
+        "first_name": "Alex",
+        "last_name": "Alexeev",
+        "father_name": "Alexeevich",
+        "email": "aled@mail.com",
+        "position": "engineer",
+    }
+    response = client.post("/contacts", json=payload)
+    assert response.status_code == 422

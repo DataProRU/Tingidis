@@ -1,7 +1,7 @@
 from .users import Users
 from .token import Tokens
 
-from .business_contracts import BusinessContracts
+from .contracts import Contracts
 from .agreements import Agreements
 
 from .objects import Objects

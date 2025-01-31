@@ -8,8 +8,8 @@ from sqlalchemy import (
 )
 
 
-class PersonContracts(Base):
-    __tablename__ = "person_contracts"
+class Contacts(Base):
+    __tablename__ = "contacts"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
