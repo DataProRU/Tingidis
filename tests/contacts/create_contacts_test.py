@@ -5,7 +5,7 @@ def test_create_contact(client, another_customer):
         "father_name": "Alexeevich",
         "email": "alex@mail.com",
         "position": "engineer",
-        "customer": str(another_customer.id),
+        "customer": another_customer.id,
     }
     response = client.post("/contacts", json=payload)
     assert response.status_code == 201
@@ -26,7 +26,7 @@ def test_unauthenticated_user_cannot_create_contacts(client, another_customer):
         "father_name": "Alexeevich",
         "email": "aled@mail.com",
         "position": "engineer",
-        "customer": str(another_customer.id),
+        "customer": another_customer.id,
     }
     response = client.post("/contacts", json=payload)
     assert response.status_code == 401
