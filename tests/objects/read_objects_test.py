@@ -30,6 +30,7 @@ def test_get_objects(client, sample_object, another_object):
             "name": object_2.name,
         },
     ]
+    assert response.json() == expected_result
 
 
 def test_get_object(client, sample_object):

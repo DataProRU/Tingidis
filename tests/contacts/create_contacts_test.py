@@ -3,6 +3,7 @@ def test_create_contact(client, another_customer):
         "first_name": "Alex",
         "last_name": "Alexeev",
         "father_name": "Alexeevich",
+        "phone": "+798323456",
         "email": "alex@mail.com",
         "position": "engineer",
         "customer": another_customer.id,

@@ -11,6 +11,7 @@ async def sample_contact(async_session_test, sample_customer):
             last_name="Ivanov",
             father_name="Ivanovich",
             email="ivanov@mail.com",
+            phone="+70000000000",
             position="worker",
             customer=sample_customer.id,
         )
@@ -27,6 +28,7 @@ async def another_contact(async_session_test, another_customer):
             first_name="Alex",
             last_name="Alexeev",
             father_name="Alexeevich",
+            phone="+70000000001",
             email="aled@mail.com",
             position="engineer",
             customer=another_customer.id,
