@@ -17,7 +17,14 @@ def test_update_contacts(client, sample_contact, another_customer):
     assert result["phone"] == "+70000000002"
     assert result["email"] == "alex@mail.com"
     assert result["position"] == "engineer"
-    assert result["customer"] == another_customer.id
+    assert result["customer"] == {
+        'id': another_customer.id,
+        'form': another_customer.form,
+        'name': another_customer.name,
+        'address': another_customer.address,
+        'inn': another_customer.inn,
+        'notes': another_customer.notes,
+    }
 
 
 def test_unauthenticated_user_cannot_update_contact(

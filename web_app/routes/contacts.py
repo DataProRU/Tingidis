@@ -103,14 +103,18 @@ async def create_contact(
     return obj
 
 
-@router.patch("/contacts/{contact_id}", response_model=ContactResponse)
+@router.patch("/contacts/{contact_id}", response_model=ContactGetResponse)
 async def update_contact(
     contact_id: int,
     object_data: ContactUpdate,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(select(Contacts).filter(Contacts.id == contact_id))
+    result = await db.execute(
+        select(Contacts)
+        .options(selectinload(Contacts.customer_info))
+        .filter(Contacts.id == contact_id)
+    )
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Контакт не найден")
@@ -120,7 +124,23 @@ async def update_contact(
 
     await db.commit()
     await db.refresh(obj)
-    return obj
+    return {
+        "id": obj.id,
+        "first_name": obj.first_name,
+        "last_name": obj.last_name,
+        "father_name": obj.father_name,
+        "phone": obj.phone,
+        "email": obj.email,
+        "position": obj.position,
+        "customer": {
+            "id": obj.customer_info.id,
+            "form": obj.customer_info.form,
+            "name": obj.customer_info.name,
+            "address": obj.customer_info.address,
+            "inn": obj.customer_info.inn,
+            "notes": obj.customer_info.notes,
+        },
+    }
 
 
 @router.delete("/contacts/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)

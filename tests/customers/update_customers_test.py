@@ -11,7 +11,10 @@ def test_update_customer(client, sample_customer, another_form):
     assert response.status_code == 200
     result = response.json()
     assert result["name"] == "new Ivan"
-    assert result["form"] == another_form.id
+    assert result["form"] ==  {
+        'id': another_form.id,
+        'name': another_form.name
+    }
     assert result["address"] == "new test addres"
     assert result["inn"] == "new test inn"
     assert result["notes"] == "other note"

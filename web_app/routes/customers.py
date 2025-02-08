@@ -157,14 +157,20 @@ async def create_customer(
     }
 
 
-@router.patch("/customers/{customer_id}", response_model=CustomerResponse)
+@router.patch("/customers/{customer_id}", response_model=CustomerGetResponse)
 async def update_customer(
     customer_id: int,
     customer_data: CustomerUpdate,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    result = await db.execute(select(Customers).filter(Customers.id == customer_id))
+    result = await db.execute(
+        select(Customers)
+        .options(
+            selectinload(Customers.form_of_ownership), selectinload(Customers.contacts)
+        )
+        .filter(Customers.id == customer_id)
+    )
     customer = result.scalar_one_or_none()
     if not customer:
         raise HTTPException(status_code=404, detail="Клиент не найден")
@@ -174,7 +180,30 @@ async def update_customer(
 
     await db.commit()
     await db.refresh(customer)
-    return customer
+    return {
+        "id": customer.id,
+        "form": {
+            "id": customer.form_of_ownership.id,
+            "name": customer.form_of_ownership.name,
+        },
+        "name": customer.name,
+        "address": customer.address,
+        "inn": customer.inn,
+        "notes": customer.notes,
+        "contacts": [
+            {
+                "id": contact.id,
+                "first_name": contact.first_name,
+                "last_name": contact.last_name,
+                "father_name": contact.father_name,
+                "phone": contact.phone,
+                "email": contact.email,
+                "position": contact.position,
+                "customer": contact.customer,
+            }
+            for contact in customer.contacts
+        ],
+    }
 
 
 @router.delete("/customers/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
