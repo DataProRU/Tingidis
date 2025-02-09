@@ -55,6 +55,7 @@ async def get_user_by_id(
 
 
 @router.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@log_action("Создание пользователя")
 async def create_user(
     user_data_create: UserCreate,
     db: AsyncSession = Depends(get_db),
@@ -89,6 +90,7 @@ async def create_user(
 
 
 @router.patch("/users/{user_id}", response_model=UserUpdate)
+@log_action("Обновление пользователя")
 async def update_user(
     user_id: int,
     web_user_data: UserUpdate,
@@ -134,6 +136,7 @@ async def update_user(
 
 
 @router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_action("Удаление пользователя")
 async def delete_user(
     user_id: int,
     db: AsyncSession = Depends(get_db),

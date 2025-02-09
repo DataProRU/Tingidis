@@ -46,6 +46,7 @@ async def read_root(request: Request):
 
 
 @router.post("/upload_image/")
+@log_action("Загрузка изображения")
 async def upload_image(file: UploadFile = File(...)):
     logger.info(f"Uploading image: {file.filename}")
     file_location = f"{UPLOAD_DIRECTORY}/{file.filename}"
@@ -56,6 +57,7 @@ async def upload_image(file: UploadFile = File(...)):
 
 
 @router.post("/upload-logo/")
+@log_action("Загрузка лого")
 async def upload_logo(file: UploadFile = File(...)):
     logger.info(f"Uploading logo: {file.filename}")
     file_location = f"{LOGO_DIRECTORY}/{file.filename}"

@@ -47,6 +47,7 @@ async def get_form_of_ownership_by_id(
     response_model=FormOfOwnershipResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@log_action("Создание формы собственности")
 async def create_form_of_ownership(
     form_of_ownership_data: FormOfOwnershipCreate,
     db: AsyncSession = Depends(get_db),
@@ -62,6 +63,7 @@ async def create_form_of_ownership(
 @router.patch(
     "/form-of-ownership/{form_of_ownership_id}", response_model=FormOfOwnershipResponse
 )
+@log_action("Обновление формы собственности")
 async def update_form_of_ownership(
     form_of_ownership_id: int,
     object_data: FormOfOwnershipCreate,
@@ -86,6 +88,7 @@ async def update_form_of_ownership(
 @router.delete(
     "/form-of-ownership/{form_of_ownership_id}", status_code=status.HTTP_204_NO_CONTENT
 )
+@log_action("Удаление формы собственности")
 async def delete_form_of_ownership(
     form_of_ownership_id: int,
     db: AsyncSession = Depends(get_db),
