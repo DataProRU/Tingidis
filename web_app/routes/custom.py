@@ -5,7 +5,8 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 import shutil
 import os
-from .utils import log_action
+
+from Tingidis.web_app.utils import log_action
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)

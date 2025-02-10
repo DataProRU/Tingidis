@@ -9,7 +9,7 @@ from web_app.schemas.agreements import (
     AgreementsCreate,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
-from .utils import log_action
+from Tingidis.web_app.utils import log_action
 
 router = APIRouter()
 

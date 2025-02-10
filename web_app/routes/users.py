@@ -11,7 +11,7 @@ from sqlalchemy.future import select
 from passlib.context import CryptContext
 from typing import List
 from web_app.middlewares.auth_middleware import token_verification_dependency
-from .utils import log_action
+from Tingidis.web_app.utils import log_action
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
