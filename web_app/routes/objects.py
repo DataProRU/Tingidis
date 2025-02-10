@@ -6,6 +6,7 @@ from sqlalchemy.future import select
 from web_app.models.objects import Objects
 from web_app.schemas.objects import ObjectCreate, ObjectResponse
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from .utils import log_action
 
 router = APIRouter()
 
