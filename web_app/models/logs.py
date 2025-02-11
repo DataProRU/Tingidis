@@ -1,8 +1,7 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
-from sqlalchemy.orm import declarative_base
 from datetime import datetime
+from web_app.database import Base
 
-Base = declarative_base()
 
 class LogEntry(Base):
     __tablename__ = 'logs'
