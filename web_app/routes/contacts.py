@@ -12,7 +12,8 @@ from web_app.schemas.contacts import (
     ContactGetResponse,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
-from Tingidis.web_app.utils import log_action
+
+from web_app.utils.utils import log_action
 
 router = APIRouter()
 

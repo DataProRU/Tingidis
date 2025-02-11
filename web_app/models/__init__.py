@@ -1,5 +1,6 @@
 from .users import Users
 from .token import Tokens
+from .logs import LogEntry
 
 from .contracts import Contracts
 from .agreements import Agreements

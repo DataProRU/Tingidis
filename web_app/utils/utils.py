@@ -1,6 +1,6 @@
 from functools import wraps
 from sqlalchemy.ext.asyncio import AsyncSession
-from .models import LogEntry
+from web_app.models.logs import LogEntry
 
 def log_action(action: str):
     def decorator(func):

@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 import shutil
 import os
 
-from Tingidis.web_app.utils import log_action
+from web_app.utils.utils import log_action
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -40,7 +40,6 @@ async def read_root(request: Request):
     else:
         logo_file = None
         bg_file = None
-
     return templates.TemplateResponse(
         "custom.html",  # template name
         {"request": request, "bg_filename": bg_file, "logo_file": logo_file},
