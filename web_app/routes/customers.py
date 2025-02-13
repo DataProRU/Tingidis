@@ -15,6 +15,7 @@ from web_app.schemas.customers import (
     CustomerCreateResponse,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from web_app.utils.utils import log_action
 
 router = APIRouter()
 
@@ -112,6 +113,7 @@ async def get_customer_by_id(
     response_model=CustomerCreateResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@log_action("Создание заказчика")
 async def create_customer(
     customer_data: CustomerCreateResponse,
     db: AsyncSession = Depends(get_db),
@@ -158,6 +160,7 @@ async def create_customer(
 
 
 @router.patch("/customers/{customer_id}", response_model=CustomerGetResponse)
+@log_action("Обновление заказчика")
 async def update_customer(
     customer_id: int,
     customer_data: CustomerUpdate,
@@ -206,14 +209,15 @@ async def update_customer(
     }
 
 
-@router.delete("/customers/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/customers/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_action("Удаление заказчика")
 async def delete_customer(
-    customer_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(select(Customers).filter(Customers.id == customer_id))
+    result = await db.execute(select(Customers).filter(Customers.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Клиент не найден")
@@ -221,4 +225,4 @@ async def delete_customer(
     # Удаление объекта
     await db.delete(obj)
     await db.commit()
-    return {"message": "Клиент успешно удален", "customer_id": customer_id}
+    return {"message": "Клиент успешно удален", "customer_id": object_id}

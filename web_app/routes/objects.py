@@ -6,6 +6,7 @@ from sqlalchemy.future import select
 from web_app.models.objects import Objects
 from web_app.schemas.objects import ObjectCreate, ObjectResponse
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from web_app.utils.utils import log_action
 
 router = APIRouter()
 
@@ -38,6 +39,7 @@ async def get_object_by_id(
 @router.post(
     "/objects", response_model=ObjectResponse, status_code=status.HTTP_201_CREATED
 )
+@log_action("Создание объекта")
 async def create_object(
     object_data: ObjectCreate,
     db: AsyncSession = Depends(get_db),
@@ -51,6 +53,7 @@ async def create_object(
 
 
 @router.patch("/objects/{object_id}", response_model=ObjectResponse)
+@log_action("Обновление объекта")
 async def update_object(
     object_id: int,
     object_data: ObjectCreate,
@@ -71,6 +74,7 @@ async def update_object(
 
 
 @router.delete("/objects/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_action("Удаление объекта")
 async def delete_object(
     object_id: int,
     db: AsyncSession = Depends(get_db),

@@ -11,6 +11,7 @@ from sqlalchemy.future import select
 from passlib.context import CryptContext
 from typing import List
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from web_app.utils.utils import log_action
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)
@@ -55,6 +56,7 @@ async def get_user_by_id(
 
 
 @router.post("/users", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@log_action("Создание пользователя")
 async def create_user(
     user_data_create: UserCreate,
     db: AsyncSession = Depends(get_db),
@@ -89,6 +91,7 @@ async def create_user(
 
 
 @router.patch("/users/{user_id}", response_model=UserUpdate)
+@log_action("Обновление пользователя")
 async def update_user(
     user_id: int,
     web_user_data: UserUpdate,
@@ -133,9 +136,10 @@ async def update_user(
     return user
 
 
-@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/users/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_action("Удаление пользователя")
 async def delete_user(
-    user_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
@@ -145,7 +149,7 @@ async def delete_user(
             detail="Отсутствует доступ к запросу",
         )
     # Проверка наличия объекта
-    result = await db.execute(select(Users).filter(Users.id == user_id))
+    result = await db.execute(select(Users).filter(Users.id == object_id))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
@@ -153,4 +157,4 @@ async def delete_user(
     # Удаление объекта
     await db.delete(user)
     await db.commit()
-    return {"message": "Пользователь успешно удален", "user_id": user_id}
+    return {"message": "Пользователь успешно удален", "user_id": object_id}

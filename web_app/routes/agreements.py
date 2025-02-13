@@ -9,6 +9,7 @@ from web_app.schemas.agreements import (
     AgreementsCreate,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from web_app.utils.utils import log_action
 
 router = APIRouter()
 
@@ -42,6 +43,7 @@ async def get_agreements_by_id(
     response_model=AgreementsResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@log_action("Создание соглашения")
 async def create_agreement(
     agreement_data: AgreementsCreate,
     db: AsyncSession = Depends(get_db),
@@ -55,6 +57,7 @@ async def create_agreement(
 
 
 @router.patch("/agreements/{agreement_id}", response_model=AgreementsResponse)
+@log_action("Обновление соглашения")
 async def update_agreement(
     agreement_id: int,
     agreement_data: AgreementsCreate,
@@ -74,14 +77,15 @@ async def update_agreement(
     return agreement
 
 
-@router.delete("/agreements/{agreement_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/agreements/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_action("Удаление соглашения")
 async def delete_agreement(
-    agreement_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(select(Agreements).filter(Agreements.id == agreement_id))
+    result = await db.execute(select(Agreements).filter(Agreements.id == object_id))
     agreement = result.scalar_one_or_none()
     if not agreement:
         raise HTTPException(status_code=404, detail="Соглашение не найдено")
@@ -89,4 +93,4 @@ async def delete_agreement(
     # Удаление объекта
     await db.delete(agreement)
     await db.commit()
-    return {"message": "Соглашение успешно удалено", "agreement_id": agreement_id}
+    return {"message": "Соглашение успешно удалено", "agreement_id": object_id}

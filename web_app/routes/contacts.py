@@ -13,6 +13,8 @@ from web_app.schemas.contacts import (
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
 
+from web_app.utils.utils import log_action
+
 router = APIRouter()
 
 
@@ -91,6 +93,7 @@ async def get_contact_by_id(
     response_model=ContactResponse,
     status_code=status.HTTP_201_CREATED,
 )
+@log_action("Создание контакта")
 async def create_contact(
     contact_data: ContactResponse,
     db: AsyncSession = Depends(get_db),
@@ -104,6 +107,7 @@ async def create_contact(
 
 
 @router.patch("/contacts/{contact_id}", response_model=ContactGetResponse)
+@log_action("Обновление контакта")
 async def update_contact(
     contact_id: int,
     object_data: ContactUpdate,
@@ -143,14 +147,15 @@ async def update_contact(
     }
 
 
-@router.delete("/contacts/{contact_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/contacts/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
+@log_action("Удаление контакта")
 async def delete_contact(
-    contact_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(select(Contacts).filter(Contacts.id == contact_id))
+    result = await db.execute(select(Contacts).filter(Contacts.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Контакт не найден")
@@ -160,5 +165,5 @@ async def delete_contact(
     await db.commit()
     return {
         "message": "Контакт успешно удален",
-        "contact_id": contact_id,
+        "contact_id": object_id,
     }
