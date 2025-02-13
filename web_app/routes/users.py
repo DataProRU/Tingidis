@@ -136,10 +136,10 @@ async def update_user(
     return user
 
 
-@router.delete("/users/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/users/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
 @log_action("Удаление пользователя")
 async def delete_user(
-    user_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
@@ -149,7 +149,7 @@ async def delete_user(
             detail="Отсутствует доступ к запросу",
         )
     # Проверка наличия объекта
-    result = await db.execute(select(Users).filter(Users.id == user_id))
+    result = await db.execute(select(Users).filter(Users.id == object_id))
     user = result.scalar_one_or_none()
     if not user:
         raise HTTPException(status_code=404, detail="Пользователь не найден")
@@ -157,4 +157,4 @@ async def delete_user(
     # Удаление объекта
     await db.delete(user)
     await db.commit()
-    return {"message": "Пользователь успешно удален", "user_id": user_id}
+    return {"message": "Пользователь успешно удален", "user_id": object_id}

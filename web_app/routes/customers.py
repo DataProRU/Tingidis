@@ -209,15 +209,15 @@ async def update_customer(
     }
 
 
-@router.delete("/customers/{customer_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/customers/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
 @log_action("Удаление заказчика")
 async def delete_customer(
-    customer_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
-    result = await db.execute(select(Customers).filter(Customers.id == customer_id))
+    result = await db.execute(select(Customers).filter(Customers.id == object_id))
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Клиент не найден")
@@ -225,4 +225,4 @@ async def delete_customer(
     # Удаление объекта
     await db.delete(obj)
     await db.commit()
-    return {"message": "Клиент успешно удален", "customer_id": customer_id}
+    return {"message": "Клиент успешно удален", "customer_id": object_id}

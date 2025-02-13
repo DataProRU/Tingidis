@@ -86,18 +86,16 @@ async def update_form_of_ownership(
     return form_of_ownership
 
 
-@router.delete(
-    "/form-of-ownership/{form_of_ownership_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/form-of-ownership/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
 @log_action("Удаление формы собственности")
 async def delete_form_of_ownership(
-    form_of_ownership_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
     result = await db.execute(
-        select(FormOfOwnerships).filter(FormOfOwnerships.id == form_of_ownership_id)
+        select(FormOfOwnerships).filter(FormOfOwnerships.id == object_id)
     )
     form_of_ownership = result.scalar_one_or_none()
     if not form_of_ownership:
@@ -108,5 +106,5 @@ async def delete_form_of_ownership(
     await db.commit()
     return {
         "message": "Форма собственности успешно удалена",
-        "form_of_ownership_id": form_of_ownership,
+        "form_of_ownership_id": object_id,
     }

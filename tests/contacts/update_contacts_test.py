@@ -18,12 +18,12 @@ def test_update_contacts(client, sample_contact, another_customer):
     assert result["email"] == "alex@mail.com"
     assert result["position"] == "engineer"
     assert result["customer"] == {
-        'id': another_customer.id,
-        'form': another_customer.form,
-        'name': another_customer.name,
-        'address': another_customer.address,
-        'inn': another_customer.inn,
-        'notes': another_customer.notes,
+        "id": another_customer.id,
+        "form": another_customer.form,
+        "name": another_customer.name,
+        "address": another_customer.address,
+        "inn": another_customer.inn,
+        "notes": another_customer.notes,
     }
 
 
