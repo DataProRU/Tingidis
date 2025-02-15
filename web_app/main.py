@@ -11,8 +11,9 @@ from web_app.routes import (
     customers,
     contacts,
     logs,
+    contracts,
 )
-from web_app.database import init_db
+from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
@@ -22,7 +23,9 @@ from pathlib import Path
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
-    await add_initial_forms_of_ownership()
+    async with async_session() as db:
+        await add_initial_forms_of_ownership(db)
+
     yield
 
 
@@ -42,6 +45,7 @@ app.include_router(agreements.router)
 app.include_router(form_of_ownerships.router)
 app.include_router(customers.router)
 app.include_router(contacts.router)
+app.include_router(contracts.router)
 app.include_router(logs.router)
 
 origins = [

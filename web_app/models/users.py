@@ -4,7 +4,7 @@ from sqlalchemy import Column, Integer, String, Date, Text
 from sqlalchemy.orm import relationship
 
 
-class Users(Base, TestBase):
+class Users(Base):
     __tablename__ = "web_user"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -20,12 +20,13 @@ class Users(Base, TestBase):
     birthday = Column(Date, nullable=True)
     category = Column(String, nullable=True)
     specialization = Column(String, nullable=True)
-    username = Column(
-        String,
-        unique=True,
-    )
-    password = Column(String)
+    username = Column(String, unique=True, nullable=False)
+    password = Column(String, nullable=False)
     notes = Column(Text, nullable=True)
     role = Column(String, server_default="user")
 
     tokens = relationship("Tokens", back_populates="user", cascade="all, delete-orphan")
+    contracts = relationship("Contracts", back_populates="executor_info")
+    project_executors = relationship("ProjectExecutors", back_populates="user", cascade="all, delete-orphan")
+    projects = relationship("Projects", back_populates="executor")
+

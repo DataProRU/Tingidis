@@ -16,3 +16,4 @@ class Customers(Base):
 
     form_of_ownership = relationship("FormOfOwnerships", back_populates="customers")
     contacts = relationship("Contacts", back_populates="customer_info")
+    contracts = relationship("Contracts", back_populates="customer_info")
