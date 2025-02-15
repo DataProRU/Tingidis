@@ -11,6 +11,7 @@ async def sample_agreement(async_session_test, another_contract):
         agreement = Agreements(
             name="test_agreement",
             number="1234567890",
+            price=1000,
             deadline=date(2024, 1, 1),
             notes=None,
             contract=another_contract.id,
@@ -27,6 +28,7 @@ async def another_agreement(async_session_test, sample_contract):
         agreement = Agreements(
             name="new_test_agreement",
             number="987654321",
+            price=1000,
             deadline=date(2024, 2, 2),
             notes="new_test notes",
             contract=sample_contract.id,

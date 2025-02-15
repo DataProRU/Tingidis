@@ -1,3 +1,5 @@
+from sqlalchemy.orm import relationship
+
 from web_app.database import Base
 from sqlalchemy import (
     Column,
@@ -20,3 +22,5 @@ class Agreements(Base):
     deadline = Column(Date)
     notes = Column(Text, nullable=True)
     contract = Column(Integer, ForeignKey("contracts.id"))
+
+    contract_info = relationship("Contracts", back_populates="agreements")

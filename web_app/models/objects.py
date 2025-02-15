@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, String, Text
 from web_app.database import Base
+from sqlalchemy.orm import relationship
 
 
 class Objects(Base):
@@ -9,3 +10,5 @@ class Objects(Base):
     code = Column(String(6), nullable=False)
     name = Column(String(30), nullable=False)
     comment = Column(Text, nullable=True)
+
+    contracts = relationship("Contracts", back_populates="code_info")
