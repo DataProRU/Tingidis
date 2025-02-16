@@ -20,6 +20,7 @@ class UserResponse(BaseModel):
     password: Optional[str] = None
     notes: Optional[str] = None
     role: str
+    notification: Optional[bool] = None
 
 
 class UserUpdate(BaseModel):
@@ -39,6 +40,7 @@ class UserUpdate(BaseModel):
     password: Optional[str] = None
     notes: Optional[str] = None
     role: str
+    notification: Optional[bool] = None
 
 
 class UserCreate(BaseModel):
@@ -58,6 +60,7 @@ class UserCreate(BaseModel):
     password: Optional[str] = None
     notes: Optional[str] = None
     role: str
+    notification: Optional[bool] = None
 
 
 # Модель запроса для регистрации

@@ -15,6 +15,7 @@ def test_update_user(client, sample_user):
         "username": "user_alex_new",
         "notes": "another test user_new",
         "role": "admin",
+        "notification": "True",
     }
     response = client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 403
@@ -38,6 +39,7 @@ def test_update_user_by_admin(admin_client, sample_user):
         "username": "user_alex_new",
         "notes": "another test user_new",
         "role": "admin",
+        "notification": "True",
     }
     response = admin_client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 200
@@ -56,6 +58,7 @@ def test_update_user_by_admin(admin_client, sample_user):
     assert result["password"] == sample_user.password
     assert result["notes"] == "another test user_new"
     assert result["role"] == "admin"
+    assert result["notification"] == True
 
 
 def test_update_password_by_admin(admin_client, sample_user):
@@ -102,6 +105,7 @@ def test_unauthenticated_user_cannot_update_user(client, sample_user):
         "username": "user_alex_new",
         "notes": "another test user_new",
         "role": "admin",
+        "notification": "True",
     }
     response = client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 401
