@@ -19,9 +19,7 @@ from web_app.routes import (
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 from contextlib import asynccontextmanager
-from pathlib import Path
 
 
 @asynccontextmanager
@@ -34,12 +32,6 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
-
-app.mount(
-    "/static",
-    StaticFiles(directory=Path(__file__).parent / "static"),
-    name="static",
-)
 
 app.include_router(auth.router)
 app.include_router(users.router)
