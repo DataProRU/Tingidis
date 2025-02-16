@@ -29,6 +29,7 @@ def test_get_user(client, another_user):
         "password": None,  # Use the actual password field
         "notes": user.notes,
         "role": user.role,
+        "notification": user.notification,
     }
 
     assert response.json() == expected_response
@@ -57,6 +58,7 @@ def test_get_user_by_admin(admin_client, sample_user):
         "password": user.password,  # Use the actual password field
         "notes": user.notes,
         "role": user.role,
+        "notification": user.notification,
     }
 
 
@@ -83,6 +85,7 @@ def test_get_all_users_by_admin(admin_client, admin_user, sample_user, another_u
             "password": admin_user.password,  # Use the actual password field
             "notes": admin_user.notes,
             "role": admin_user.role,
+            "notification": admin_user.notification,
         },
         {
             "id": sample_user.id,
@@ -103,6 +106,7 @@ def test_get_all_users_by_admin(admin_client, admin_user, sample_user, another_u
             "password": sample_user.password,  # Use the actual password field
             "notes": sample_user.notes,
             "role": sample_user.role,
+            "notification": sample_user.notification,
         },
         {
             "id": another_user.id,
@@ -123,6 +127,7 @@ def test_get_all_users_by_admin(admin_client, admin_user, sample_user, another_u
             "password": another_user.password,  # Use the actual password field
             "notes": another_user.notes,
             "role": another_user.role,
+            "notification": another_user.notification,
         },
     ]
 
@@ -150,6 +155,7 @@ def test_get_all_users_by_user_role(client, admin_user, sample_user, another_use
             "password": None,  # Use the actual password field
             "notes": sample_user.notes,
             "role": sample_user.role,
+            "notification": sample_user.notification,
         },
         {
             "id": admin_user.id,
@@ -170,6 +176,7 @@ def test_get_all_users_by_user_role(client, admin_user, sample_user, another_use
             "password": None,  # Use the actual password field
             "notes": admin_user.notes,
             "role": admin_user.role,
+            "notification": another_user.notification,
         },
         {
             "id": another_user.id,
@@ -190,6 +197,7 @@ def test_get_all_users_by_user_role(client, admin_user, sample_user, another_use
             "password": None,  # Use the actual password field
             "notes": another_user.notes,
             "role": another_user.role,
+            "notification": another_user.notification,
         },
     ]
 
