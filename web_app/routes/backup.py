@@ -7,7 +7,6 @@ from email import encoders
 import smtplib
 import schedule
 import time
-import json
 from sqlalchemy.orm import class_mapper
 
 import pandas as pd
