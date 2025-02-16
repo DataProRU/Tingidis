@@ -2,7 +2,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-from web_app.schemas.projects import ProjectResponse
 from web_app.schemas.users import UserResponse
 
 
@@ -10,7 +9,7 @@ from web_app.schemas.users import UserResponse
 class ProjectExecutorsGetResponse(BaseModel):
     id: Optional[int] = None
     user: UserResponse
-    project: ProjectResponse
+    project: "ProjectResponse"
 
     class Config:
         orm_mode = True
@@ -33,3 +32,8 @@ class ProjectExecutorsResponse(BaseModel):
 class ProjectExecutorsUpdate(BaseModel):
     user: Optional[int] = None
     project: Optional[int] = None
+
+
+from web_app.schemas.projects import ProjectResponse
+
+ProjectResponse.update_forward_refs()

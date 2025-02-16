@@ -13,6 +13,7 @@ from web_app.routes import (
     contacts,
     logs,
     contracts,
+    backup,
     project_statuses,
     projects,
     project_executors,
@@ -46,6 +47,7 @@ app.include_router(logs.router)
 app.include_router(project_statuses.router)
 app.include_router(projects.router)
 app.include_router(project_executors.router)
+app.include_router(backup.router)
 
 origins = [
     "http://localhost:3000",  # React production server

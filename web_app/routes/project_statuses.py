@@ -6,7 +6,7 @@ from sqlalchemy.future import select
 from web_app.models.project_statuses import ProjectStatuses
 from web_app.schemas.project_statuses import ProjectStatusCreate, ProjectStatusResponse
 from web_app.middlewares.auth_middleware import token_verification_dependency
-from web_app.utils.utils import log_action
+from web_app.utils.logs import log_action
 
 router = APIRouter()
 
