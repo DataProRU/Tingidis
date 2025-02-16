@@ -8,6 +8,7 @@ import smtplib
 import schedule
 import time
 import json
+from sqlalchemy.orm import class_mapper
 
 import pandas as pd
 from io import BytesIO
@@ -27,6 +28,13 @@ from web_app.routes.objects import get_objects
 router = APIRouter()
 
 
+def model_to_dict(model):
+    return {
+        column.name: getattr(model, column.name)
+        for column in class_mapper(model.__class__).mapped_table.c
+    }
+
+
 async def generate_excel_report(db: AsyncSession):
     # Получаем данные из базы данных
     contracts_data = await get_contracts(db)
@@ -36,32 +44,33 @@ async def generate_excel_report(db: AsyncSession):
     contacts_data = await get_contacts(db)
     form_of_ownerships_data = await get_form_of_ownerships(db)
     logs_data = await get_logs(db)
-    # users_data = await get_users(db, user_data)
+
+    # Преобразуем только объекты SQLAlchemy в словари
+    objects_dict = [model_to_dict(obj) for obj in objects_data]
+    form_of_ownerships_dict = [model_to_dict(obj) for obj in form_of_ownerships_data]
 
     # Преобразуем данные в DataFrame
     contracts_df = pd.DataFrame(contracts_data)
     customers_df = pd.DataFrame(customers_data)
-    objects_df = pd.DataFrame(objects_data)
+    objects_df = pd.DataFrame(objects_dict)
     agreements_df = pd.DataFrame(agreements_data)
     contacts_df = pd.DataFrame(contacts_data)
-    form_of_ownerships_data_df = pd.DataFrame(form_of_ownerships_data)
+    form_of_ownerships_df = pd.DataFrame(form_of_ownerships_dict)
     logs_df = pd.DataFrame(logs_data)
-    # users_df = pd.DataFrame(users_data)
 
     # Создаем Excel-файл в памяти
     output = BytesIO()
     with pd.ExcelWriter(output, engine="openpyxl") as writer:
-        # Добавляем каждый DataFrame на свой лист
         contracts_df.to_excel(writer, sheet_name="Contracts", index=False)
         customers_df.to_excel(writer, sheet_name="Customers", index=False)
         objects_df.to_excel(writer, sheet_name="Objects", index=False)
         agreements_df.to_excel(writer, sheet_name="Agreements", index=False)
         contacts_df.to_excel(writer, sheet_name="Contacts", index=False)
-        form_of_ownerships_data_df.to_excel(
+        form_of_ownerships_df.to_excel(
             writer, sheet_name="Form_of_ownerships", index=False
         )
         logs_df.to_excel(writer, sheet_name="Logs", index=False)
-        # users_df.to_excel(writer, sheet_name='Logs', index=False)
+
     # Возвращаем содержимое файла
     output.seek(0)
     return output
@@ -104,9 +113,9 @@ def background_task(email: EmailStr, period: str, db: AsyncSession):
     elif period == "week":
         schedule.every().week.do(job)
     elif period == "month":
-        schedule.every(30).days.do(job)  # Приблизительно раз в месяц
+        schedule.every(30).days.do(job)
     elif period == "year":
-        schedule.every(365).days.do(job)  # Раз в год
+        schedule.every(365).days.do(job)
 
     while True:
         schedule.run_pending()
@@ -116,7 +125,7 @@ def background_task(email: EmailStr, period: str, db: AsyncSession):
 @router.get("/export", response_class=Response)
 async def export_to_excel(
     db: AsyncSession = Depends(get_db),
-    # user_data: dict = Depends(token_verification_dependency),
+    user_data: dict = Depends(token_verification_dependency),
 ):
     # Генерируем Excel-файл
     excel_file = await generate_excel_report(db)
@@ -136,6 +145,7 @@ async def schedule_report(
     period: str,
     db: AsyncSession = Depends(get_db),
     background_tasks: BackgroundTasks = BackgroundTasks(),
+    user_data: dict = Depends(token_verification_dependency),
 ):
     allowed_periods = ["day", "week", "month", "year"]
     if period not in allowed_periods:
