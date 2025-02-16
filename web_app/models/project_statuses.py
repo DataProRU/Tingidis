@@ -9,5 +9,4 @@ class ProjectStatuses(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(30))
 
-    executors = relationship("ProjectExecutors", back_populates="project_status")
     projects = relationship("Projects", back_populates="project_status")

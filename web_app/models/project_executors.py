@@ -9,13 +9,8 @@ class ProjectExecutors(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("web_user.id"), nullable=False)
-    status_id = Column(Integer, ForeignKey("project_statuses.id"), nullable=False)
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
 
     user = relationship("Users", back_populates="project_executors")
     project = relationship("Projects", back_populates="project_executors")
     project_status = relationship("ProjectStatuses", back_populates="executors")
-
-
-
-

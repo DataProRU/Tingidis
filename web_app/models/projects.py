@@ -19,8 +19,8 @@ class Projects(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True)
-    objects = Column(Integer, ForeignKey("objects.id"), nullable=False)
-    contracts = Column(Integer, ForeignKey("contracts.id"), nullable=False)
+    object = Column(Integer, ForeignKey("objects.id"), nullable=False)
+    contract = Column(Integer, ForeignKey("contracts.id"), nullable=False)
     name = Column(String, nullable=False)
     number = Column(String, unique=True, index=True)
     main_executor = Column(Integer, ForeignKey("web_user.id"), nullable=False)
@@ -28,12 +28,13 @@ class Projects(Base):
     status = Column(Integer, ForeignKey("project_statuses.id"), nullable=False)
     notes = Column(Text)
 
-    object = relationship("Objects", back_populates="projects", foreign_keys=[objects])
     contract = relationship("Contracts", back_populates="projects")
-    executor = relationship("Users", back_populates="projects", foreign_keys=[main_executor])
+    executor = relationship(
+        "Users", back_populates="projects", foreign_keys=[main_executor]
+    )
+
     project_status = relationship("ProjectStatuses", back_populates="projects")
     project_executors = relationship("ProjectExecutors", back_populates="project")
-
 
 
 @event.listens_for(Projects, "before_insert")
