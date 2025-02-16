@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-# Настройка статических файлов и шаблонов
+"""''# Настройка статических файлов и шаблонов
 router.mount("/static", StaticFiles(directory="web_app/static"), name="static")
 templates = Jinja2Templates(directory="web_app/templates")
 
@@ -63,3 +63,4 @@ async def upload_logo(file: UploadFile = File(...)):
         shutil.copyfileobj(file.file, buffer)
     logger.info(f"Logo uploaded successfully: {file.filename}")
     return RedirectResponse(url="/customaze", status_code=status.HTTP_303_SEE_OTHER)
+""" ""
