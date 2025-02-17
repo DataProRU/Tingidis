@@ -30,4 +30,4 @@ class Users(Base):
     project_executors = relationship(
         "ProjectExecutors", back_populates="user", cascade="all, delete-orphan"
     )
-    projects = relationship("Projects", back_populates="executor")
+    projects = relationship("Projects", back_populates="executor_info")

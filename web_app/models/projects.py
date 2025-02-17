@@ -28,13 +28,13 @@ class Projects(Base):
     status = Column(Integer, ForeignKey("project_statuses.id"), nullable=False)
     notes = Column(Text)
 
-    contract = relationship("Contracts", back_populates="projects")
-    executor = relationship(
+    object_info = relationship("Objects", back_populates="projects")
+    contract_info = relationship("Contracts", back_populates="projects")
+    executor_info = relationship(
         "Users", back_populates="projects", foreign_keys=[main_executor]
     )
 
-    project_status = relationship("ProjectStatuses", back_populates="projects")
-    project_executors = relationship("ProjectExecutors", back_populates="project")
+    project_info = relationship("ProjectStatuses", back_populates="projects")
 
 
 @event.listens_for(Projects, "before_insert")
