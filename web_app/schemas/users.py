@@ -60,7 +60,7 @@ class UserCreate(BaseModel):
     password: Optional[str] = None
     notes: Optional[str] = None
     role: str
-    notification: Optional[bool] = None
+    notification: Optional[bool] = False
 
 
 # Модель запроса для регистрации

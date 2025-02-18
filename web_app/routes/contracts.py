@@ -73,6 +73,7 @@ async def get_contracts(
                     "username": contract.executor_info.username,
                     "notes": contract.executor_info.notes,
                     "role": contract.executor_info.role,
+                    "notification": contract.executor_info.notification,
                 },
                 "agreements": [
                     {
