@@ -15,7 +15,7 @@ def test_update_user(client, sample_user):
         "username": "user_alex_new",
         "notes": "another test user_new",
         "role": "admin",
-        "notification": "True",
+        "notification": True,
     }
     response = client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 403
@@ -39,7 +39,7 @@ def test_update_user_by_admin(admin_client, sample_user):
         "username": "user_alex_new",
         "notes": "another test user_new",
         "role": "admin",
-        "notification": "True",
+        "notification": True,
     }
     response = admin_client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 200
@@ -105,7 +105,7 @@ def test_unauthenticated_user_cannot_update_user(client, sample_user):
         "username": "user_alex_new",
         "notes": "another test user_new",
         "role": "admin",
-        "notification": "True",
+        "notification": True,
     }
     response = client.patch(f"/users/{user.id}", json=payload)
     assert response.status_code == 401
