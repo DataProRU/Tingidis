@@ -35,6 +35,7 @@ class Projects(Base):
     )
 
     project_info = relationship("ProjectStatuses", back_populates="projects")
+    project_executors = relationship("ProjectExecutors", back_populates="project_info")
 
 
 @event.listens_for(Projects, "before_insert")

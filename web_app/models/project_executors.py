@@ -12,4 +12,4 @@ class ProjectExecutors(Base):
     project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
 
     user = relationship("Users", back_populates="project_executors")
-    # project = relationship("Projects", back_populates="project_info")
+    project_info = relationship("Projects", back_populates="project_executors")

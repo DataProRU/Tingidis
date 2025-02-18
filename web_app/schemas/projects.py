@@ -10,8 +10,8 @@ from web_app.schemas.project_statuses import ProjectStatusResponse
 
 class ProjectGetResponse(BaseModel):
     id: Optional[int] = None
-    objects: ObjectResponse
-    contracts: ContactResponse
+    object: ObjectResponse
+    contract: ContactResponse
     name: str
     number: str
     main_executor: UserResponse
@@ -24,8 +24,8 @@ class ProjectGetResponse(BaseModel):
 
 
 class ProjectCreateResponse(BaseModel):
-    objects: ObjectResponse
-    contracts: ContactResponse
+    object: ObjectResponse
+    contract: ContactResponse
     name: str
     number: str
     main_executor: UserResponse
@@ -39,8 +39,8 @@ class ProjectCreateResponse(BaseModel):
 
 class ProjectResponse(BaseModel):
     id: Optional[int] = None
-    objects: ObjectResponse
-    contracts: ContactResponse
+    object: ObjectResponse
+    contract: ContactResponse
     name: str
     number: str
     main_executor: UserResponse
