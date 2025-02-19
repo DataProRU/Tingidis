@@ -1,5 +1,5 @@
 from pydantic import BaseModel, constr
-from typing import Optional
+from typing import Optional, List
 from datetime import date
 
 from web_app.schemas.objects import ObjectResponse
@@ -14,7 +14,7 @@ class ProjectGetResponse(BaseModel):
     contract: ContactResponse
     name: str
     number: str
-    main_executor: UserResponse
+    project_executors: List[UserResponse]
     deadline: date
     status: ProjectStatusResponse
     notes: str

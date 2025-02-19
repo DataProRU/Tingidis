@@ -30,9 +30,7 @@ class Projects(Base):
 
     object_info = relationship("Objects", back_populates="projects")
     contract_info = relationship("Contracts", back_populates="projects")
-    executor_info = relationship(
-        "Users", back_populates="projects", foreign_keys=[main_executor]
-    )
+    executor_info = relationship("Users", back_populates="projects")
 
     project_info = relationship("ProjectStatuses", back_populates="projects")
     project_executors = relationship("ProjectExecutors", back_populates="project_info")

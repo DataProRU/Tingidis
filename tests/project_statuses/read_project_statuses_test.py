@@ -26,7 +26,7 @@ def test_get_project_statuses(client, sample_project_status, another_project_sta
     ]
 
 
-def test_get_form(client, sample_project_status):
+def test_get_project_status(client, sample_project_status):
     response = client.get(f"/project-statuses/{sample_project_status.id}")
     assert response.status_code == 200
     assert response.json() == {

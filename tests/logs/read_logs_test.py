@@ -36,14 +36,14 @@ def test_read_logs(
     response = client.get("/logs")
     assert response.status_code == 200
     result = response.json()
-    assert "Создание формы собственности" in result[0]["action"]
-    assert result[0]["datetime"] is not None
-    assert result[0]["user"] == sample_user.username
+    assert "Создание формы собственности" in result[2]["action"]
+    assert result[2]["datetime"] is not None
+    assert result[2]["user"] == sample_user.username
 
     assert result[1]["action"] == f"Обновление заказчика (ID: {sample_customer.id})"
     assert result[1]["datetime"] is not None
     assert result[1]["user"] == sample_user.username
 
-    assert result[2]["action"] == f"Удаление соглашения (ID: {sample_agreement.id})"
-    assert result[2]["datetime"] is not None
-    assert result[2]["user"] == sample_user.username
+    assert result[0]["action"] == f"Удаление соглашения (ID: {sample_agreement.id})"
+    assert result[0]["datetime"] is not None
+    assert result[0]["user"] == sample_user.username

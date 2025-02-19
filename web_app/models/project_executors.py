@@ -8,8 +8,8 @@ class ProjectExecutors(Base):
     __tablename__ = "project_executors"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("web_user.id"), nullable=False)
-    project_id = Column(Integer, ForeignKey("projects.id"), nullable=False)
+    user = Column(Integer, ForeignKey("web_user.id"), nullable=False)
+    project = Column(Integer, ForeignKey("projects.id"), nullable=False)
 
-    user = relationship("Users", back_populates="project_executors")
+    user_info = relationship("Users", back_populates="project_executors")
     project_info = relationship("Projects", back_populates="project_executors")

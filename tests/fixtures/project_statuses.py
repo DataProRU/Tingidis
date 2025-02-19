@@ -6,18 +6,18 @@ from web_app.models.project_statuses import ProjectStatuses
 @pytest.fixture
 async def sample_project_status(async_session_test):
     async with async_session_test() as db:
-        form = ProjectStatuses(name="test project name")
-        db.add(form)
+        project_status = ProjectStatuses(name="test project name")
+        db.add(project_status)
         await db.commit()
-        await db.refresh(form)
-        return form
+        await db.refresh(project_status)
+        return project_status
 
 
 @pytest.fixture
 async def another_project_status(async_session_test):
     async with async_session_test() as db:
-        form = ProjectStatuses(name="test project name")
-        db.add(form)
+        project_status = ProjectStatuses(name="test project name")
+        db.add(project_status)
         await db.commit()
-        await db.refresh(form)
-        return form
+        await db.refresh(project_status)
+        return project_status
