@@ -61,6 +61,7 @@ def test_get_contracts(
                 "password": None,
                 "notes": sample_user.notes,
                 "role": sample_user.role,
+                "notification": sample_user.notification,
             },
             "code": {
                 "id": sample_object.id,
@@ -119,6 +120,7 @@ def test_get_contracts(
                 "notes": another_user.notes,
                 "password": None,
                 "role": another_user.role,
+                "notification": another_user.notification,
             },
             "code": {
                 "id": another_object.id,
@@ -192,6 +194,7 @@ def test_get_contract(
             "password": None,
             "notes": sample_user.notes,
             "role": sample_user.role,
+            "notification": None,
         },
         "code": {
             "id": sample_object.id,

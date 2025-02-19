@@ -1,6 +1,5 @@
-from sqlalchemy.testing.fixtures import TestBase
 from web_app.database import Base
-from sqlalchemy import Column, Integer, String, Date, Text
+from sqlalchemy import Column, Integer, String, Date, Text, Boolean
 from sqlalchemy.orm import relationship
 
 
@@ -24,6 +23,7 @@ class Users(Base):
     password = Column(String, nullable=False)
     notes = Column(Text, nullable=True)
     role = Column(String, server_default="user")
+    notification = Column(Boolean, default=False)
 
     tokens = relationship("Tokens", back_populates="user", cascade="all, delete-orphan")
     contracts = relationship("Contracts", back_populates="executor_info")
