@@ -42,5 +42,3 @@ python-dotenv
 pydantic[email]
 pandas
 openpyxl
-schedule
-
