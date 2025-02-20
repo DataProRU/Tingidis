@@ -17,6 +17,7 @@ from web_app.routes import (
     project_statuses,
     projects,
     project_executors,
+    backups,
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
