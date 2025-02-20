@@ -1,13 +1,21 @@
-from fastapi import FastAPI, HTTPException
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from fastapi import HTTPException, APIRouter, Depends, status
+from typing import List
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
-DATABASE_URL = "sqlite:///./test.db"
+from web_app.database import get_db
+from sqlalchemy.future import select
+from web_app.models.contacts import Contacts
+from web_app.schemas.contacts import (
+    ContactResponse,
+    ContactUpdate,
+    ContactGetResponse,
+)
+from web_app.middlewares.auth_middleware import token_verification_dependency
 
-engine = create_engine(DATABASE_URL)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+from web_app.utils.utils import log_action
 
-app = FastAPI()
+router = APIRouter()
 
 @app.post("/reserve-copy/")
 def create_reserve_copy(reserve_copy: ReserveCopyCreate):
