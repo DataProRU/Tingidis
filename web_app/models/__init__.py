@@ -12,3 +12,5 @@ from .customers import Customers
 from .project_statuses import ProjectStatuses
 from .project_executors import ProjectExecutors
 from .projects import Projects
+
+from .backups import Backups

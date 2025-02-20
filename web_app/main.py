@@ -47,6 +47,7 @@ app.include_router(logs.router)
 app.include_router(project_statuses.router)
 app.include_router(projects.router)
 app.include_router(project_executors.router)
+app.include_router(backups.router)
 app.include_router(backup.router)
 
 origins = [
