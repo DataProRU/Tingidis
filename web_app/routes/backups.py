@@ -17,7 +17,7 @@ from web_app.utils.utils import log_action
 
 router = APIRouter()
 
-@app.post("/reserve-copy/")
+@router.post("/reserve-copy/")
 def create_reserve_copy(reserve_copy: ReserveCopyCreate):
     db = SessionLocal()
 
