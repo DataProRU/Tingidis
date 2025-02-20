@@ -5,11 +5,9 @@ from sqlalchemy.orm import selectinload
 
 from web_app.database import get_db
 from sqlalchemy.future import select
-from web_app.models.contacts import Contacts
-from web_app.schemas.contacts import (
-    ContactResponse,
-    ContactUpdate,
-    ContactGetResponse,
+from web_app.models.backups import Backups
+from web_app.schemas.backups import (
+    ReserveCopyCreate
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
 
