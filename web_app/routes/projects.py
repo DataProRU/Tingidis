@@ -10,6 +10,7 @@ from web_app.schemas.projects import (
     ProjectResponse,
     ProjectUpdate,
     ProjectGetResponse,
+    ProjectCreateResponse,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
 
@@ -20,60 +21,62 @@ router = APIRouter()
 
 # Endpoints
 @router.get("/projects", response_model=List[ProjectGetResponse])
-async def get_contacts(
+async def get_projects(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     stmt = select(Projects).options(
         selectinload(Projects.object_info),
-        selectinload(Projects.cotract_info),
+        selectinload(Projects.contract_info),
         selectinload(Projects.executor_info),
-        selectinload(Projects.status_info),
+        selectinload(Projects.project_info),
     )
     result = await db.execute(stmt)
-    projects = result.scalar_one_or_none()
+    projects = result.scalars().all()
 
     response = []
     for project in projects:
         response.append(
             {
                 "id": project.id,
-                "objects": {
-                    "id": project.objects.id,
-                    "code": project.objects.code,
-                    "name": project.objects.name,
-                    "comment": project.objects.comment,
+                "object": {
+                    "id": project.object.id,
+                    "code": project.object.code,
+                    "name": project.object.name,
+                    "comment": project.object.comment,
                 },
-                "contracts": {
-                    "id": project.contracts.id,
-                    "first_name": project.contracts.first_name,
-                    "last_name": project.contracts.last_name,
-                    "father_name": project.contracts.father_name,
-                    "phone": project.contracts.phone,
-                    "email": project.contracts.email,
-                    "position": project.contracts.position,
-                    "customer": project.contracts.customer,
+                "contract": {
+                    "id": project.contract.id,
+                    "first_name": project.contract.first_name,
+                    "last_name": project.contract.last_name,
+                    "father_name": project.contract.father_name,
+                    "phone": project.contract.phone,
+                    "email": project.contract.email,
+                    "position": project.contract.position,
+                    "customer": project.contract.customer.id,
                 },
                 "name": project.name,
                 "number": project.number,
-                "main_executor": {
-                    "id": project.main_executor.id,
-                    "first_name": project.main_executor.first_name,
-                    "last_name": project.main_executor.last_name,
-                    "father_name": project.main_executor.father_name,
-                    "full_name": project.main_executor.full_name,
-                    "position": project.main_executor.position,
-                    "phone": project.main_executor.phone,
-                    "email": project.main_executor.email,
-                    "telegram": project.main_executor.telegram,
-                    "birthday": project.main_executor.birthday,
-                    "category": project.main_executor.category,
-                    "specialization": project.main_executor.specialization,
-                    "username": project.main_executor.username,
-                    "password": None,
-                    "notes": project.main_executor.notes,
-                    "role": project.main_executor.role,
-                },
+                "project_executors": [
+                    {
+                        "id": project.project_executors.id,
+                        "first_name": project.project_executor.first_name,
+                        "last_name": project.project_executor.last_name,
+                        "father_name": project.project_executor.father_name,
+                        "full_name": project.project_executor.full_name,
+                        "position": project.project_executor.position,
+                        "phone": project.project_executor.phone,
+                        "email": project.project_executor.email,
+                        "telegram": project.project_executor.telegram,
+                        "birthday": project.project_executor.birthday,
+                        "category": project.project_executor.category,
+                        "specialization": project.project_executor.specialization,
+                        "username": project.project_executor.username,
+                        "password": None,
+                        "notes": project.project_executor.notes,
+                        "role": project.project_executor.role,
+                    }
+                ],
                 "deadline": project.deadline,
                 "status": {"id": project.status.id, "name": project.status.name},
                 "notes": project.notes,
@@ -83,21 +86,21 @@ async def get_contacts(
     return response
 
 
-@router.get("/projects/{contact_id}", response_model=ProjectGetResponse)
-async def get_contact_by_id(
-    contact_id: int,
+@router.get("/projects/{project_id}", response_model=ProjectGetResponse)
+async def get_project_by_id(
+    project_id: int,
     db: AsyncSession = Depends(get_db),
-    user_data: dict = Depends(token_verification_dependency),
+    # user_data: dict = Depends(token_verification_dependency),
 ):
     result = await db.execute(
         select(Projects)
         .options(
             selectinload(Projects.object_info),
-            selectinload(Projects.cotract_info),
+            selectinload(Projects.contract_info),
             selectinload(Projects.executor_info),
-            selectinload(Projects.status_info),
+            selectinload(Projects.project_info),
         )
-        .filter(Projects.id == contact_id)
+        .filter(Projects.id == project_id)
     )
     project = result.scalar_one_or_none()
 
@@ -106,42 +109,39 @@ async def get_contact_by_id(
 
     return {
         "id": project.id,
-        "objects": {
-            "id": project.objects.id,
-            "code": project.objects.code,
-            "name": project.objects.name,
-            "comment": project.objects.comment,
-        },
-        "contracts": {
-            "id": project.contracts.id,
-            "first_name": project.contracts.first_name,
-            "last_name": project.contracts.last_name,
-            "father_name": project.contracts.father_name,
-            "phone": project.contracts.phone,
-            "email": project.contracts.email,
-            "position": project.contracts.position,
-            "customer": project.contracts.customer,
+        "object": {"id": 0, "code": "string", "name": "string", "comment": "string"},
+        "contract": {
+            "id": 0,
+            "first_name": "string",
+            "last_name": "string",
+            "father_name": "string",
+            "phone": "string",
+            "email": "string",
+            "position": "string",
+            "customer": 0,
         },
         "name": project.name,
         "number": project.number,
-        "main_executor": {
-            "id": project.main_executor.id,
-            "first_name": project.main_executor.first_name,
-            "last_name": project.main_executor.last_name,
-            "father_name": project.main_executor.father_name,
-            "full_name": project.main_executor.full_name,
-            "position": project.main_executor.position,
-            "phone": project.main_executor.phone,
-            "email": project.main_executor.email,
-            "telegram": project.main_executor.telegram,
-            "birthday": project.main_executor.birthday,
-            "category": project.main_executor.category,
-            "specialization": project.main_executor.specialization,
-            "username": project.main_executor.username,
-            "password": None,
-            "notes": project.main_executor.notes,
-            "role": project.main_executor.role,
-        },
+        "project_executors": [
+            {
+                "id": project.project_executors.id,
+                "first_name": project.project_executor.first_name,
+                "last_name": project.project_executor.last_name,
+                "father_name": project.project_executor.father_name,
+                "full_name": project.project_executor.full_name,
+                "position": project.project_executor.position,
+                "phone": project.project_executor.phone,
+                "email": project.project_executor.email,
+                "telegram": project.project_executor.telegram,
+                "birthday": project.project_executor.birthday,
+                "category": project.project_executor.category,
+                "specialization": project.project_executor.specialization,
+                "username": project.project_executor.username,
+                "password": None,
+                "notes": project.project_executor.notes,
+                "role": project.project_executor.role,
+            }
+        ],
         "deadline": project.deadline,
         "status": {"id": project.status.id, "name": project.status.name},
         "notes": project.notes,
@@ -150,20 +150,20 @@ async def get_contact_by_id(
 
 @router.post(
     "/projects",
-    response_model=ProjectResponse,
+    response_model=ProjectCreateResponse,
     status_code=status.HTTP_201_CREATED,
 )
-@log_action("Создание контакта")
-async def create_contact(
-    contact_data: ProjectResponse,
+@log_action("Создание проекта")
+async def create_project(
+    project_data: ProjectCreateResponse,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    obj = Contacts(**contact_data.dict())
-    db.add(obj)
+    project = Projects(**project_data.dict())
+    db.add(project)
     await db.commit()
-    await db.refresh(obj)
-    return obj
+    await db.refresh(project)
+    return project
 
 
 @router.patch("/projects/{project_id}", response_model=ProjectGetResponse)
@@ -178,9 +178,9 @@ async def update_project(
         select(Projects)
         .options(
             selectinload(Projects.object_info),
-            selectinload(Projects.cotract_info),
+            selectinload(Projects.contract_info),
             selectinload(Projects.executor_info),
-            selectinload(Projects.status_info),
+            selectinload(Projects.project_info),
         )
         .filter(Projects.id == project_id)
     )
@@ -238,7 +238,6 @@ async def update_project(
 
 
 @router.delete("/projects/{project_id}", status_code=status.HTTP_204_NO_CONTENT)
-@log_action("Удаление проекта")
 async def delete_project(
     project_id: int,
     db: AsyncSession = Depends(get_db),

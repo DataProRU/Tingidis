@@ -19,13 +19,13 @@ class Projects(Base):
     __tablename__ = "projects"
 
     id = Column(Integer, primary_key=True, index=True)
-    object = Column(Integer, ForeignKey("objects.id"), nullable=False)
-    contract = Column(Integer, ForeignKey("contracts.id"), nullable=False)
-    name = Column(String, nullable=False)
+    object = Column(Integer, ForeignKey("objects.id"))
+    contract = Column(Integer, ForeignKey("contracts.id"))
+    name = Column(String)
     number = Column(String, unique=True, index=True)
-    main_executor = Column(Integer, ForeignKey("web_user.id"), nullable=False)
+    main_executor = Column(Integer, ForeignKey("web_user.id"))
     deadline = Column(Date)
-    status = Column(Integer, ForeignKey("project_statuses.id"), nullable=False)
+    status = Column(Integer, ForeignKey("project_statuses.id"))
     notes = Column(Text)
 
     object_info = relationship("Objects", back_populates="projects")

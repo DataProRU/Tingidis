@@ -83,18 +83,16 @@ async def update_project_status(
     return project_status
 
 
-@router.delete(
-    "/project-statuses/{project_status_id}", status_code=status.HTTP_204_NO_CONTENT
-)
+@router.delete("/project-statuses/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
 @log_action("Удаление статуса проекта в справочнике")
 async def delete_project_status(
-    project_status_id: int,
+    object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
     # Проверка наличия объекта
     result = await db.execute(
-        select(ProjectStatuses).filter(ProjectStatuses.id == project_status_id)
+        select(ProjectStatuses).filter(ProjectStatuses.id == object_id)
     )
     project_status = result.scalar_one_or_none()
     if not project_status:
@@ -105,5 +103,5 @@ async def delete_project_status(
     await db.commit()
     return {
         "message": "Статус проекта успешно удалён",
-        "project_status_id": project_status_id,
+        "object_id": object_id,
     }

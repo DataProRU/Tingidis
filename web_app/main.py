@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 
 from web_app.management.add_form_ownership import add_initial_forms_of_ownership
+from web_app.management.add_project_status import add_initial_project_statuses
 from web_app.routes import (
     custom,
     auth,
@@ -13,6 +14,7 @@ from web_app.routes import (
     logs,
     contracts,
     project_statuses,
+    projects,
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
@@ -26,7 +28,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     async with async_session() as db:
         await add_initial_forms_of_ownership(db)
-
+        await add_initial_project_statuses(db)
     yield
 
 
@@ -49,6 +51,7 @@ app.include_router(contacts.router)
 app.include_router(contracts.router)
 app.include_router(logs.router)
 app.include_router(project_statuses.router)
+app.include_router(projects.router)
 
 origins = [
     "http://localhost:3000",  # React production server

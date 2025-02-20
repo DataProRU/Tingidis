@@ -14,7 +14,7 @@ class ProjectGetResponse(BaseModel):
     contract: ContactResponse
     name: str
     number: str
-    project_executors: List[UserResponse]
+    project_executors: UserResponse
     deadline: date
     status: ProjectStatusResponse
     notes: str
@@ -24,17 +24,14 @@ class ProjectGetResponse(BaseModel):
 
 
 class ProjectCreateResponse(BaseModel):
-    object: ObjectResponse
-    contract: ContactResponse
+    object: int
+    contract: int
     name: str
     number: str
-    main_executor: UserResponse
+    main_executor: int
     deadline: date
-    status: ProjectStatusResponse
+    status: int
     notes: str
-
-    class Config:
-        orm_mode = True
 
 
 class ProjectResponse(BaseModel):
