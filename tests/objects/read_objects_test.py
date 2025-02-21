@@ -43,3 +43,11 @@ def test_get_object(client, sample_object):
         "id": object.id,
         "name": object.name,
     }
+
+
+def test_unauthenticated_user_cannot_read_object_by_id(client, sample_object):
+    client.headers = {}
+    object = sample_object
+    response = client.get(f"/objects/{object.id}")
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Отсутствует токен"}

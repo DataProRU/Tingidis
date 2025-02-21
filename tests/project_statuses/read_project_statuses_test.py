@@ -33,3 +33,12 @@ def test_get_project_status(client, sample_project_status):
         "id": sample_project_status.id,
         "name": sample_project_status.name,
     }
+
+
+def test_unauthenticated_user_cannot_read_project_status_by_id(
+    client, sample_project_status
+):
+    client.headers = {}
+    response = client.get(f"/project-statuses/{sample_project_status.id}")
+    assert response.status_code == 401
+    assert response.json() == {"detail": "Отсутствует токен"}

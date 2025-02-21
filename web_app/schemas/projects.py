@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import date
 
 from web_app.schemas.objects import ObjectResponse
-from web_app.schemas.contacts import ContactResponse
+from web_app.schemas.contacts import ContactResponse, ContactGetResponse
 from web_app.schemas.users import UserResponse
 from web_app.schemas.project_statuses import ProjectStatusResponse
 
@@ -14,10 +14,11 @@ class ProjectGetResponse(BaseModel):
     contract: ContactResponse
     name: str
     number: str
-    project_executors: UserResponse
+    project_main_executor: UserResponse
     deadline: date
     status: ProjectStatusResponse
     notes: str
+    project_executors: List[UserResponse]
 
     class Config:
         orm_mode = True
