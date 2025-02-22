@@ -22,11 +22,11 @@ class Projects(Base):
     object = Column(Integer, ForeignKey("objects.id"))
     contract = Column(Integer, ForeignKey("contracts.id"))
     name = Column(String)
-    number = Column(String, unique=True, index=True)
+    number = Column(String)
     main_executor = Column(Integer, ForeignKey("web_user.id"))
     deadline = Column(Date)
     status = Column(Integer, ForeignKey("project_statuses.id"))
-    notes = Column(Text)
+    notes = Column(Text, nullable=True)
 
     object_info = relationship("Objects", back_populates="projects")
     contract_info = relationship("Contracts", back_populates="projects")

@@ -3,7 +3,7 @@ from typing import Optional, List
 from datetime import date
 
 from web_app.schemas.objects import ObjectResponse
-from web_app.schemas.contacts import ContactResponse, ContactGetResponse
+from web_app.schemas.contracts import ContractsResponse, ContractsGetResponse
 from web_app.schemas.users import UserResponse
 from web_app.schemas.project_statuses import ProjectStatusResponse
 
@@ -11,14 +11,14 @@ from web_app.schemas.project_statuses import ProjectStatusResponse
 class ProjectGetResponse(BaseModel):
     id: Optional[int] = None
     object: ObjectResponse
-    contract: ContactResponse
+    contract: Optional[ContractsResponse] = None
     name: str
     number: str
-    project_main_executor: UserResponse
+    main_executor: UserResponse
     deadline: date
     status: ProjectStatusResponse
-    notes: str
-    project_executors: List[UserResponse]
+    notes: Optional[str] = None
+    project_executors: List["ProjectExecutorsGetResponse"]
 
     class Config:
         orm_mode = True
@@ -32,30 +32,42 @@ class ProjectCreateResponse(BaseModel):
     main_executor: int
     deadline: date
     status: int
-    notes: str
+    notes: Optional[str] = None
+
+    class Config:
+        orm_mode = True
 
 
 class ProjectResponse(BaseModel):
     id: Optional[int] = None
-    object: ObjectResponse
-    contract: ContactResponse
+    object: int
+    contract: Optional[int] = None
     name: str
     number: str
-    main_executor: UserResponse
+    main_executor: int
     deadline: date
-    status: ProjectStatusResponse
-    notes: str
+    status: int
+    notes: Optional[str] = None
 
     class Config:
         orm_mode = True
 
 
 class ProjectUpdate(BaseModel):
-    objects: Optional[int] = None
-    contracts: Optional[int] = None
-    name: Optional[constr(min_length=1, max_length=50)] = None
-    number: Optional[constr(min_length=1, max_length=50)] = None
+    object: Optional[int] = None
+    contract: Optional[int] = None
+    name: Optional[str] = None
+    number: Optional[str] = None
     main_executor: Optional[int] = None
-    deadline: Optional[constr(min_length=1, max_length=50)] = None
+    deadline: Optional[date] = None
     status: Optional[int] = None
-    notes: Optional[constr(min_length=1, max_length=50)] = None
+    notes: Optional[str] = None
+
+    class Config:
+        orm_mode = True
+
+
+# Отложенный импорт
+from web_app.schemas.project_executors import ProjectExecutorsGetResponse
+
+ProjectGetResponse.update_forward_refs()

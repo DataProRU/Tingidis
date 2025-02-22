@@ -48,7 +48,7 @@ def test_unauthenticated_user_cannot_create_projects(
 
 
 def test_cannot_create_projects_with_empty_fields(
-    client, sample_object, sample_contract, sample_user, sample_project_status
+    client, sample_object, sample_contract, sample_user
 ):
     payload = {
         "object": sample_object.id,

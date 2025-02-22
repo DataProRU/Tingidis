@@ -4,7 +4,7 @@ def test_get_empty_objects(client):
     assert response.json() == []
 
 
-def test_unauthenticated_user_cannot_read_object(client):
+def test_unauthenticated_user_cannot_read_objects(client):
     client.headers = {}
     response = client.get("/objects")
     assert response.status_code == 401
@@ -45,7 +45,7 @@ def test_get_object(client, sample_object):
     }
 
 
-def test_unauthenticated_user_cannot_read_object_by_id(client, sample_object):
+def test_unauthenticated_user_cannot_read_object(client, sample_object):
     client.headers = {}
     object = sample_object
     response = client.get(f"/objects/{object.id}")

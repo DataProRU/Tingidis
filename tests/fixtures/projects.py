@@ -31,21 +31,21 @@ async def sample_project(
 @pytest.fixture
 async def another_project(
     async_session_test,
-    sample_object,
-    sample_contract,
-    sample_user,
-    sample_project_status,
+    another_object,
+    another_contract,
+    another_user,
+    another_project_status,
 ):
     async with async_session_test() as db:
         project = Projects(
-            object=sample_object.id,
-            contract=sample_contract.id,
+            object=another_object.id,
+            contract=another_contract.id,
             name="test contract",
             number="222",
-            main_executor=sample_user.id,
+            main_executor=another_user.id,
             deadline=date(2001, 2, 2),
-            status=sample_project_status.id,
-            notes="sample notes new",
+            status=another_project_status.id,
+            notes=None,
         )
         db.add(project)
         await db.commit()
