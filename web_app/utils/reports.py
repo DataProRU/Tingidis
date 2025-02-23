@@ -205,6 +205,21 @@ async def get_project_statuses_data(db):
     return parsed_data
 
 
+async def get_project_statuses_data(db):
+    data = await get_project_statuses(db)
+    data = [model_to_dict(obj) for obj in data]
+    parsed_data = []
+    for item in data:
+
+        parsed_item = {
+            "Номер": item["id"],
+            "Наименование": item["name"],
+        }
+        parsed_data.append(parsed_item)
+
+    return parsed_data
+
+
 async def get_logs_data(db):
     data = await get_logs(db)
     parsed_data = []

@@ -11,7 +11,7 @@ router = APIRouter()
 @router.get("/export", response_class=Response)
 async def export_to_excel(
     db: AsyncSession = Depends(get_db),
-    user_data: dict = Depends(token_verification_dependency),
+    # user_data: dict = Depends(token_verification_dependency),
 ):
     # Генерируем Excel-файл
     excel_file = await generate_excel_report(db)
