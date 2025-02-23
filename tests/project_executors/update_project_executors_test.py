@@ -33,6 +33,7 @@ def test_update_project_executor(
         "password": None,
         "notes": another_user.notes,
         "role": another_user.role,
+        "notification": another_user.notification,
     }
     assert result["project"] == {
         "id": another_project.id,

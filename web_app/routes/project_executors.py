@@ -55,6 +55,7 @@ async def get_project_executors(
                     "password": None,
                     "notes": projects_executor.user_info.notes,
                     "role": projects_executor.user_info.role,
+                    "notification": projects_executor.user_info.notification,
                 },
                 "project": {
                     "id": projects_executor.project_info.id,
@@ -114,6 +115,7 @@ async def get_project_executor_by_id(
             "password": None,
             "notes": project_executor.user_info.notes,
             "role": project_executor.user_info.role,
+            "notification": project_executor.user_info.notification,
         },
         "project": {
             "id": project_executor.project_info.id,
@@ -255,6 +257,7 @@ async def update_project_executor(
             "password": None,
             "notes": project_executor.user_info.notes,
             "role": project_executor.user_info.role,
+            "notification": project_executor.user_info.notification,
         },
         "project": {
             "id": project_executor.project_info.id,

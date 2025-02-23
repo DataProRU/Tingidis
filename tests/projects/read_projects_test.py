@@ -93,6 +93,7 @@ def test_get_project(
                     "password": None,
                     "notes": sample_user.notes,
                     "role": sample_user.role,
+                    "notification": sample_user.notification,
                 },
                 "project": {
                     "id": sample_project.id,
@@ -172,6 +173,7 @@ def test_get_projects(
                 "password": None,
                 "notes": sample_user.notes,
                 "role": sample_user.role,
+                "notification": sample_user.notification,
             },
             "deadline": str(sample_project.deadline),
             "status": {
@@ -259,6 +261,7 @@ def test_get_projects(
                 "password": None,
                 "notes": another_user.notes,
                 "role": another_user.role,
+                "notification": another_user.notification,
             },
             "deadline": str(another_project.deadline),
             "status": {

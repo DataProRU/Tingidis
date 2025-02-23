@@ -85,6 +85,7 @@ async def get_projects(
                     "password": None,
                     "notes": project.executor_info.notes,
                     "role": project.executor_info.role,
+                    "notification": project.executor_info.notification,
                 },
                 "deadline": project.deadline,
                 "status": {
@@ -175,6 +176,7 @@ async def get_project_by_id(
             "password": None,
             "notes": project.executor_info.notes,
             "role": project.executor_info.role,
+            "notification": project.executor_info.notification,
         },
         "deadline": project.deadline,
         "status": {
@@ -287,6 +289,7 @@ async def update_project(
             "password": None,
             "notes": project.executor_info.notes,
             "role": project.executor_info.role,
+            "notification": project.executor_info.notification,
         },
         "deadline": project.deadline,
         "status": {

@@ -45,6 +45,7 @@ def test_get_project_executor(
             "password": None,
             "notes": sample_user.notes,
             "role": sample_user.role,
+            "notification": sample_user.notification,
         },
         "project": {
             "id": sample_project.id,
@@ -96,6 +97,7 @@ def test_get_project_executors(
                 "password": None,
                 "notes": sample_user.notes,
                 "role": sample_user.role,
+                "notification": sample_user.notification,
             },
             "project": {
                 "id": sample_project.id,
@@ -130,6 +132,7 @@ def test_get_project_executors(
                 "password": None,
                 "notes": another_user.notes,
                 "role": another_user.role,
+                "notification": sample_user.notification,
             },
             "project": {
                 "id": another_project.id,

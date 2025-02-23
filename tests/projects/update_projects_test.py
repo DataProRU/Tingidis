@@ -59,6 +59,7 @@ def test_update_project(
         "password": None,
         "notes": another_user.notes,
         "role": another_user.role,
+        "notification": another_user.notification,
     }
     assert result["deadline"] == "2024-12-12"
     assert result["status"] == {
