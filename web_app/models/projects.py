@@ -20,7 +20,7 @@ class Projects(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     object = Column(Integer, ForeignKey("objects.id"))
-    contract = Column(Integer, ForeignKey("contracts.id"))
+    contract = Column(Integer, ForeignKey("contracts.id"), nullable=True)
     name = Column(String)
     number = Column(String)
     main_executor = Column(Integer, ForeignKey("web_user.id"))

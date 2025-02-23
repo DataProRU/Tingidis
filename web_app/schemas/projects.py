@@ -26,7 +26,7 @@ class ProjectGetResponse(BaseModel):
 
 class ProjectCreateResponse(BaseModel):
     object: int
-    contract: int
+    contract: Optional[int] = None
     name: str
     number: str
     main_executor: int

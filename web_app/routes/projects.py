@@ -65,7 +65,7 @@ async def get_projects(
                     "price": project.contract_info.price,
                     "theme": project.contract_info.theme,
                     "evolution": project.contract_info.evolution,
-                },
+                } if project.contract_info else None,
                 "name": project.name,
                 "number": project.number,
                 "main_executor": {
@@ -155,7 +155,7 @@ async def get_project_by_id(
             "price": project.contract_info.price,
             "theme": project.contract_info.theme,
             "evolution": project.contract_info.evolution,
-        },
+        } if project.contract_info else None,
         "name": project.name,
         "number": project.number,
         "main_executor": {
@@ -267,7 +267,7 @@ async def update_project(
             "price": project.contract_info.price,
             "theme": project.contract_info.theme,
             "evolution": project.contract_info.evolution,
-        },
+        } if project.contract_info else None,
         "name": project.name,
         "number": project.number,
         "main_executor": {

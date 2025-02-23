@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from web_app.database import get_db
 from sqlalchemy.future import select
 
-from web_app.models import ProjectExecutors
+from web_app.models import ProjectExecutors, Projects
 from web_app.schemas.project_executors import (
     ProjectExecutorsGetResponse,
     ProjectExecutorsResponse,
@@ -77,7 +77,7 @@ async def get_project_executors(
     "/project-executors/{project_executor_id}",
     response_model=ProjectExecutorsGetResponse,
 )
-async def get_project_by_id(
+async def get_project_executor_by_id(
     project_executor_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
@@ -135,11 +135,40 @@ async def get_project_by_id(
     status_code=status.HTTP_201_CREATED,
 )
 @log_action("Добавление исполнителя на проекте")
-async def create_project(
+async def create_project_executor(
     project_executor_data: ProjectExecutorsCreate,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
+    existing_executor = await db.execute(
+        select(ProjectExecutors).where(
+            ProjectExecutors.user == project_executor_data.user,
+            ProjectExecutors.project == project_executor_data.project,
+        )
+    )
+    if existing_executor.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Исполнитель уже добавлен на проект",
+        )
+
+    project = await db.execute(
+        select(Projects).where(Projects.id == project_executor_data.project)
+    )
+    project = project.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Проект не найден",
+        )
+
+    if project_executor_data.user == project.main_executor:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Исполнитель не может быть основным ответственным за проект",
+        )
+
     project_executor = ProjectExecutors(**project_executor_data.dict())
     db.add(project_executor)
     await db.commit()
@@ -152,7 +181,7 @@ async def create_project(
     response_model=ProjectExecutorsGetResponse,
 )
 @log_action("Обновление исполнителя на проекте")
-async def update_project(
+async def update_project_executor(
     project_executor_id: int,
     object_data: ProjectExecutorsUpdate,
     db: AsyncSession = Depends(get_db),
@@ -167,8 +196,40 @@ async def update_project(
         .filter(ProjectExecutors.id == project_executor_id)
     )
     project_executor = result.scalar_one_or_none()
+
     if not project_executor:
         raise HTTPException(status_code=404, detail="Исполнитель на проекте не найден")
+
+    project = await db.execute(
+        select(Projects).where(Projects.id == project_executor.project)
+    )
+    project = project.scalar_one_or_none()
+
+    if not project:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Проект не найден",
+        )
+
+    if object_data.user and object_data.user == project.main_executor:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Исполнитель не может быть основным ответственным за проект",
+        )
+
+    if object_data.user and object_data.project:
+        existing_executor = await db.execute(
+            select(ProjectExecutors).where(
+                ProjectExecutors.user == object_data.user,
+                ProjectExecutors.project == object_data.project,
+                ProjectExecutors.id != project_executor_id,
+            )
+        )
+        if existing_executor.scalar_one_or_none():
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Исполнитель уже добавлен на проект",
+            )
 
     for key, value in object_data.dict(exclude_unset=True).items():
         setattr(project_executor, key, value)
@@ -210,7 +271,7 @@ async def update_project(
 
 
 @router.delete("/project-executors/{object_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_project(
+async def delete_project_executor(
     object_id: int,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
