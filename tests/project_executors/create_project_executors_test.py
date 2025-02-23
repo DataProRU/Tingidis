@@ -1,13 +1,13 @@
-def test_project_executor(client, sample_project, sample_user):
+def test_project_executor(client, sample_project, another_user):
     payload = {
-        "user": sample_user.id,
+        "user": another_user.id,
         "project": sample_project.id,
     }
 
     response = client.post("/project-executors", json=payload)
     assert response.status_code == 201
     result = response.json()
-    assert result["user"] == sample_user.id
+    assert result["user"] == another_user.id
     assert result["project"] == sample_project.id
 
 
