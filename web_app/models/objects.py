@@ -12,3 +12,4 @@ class Objects(Base):
     comment = Column(Text, nullable=True)
 
     contracts = relationship("Contracts", back_populates="code_info")
+    projects = relationship("Projects", back_populates="object_info")

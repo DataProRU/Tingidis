@@ -1,6 +1,3 @@
-from decimal import Decimal
-
-
 def test_get_empty_contracts(client):
     response = client.get("/contracts")
     assert response.status_code == 200

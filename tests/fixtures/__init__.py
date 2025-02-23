@@ -6,3 +6,6 @@ from .agreements import *
 from .form_of_ownerships import *
 from .customers import *
 from .contracts import *
+from .project_statuses import *
+from .projects import *
+from .project_executors import *

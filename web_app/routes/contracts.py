@@ -202,7 +202,7 @@ async def update_contract(
     result = await db.execute(
         select(Contracts)
         .options(
-            selectinload(Contracts.code_info),  # Загружаем объект
+            selectinload(Contracts.code_info),
             selectinload(Contracts.customer_info),
             selectinload(Contracts.executor_info),
             selectinload(Contracts.agreements),

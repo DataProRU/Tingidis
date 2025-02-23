@@ -29,6 +29,7 @@ class Contracts(Base):
     customer_info = relationship("Customers", back_populates="contracts")
     executor_info = relationship("Users", back_populates="contracts")
     agreements = relationship("Agreements", back_populates="contract_info")
+    projects = relationship("Projects", back_populates="contract_info")
 
     @staticmethod
     def generate_evolution(session):
