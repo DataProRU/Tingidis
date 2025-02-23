@@ -39,7 +39,7 @@ async def another_project(
     async with async_session_test() as db:
         project = Projects(
             object=another_object.id,
-            contract=another_contract.id,
+            contract=None,
             name="test contract",
             number="222",
             main_executor=another_user.id,

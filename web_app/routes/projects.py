@@ -54,18 +54,22 @@ async def get_projects(
                     "name": project.object_info.name,
                     "comment": project.object_info.comment,
                 },
-                "contract": {
-                    "id": project.contract_info.id,
-                    "code": project.contract_info.code,
-                    "name": project.contract_info.name,
-                    "customer": project.contract_info.customer,
-                    "executor": project.contract_info.executor,
-                    "number": project.contract_info.number,
-                    "sign_date": project.contract_info.sign_date,
-                    "price": project.contract_info.price,
-                    "theme": project.contract_info.theme,
-                    "evolution": project.contract_info.evolution,
-                } if project.contract_info else None,
+                "contract": (
+                    {
+                        "id": project.contract_info.id,
+                        "code": project.contract_info.code,
+                        "name": project.contract_info.name,
+                        "customer": project.contract_info.customer,
+                        "executor": project.contract_info.executor,
+                        "number": project.contract_info.number,
+                        "sign_date": project.contract_info.sign_date,
+                        "price": project.contract_info.price,
+                        "theme": project.contract_info.theme,
+                        "evolution": project.contract_info.evolution,
+                    }
+                    if project.contract_info
+                    else None
+                ),
                 "name": project.name,
                 "number": project.number,
                 "main_executor": {
@@ -145,18 +149,22 @@ async def get_project_by_id(
             "name": project.object_info.name,
             "comment": project.object_info.comment,
         },
-        "contract": {
-            "id": project.contract_info.id,
-            "code": project.contract_info.code,
-            "name": project.contract_info.name,
-            "customer": project.contract_info.customer,
-            "executor": project.contract_info.executor,
-            "number": project.contract_info.number,
-            "sign_date": project.contract_info.sign_date,
-            "price": project.contract_info.price,
-            "theme": project.contract_info.theme,
-            "evolution": project.contract_info.evolution,
-        } if project.contract_info else None,
+        "contract": (
+            {
+                "id": project.contract_info.id,
+                "code": project.contract_info.code,
+                "name": project.contract_info.name,
+                "customer": project.contract_info.customer,
+                "executor": project.contract_info.executor,
+                "number": project.contract_info.number,
+                "sign_date": project.contract_info.sign_date,
+                "price": project.contract_info.price,
+                "theme": project.contract_info.theme,
+                "evolution": project.contract_info.evolution,
+            }
+            if project.contract_info
+            else None
+        ),
         "name": project.name,
         "number": project.number,
         "main_executor": {
@@ -258,18 +266,22 @@ async def update_project(
             "name": project.object_info.name,
             "comment": project.object_info.comment,
         },
-        "contract": {
-            "id": project.contract_info.id,
-            "code": project.contract_info.code,
-            "name": project.contract_info.name,
-            "customer": project.contract_info.customer,
-            "executor": project.contract_info.executor,
-            "number": project.contract_info.number,
-            "sign_date": project.contract_info.sign_date,
-            "price": project.contract_info.price,
-            "theme": project.contract_info.theme,
-            "evolution": project.contract_info.evolution,
-        } if project.contract_info else None,
+        "contract": (
+            {
+                "id": project.contract_info.id,
+                "code": project.contract_info.code,
+                "name": project.contract_info.name,
+                "customer": project.contract_info.customer,
+                "executor": project.contract_info.executor,
+                "number": project.contract_info.number,
+                "sign_date": project.contract_info.sign_date,
+                "price": project.contract_info.price,
+                "theme": project.contract_info.theme,
+                "evolution": project.contract_info.evolution,
+            }
+            if project.contract_info
+            else None
+        ),
         "name": project.name,
         "number": project.number,
         "main_executor": {
