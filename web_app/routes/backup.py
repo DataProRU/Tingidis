@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from web_app.tasks.backups import send_email_backup
 
 from web_app.utils.reports import generate_excel_report
 
@@ -18,6 +19,8 @@ async def export_to_excel(
 
     # Возвращаем файл как ответ
     headers = {"Content-Disposition": 'attachment; filename="report.xlsx"'}
+
+    send_email_backup()
     return Response(
         content=excel_file.getvalue(),
         media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
