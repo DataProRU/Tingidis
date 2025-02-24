@@ -10,7 +10,7 @@ from web_app.schemas.backups import (
     ReserveCopyResponse
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
-from web_app.utils.utils import log_action
+from web_app.utils.logs import log_action
 from web_app.utils.reports import generate_excel_report
 
 

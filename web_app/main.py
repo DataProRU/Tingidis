@@ -13,7 +13,6 @@ from web_app.routes import (
     contacts,
     logs,
     contracts,
-    backup,
     project_statuses,
     projects,
     project_executors,
