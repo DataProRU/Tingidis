@@ -6,7 +6,7 @@ from fastapi.templating import Jinja2Templates
 import shutil
 import os
 
-from web_app.utils.utils import log_action
+from web_app.utils.logs import log_action
 
 # Настройка логирования
 logging.basicConfig(level=logging.INFO)

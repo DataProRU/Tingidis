@@ -40,4 +40,5 @@ pytest
 pyjwt
 python-dotenv
 pydantic[email]
-
+pandas
+openpyxl
