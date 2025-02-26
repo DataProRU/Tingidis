@@ -12,6 +12,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    networks:
+      - my_network
 
   db_tests:
     image: postgres:15
@@ -26,12 +28,20 @@ services:
     volumes:
       - postgres_data_tests:/var/lib/postgresql/data
 
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    networks:
+      - my_network
+
   app:
     build: .
     container_name: fastapi_app
     restart: always
     depends_on:
       - db
+      - redis
     environment:
       DATABASE_URL: "postgresql+asyncpg://admin:2606QWmg@db/users"
       TEST_DATABASE_URL: "postgresql+asyncpg://admin:2606QWmg@db_tests:5433/tests"
@@ -39,6 +49,12 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
+    networks:
+      - my_network
+
+networks:
+  my_network:
+    driver: bridge
 
 volumes:
   postgres_data:

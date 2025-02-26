@@ -3,6 +3,7 @@ from sqlalchemy.orm import declarative_base, relationship  # Updated import
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
+from web_app.session import SessionLocal
 import os
 
 router = APIRouter()

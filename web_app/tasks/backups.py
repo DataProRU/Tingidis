@@ -1,4 +1,5 @@
 import io
+from fastapi import Depends
 from email.mime.multipart import MIMEMultipart
 from email.mime.base import MIMEBase
 from email import encoders
@@ -9,10 +10,12 @@ from sqlalchemy import select
 from datetime import datetime, timedelta
 from web_app.utils.reports import generate_excel_report
 from web_app.database import SessionLocal
+from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.models.backups import Backups
+from web_app.database import get_db
 import logging
 
-celery = Celery("tasks", broker="redis://localhost:6379/0")
+celery = Celery("backups", broker="redis://localhost:6379/0")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -22,8 +25,9 @@ logger = logging.getLogger(__name__)
 @celery.task
 def send_reserve_copies():
     db = SessionLocal()
+    async_db: AsyncSession = Depends(get_db),
     try:
-        excel_file = generate_excel_report(db)
+        excel_file = generate_excel_report(async_db)
         today = datetime.now().date()
 
         # Find all reserve copies that need to be sent today

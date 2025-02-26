@@ -1,9 +1,11 @@
 from pydantic import BaseModel, field_validator
 from typing import Optional
+from datetime import date
 
 class ReserveCopyResponse(BaseModel):
     email: str
     frequency: int
+    send_date: date
 
     @field_validator('email')
     def email_not_empty(cls, v):
