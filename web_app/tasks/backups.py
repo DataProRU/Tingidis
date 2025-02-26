@@ -15,7 +15,7 @@ from web_app.models.backups import Backups
 from web_app.database import get_db
 import logging
 
-celery = Celery("backups", broker="redis://localhost:6379/0")
+celery = Celery("backups", broker="redis://redis:6379/0")
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -24,10 +24,9 @@ logger = logging.getLogger(__name__)
 
 @celery.task
 def send_reserve_copies():
-    db = SessionLocal()
-    async_db: AsyncSession = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
     try:
-        excel_file = generate_excel_report(async_db)
+        excel_file = generate_excel_report(db)
         today = datetime.now().date()
 
         # Find all reserve copies that need to be sent today

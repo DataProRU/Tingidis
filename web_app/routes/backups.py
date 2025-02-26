@@ -34,7 +34,7 @@ async def create_reserve_copy(reserve_copy: ReserveCopyResponse, db: AsyncSessio
         elif reserve_copy.frequency == 5:
             send_date += timedelta(days=180)
         elif reserve_copy.frequency == 6:
-            send_date += timedelta(days=360)
+            send_date += timedelta(days=365)
 
         db_reserve_copy = Backups(email=reserve_copy.email, frequency=reserve_copy.frequency, send_date=send_date)
         db.add(db_reserve_copy)

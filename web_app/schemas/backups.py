@@ -5,7 +5,7 @@ from datetime import date
 class ReserveCopyResponse(BaseModel):
     email: str
     frequency: int
-    send_date: date
+    send_date: Optional[date] = None
 
     @field_validator('email')
     def email_not_empty(cls, v):
