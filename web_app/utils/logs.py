@@ -1,9 +1,13 @@
 from functools import wraps
 from sqlalchemy.ext.asyncio import AsyncSession
+import logger
 
 from bot import notify_user
 from web_app.models import LogEntry
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 def log_action(action: str):
     def decorator(func):
@@ -22,14 +26,18 @@ def log_action(action: str):
             else:
                 object_id = delete_id
 
+            logger.info(f"User '{username}' performed '{action}' on object (ID: {object_id})")
             session: AsyncSession = kwargs.get("db")
             log_entry = LogEntry(user=username, action=f"{action} (ID: {object_id})")
             session.add(log_entry)
             await session.commit()
 
-            # Отправляем уведомление
-            await notify_user(session, username, f"Произошло действие: {action} (ID: {object_id})")
-
+            logger.info(f"Sending notification to user '{username}'")
+            try:
+                # Отправляем уведомление
+                await notify_user(session, username, f"Произошло действие: {action} (ID: {object_id})")
+            except Exception() as e:
+                logger.error(f"Error sending notification for user '{username}': {e}")
 
             return result
 
