@@ -1,6 +1,7 @@
 from functools import wraps
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from bot import notify_user
 from web_app.models import LogEntry
 
 
@@ -28,6 +29,7 @@ def log_action(action: str):
 
             # Отправляем уведомление
             await notify_user(session, username, f"Произошло действие: {action} (ID: {object_id})")
+
 
             return result
 
