@@ -25,6 +25,10 @@ def log_action(action: str):
             log_entry = LogEntry(user=username, action=f"{action} (ID: {object_id})")
             session.add(log_entry)
             await session.commit()
+
+            # Отправляем уведомление
+            await notify_user(session, username, f"Произошло действие: {action} (ID: {object_id})")
+
             return result
 
         return wrapper
