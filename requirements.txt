@@ -45,3 +45,5 @@ openpyxl
 rich
 alembic
 apscheduler
+asyncio
+aiogram
