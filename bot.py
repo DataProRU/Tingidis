@@ -28,22 +28,22 @@ dp = Dispatcher()
 # Команда /start
 @dp.message(CommandStart())
 async def command_start_handler(message: Message):
-    await message.answer(f"Привет! Я бот для уведомлений.")
+    await message.answer(f"Привет! Я бот для уведомлений")
     # logger.info(message)
-    user_id = message.from_user.id
-    username = message.from_user.username
-    logger.info("Подключение к базе и отправка тестового уведомления")
+    tg_user_id = message.from_user.id
+    tg_username = message.from_user.username
+    logger.info("Attempting to connect to database and send test notification")
     # Создаем сессию вручную
     async with async_session() as session:
-        user = await session.execute(select(Users).where(Users.telegram == username))
+        user = await session.execute(select(Users).where(Users.telegram == tg_username))
         user = user.scalar_one_or_none()
         if user:
-            user.tg_user_id = user_id
+            user.tg_user_id = tg_user_id
             await session.commit()
             await session.refresh(user)
-            await notify_user(session, username, "Telegram id успешно привязан.")
+            await notify_user(session, user.username, "Telegram id успешно привязан")
         else:
-            logger.info(f"Пользователь с ником {username} не существует.")
+            logger.info(f"User with telegram username {tg_username} does not exist")
 
 
 # Функция отправки уведомления
@@ -58,7 +58,7 @@ async def send_notification(user_id: int, message: str):
 
 # Функция уведомления пользователя
 async def notify_user(session: AsyncSession, username: str, message: str):
-    user = await session.execute(select(Users).where(Users.telegram == username))
+    user = await session.execute(select(Users).where(Users.username == username))
     user = user.scalar_one_or_none()
     if user and user.notification and user.tg_user_id:
         logger.info(f"User {username} found, notification enabled, telegram: {user.tg_user_id}")
