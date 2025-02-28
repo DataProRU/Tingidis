@@ -1,6 +1,6 @@
 from functools import wraps
 from sqlalchemy.ext.asyncio import AsyncSession
-import logger
+import logging
 
 from bot import notify_user
 from web_app.models import LogEntry
@@ -35,8 +35,8 @@ def log_action(action: str):
             logger.info(f"Sending notification to user '{username}'")
             try:
                 # Отправляем уведомление
-                await notify_user(session, username, f"Произошло действие: {action} (ID: {object_id})")
-            except Exception() as e:
+                await notify_user(username, f"Произошло действие: {action} (ID: {object_id})")
+            except Exception as e:
                 logger.error(f"Error sending notification for user '{username}': {e}")
 
             return result

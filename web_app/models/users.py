@@ -24,6 +24,7 @@ class Users(Base):
     notes = Column(Text, nullable=True)
     role = Column(String, server_default="user")
     notification = Column(Boolean, default=False)
+    tg_user_id = Column(Integer, nullable=True)
 
     tokens = relationship("Tokens", back_populates="user", cascade="all, delete-orphan")
     contracts = relationship("Contracts", back_populates="executor_info")
