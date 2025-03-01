@@ -227,7 +227,11 @@ async def get_projects_data(db):
         parsed_item = {
             "Номер": item["id"],
             "Объект": f'{item["object"]["code"]} - {item["object"]["name"]}',
-            "Договор": f'{item["contract"]["number"]} - {item["contract"]["name"]}' if item["contract"] else None,
+            "Договор": (
+                f'{item["contract"]["number"]} - {item["contract"]["name"]}'
+                if item["contract"]
+                else None
+            ),
             "Наименование проекта": item["name"],
             "Номер проекта": item["number"],
             "Основной исполнитель": item["main_executor"]["username"],

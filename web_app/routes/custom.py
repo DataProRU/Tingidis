@@ -8,8 +8,6 @@ import os
 
 from web_app.utils.logs import log_action
 
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
