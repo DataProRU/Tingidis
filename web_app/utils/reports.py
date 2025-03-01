@@ -209,14 +209,12 @@ async def get_logs_data(db):
     data = await get_logs(db)
     parsed_data = []
     for item in data:
-
         parsed_item = {
-            "Дата/Время": item["datetime"].strftime("%d.%m.%Y %h:%m:%s"),
+            "Дата/Время": item["datetime"].strftime("%d.%m.%Y %H:%M:%S"),
             "Пользователь": item["user"],
             "Действие": item["action"],
         }
         parsed_data.append(parsed_item)
-
     return parsed_data
 
 
