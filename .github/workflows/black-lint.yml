@@ -37,6 +37,13 @@ jobs:
           # Если есть дополнительные зависимости:
           pip install -r requirements.txt
 
+      - name: Run application
+        run: uvicorn web_app.main:app --host 0.0.0.0 --port 8000 --reload
+
+      - name: Wait for application to start
+        run: |
+          timeout 120 bash -c 'until curl -s http://localhost:8000 > /dev/null; do sleep 1; done'
+
       - name: Run tests
         run: pytest -vv
 
