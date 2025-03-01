@@ -1,6 +1,4 @@
-from datetime import datetime
-
-from asyncpg.pgproto.pgproto import timedelta
+from datetime import datetime, timedelta
 
 
 def test_create_backup(client):
