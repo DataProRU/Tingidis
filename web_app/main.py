@@ -1,7 +1,9 @@
+import logging
 from fastapi import FastAPI
 
 from web_app.management.add_form_ownership import add_initial_forms_of_ownership
 from web_app.management.add_project_status import add_initial_project_statuses
+from web_app.management.restore_scheduled_tasks import restore_scheduled_tasks
 from web_app.routes import (
     custom,
     auth,
@@ -21,15 +23,27 @@ from web_app.routes import (
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from rich.logging import RichHandler
+
+from web_app.services.scheduler import scheduler
+
+# Настройка логирования
+logging.basicConfig(
+    level=logging.INFO, format="%(message)s", datefmt="[%X]", handlers=[RichHandler()]
+)
+logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await init_db()
+    scheduler.start()
     async with async_session() as db:
         await add_initial_forms_of_ownership(db)
         await add_initial_project_statuses(db)
+        await restore_scheduled_tasks(db)
     yield
+    scheduler.shutdown()
 
 
 app = FastAPI(lifespan=lifespan)

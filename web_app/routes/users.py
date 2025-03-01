@@ -1,4 +1,3 @@
-import logging
 from fastapi import APIRouter, Depends, status, HTTPException
 
 from web_app.models.users import Users
@@ -13,10 +12,6 @@ from typing import List
 from web_app.middlewares.auth_middleware import token_verification_dependency
 
 from web_app.utils.logs import log_action
-
-# Настройка логирования
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
 
 router = APIRouter()
 templates = Jinja2Templates(directory="web_app/templates")

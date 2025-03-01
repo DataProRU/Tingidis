@@ -42,3 +42,6 @@ python-dotenv
 pydantic[email]
 pandas
 openpyxl
+rich
+alembic
+apscheduler

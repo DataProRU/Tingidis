@@ -18,6 +18,7 @@ from web_app.models import Customers  # noqa
 from web_app.models import ProjectStatuses  # noqa
 from web_app.models import ProjectExecutors  # noqa
 from web_app.models import Projects  # noqa
+from web_app.models import Backups  # noqa
 from web_app.database import Base
 
 
