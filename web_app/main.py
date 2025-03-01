@@ -46,6 +46,10 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
 
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(auth.router)

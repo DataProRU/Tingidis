@@ -7,7 +7,6 @@ from web_app.models.objects import Objects
 from web_app.schemas.objects import ObjectCreate, ObjectResponse
 from web_app.middlewares.auth_middleware import token_verification_dependency
 from web_app.utils.logs import log_action
-
 router = APIRouter()
 
 
@@ -85,7 +84,6 @@ async def delete_object(
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Обьект не найден")
-
     # Удаление объекта
     await db.delete(obj)
     await db.commit()
