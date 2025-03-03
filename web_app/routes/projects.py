@@ -6,7 +6,7 @@ from sqlalchemy.orm import selectinload
 from web_app.database import get_db
 from sqlalchemy.future import select
 
-from web_app.models import ProjectExecutors
+from web_app.models import ProjectExecutors, Contracts
 from web_app.models.projects import Projects
 from web_app.schemas.projects import (
     ProjectResponse,
@@ -22,7 +22,7 @@ router = APIRouter()
 
 
 # Endpoints
-@router.get("/projects", response_model=List[ProjectGetResponse])
+@router.get("/projects")
 async def get_projects(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
@@ -39,6 +39,9 @@ async def get_projects(
         selectinload(Projects.project_executors).selectinload(
             ProjectExecutors.project_info
         ),
+        selectinload(Projects.contract_info).selectinload(
+            Contracts.customer_info
+        )
     )
     result = await db.execute(stmt)
     projects = result.scalars().all()
@@ -59,7 +62,7 @@ async def get_projects(
                         "id": project.contract_info.id,
                         "code": project.contract_info.code,
                         "name": project.contract_info.name,
-                        "customer": project.contract_info.customer,
+                        "customer": project.contract_info.customer_info,
                         "executor": project.contract_info.executor,
                         "number": project.contract_info.number,
                         "sign_date": project.contract_info.sign_date,
