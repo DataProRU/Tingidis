@@ -15,10 +15,10 @@ async def sample_project(
         project = Projects(
             object=sample_object.id,
             contract=sample_contract.id,
-            name="test contract",
+            name="test project 1",
             number="11111",
             main_executor=sample_user.id,
-            deadline=date(2001, 2, 2),
+            deadline=date(2024, 2, 1),
             status=sample_project_status.id,
             notes="sample notes",
         )
@@ -40,10 +40,10 @@ async def another_project(
         project = Projects(
             object=another_object.id,
             contract=None,
-            name="test contract",
+            name="test project 2",
             number="222",
             main_executor=another_user.id,
-            deadline=date(2001, 2, 2),
+            deadline=date(2024, 2, 4),
             status=another_project_status.id,
             notes=None,
         )

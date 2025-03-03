@@ -19,6 +19,7 @@ from web_app.routes import (
     project_statuses,
     projects,
     project_executors,
+    deadlines,
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
@@ -62,6 +63,7 @@ app.include_router(project_statuses.router)
 app.include_router(projects.router)
 app.include_router(project_executors.router)
 app.include_router(backup.router)
+app.include_router(deadlines.router)
 
 origins = [
     "http://localhost:3000",  # React production server
