@@ -6,11 +6,11 @@ from web_app.models import LogEntry
 
 logger = logging.getLogger(__name__)
 
+
 def log_action(action: str):
     def decorator(func):
         @wraps(func)
         async def wrapper(*args, **kwargs):
-
 
             user_data = kwargs.get("user_data", {"sub": "Unknown"})
             username = user_data.get("sub", "Unknown")
@@ -23,7 +23,9 @@ def log_action(action: str):
             else:
                 object_id = delete_id
 
-            logger.info(f"User '{username}' performed '{action}' on object (ID: {object_id})")
+            logger.info(
+                f"User '{username}' performed '{action}' on object (ID: {object_id})"
+            )
             session: AsyncSession = kwargs.get("db")
             log_entry = LogEntry(user=username, action=f"{action} (ID: {object_id})")
             session.add(log_entry)
@@ -35,9 +37,16 @@ def log_action(action: str):
             logger.info(f"Attempting to send notification to user '{username}'")
             try:
                 from bot import notify_user
-                await notify_user(session, username, f"Пользователь {username} совершил действие '{action}' для объекта по ID: {object_id}")
+
+                await notify_user(
+                    session,
+                    username,
+                    f"Пользователь {username} совершил действие '{action}' для объекта по ID: {object_id}",
+                )
             except Exception as e:
-                logger.error(f"Failed to send notification to user '{username}': {str(e)}")
+                logger.error(
+                    f"Failed to send notification to user '{username}': {str(e)}"
+                )
             return result
 
         return wrapper

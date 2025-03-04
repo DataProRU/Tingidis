@@ -5,7 +5,9 @@ from aiogram.types import Message
 from aiogram.client.default import DefaultBotProperties
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
-from web_app.database import async_session  # Импортируйте async_session или создайте его вручную
+from web_app.database import (
+    async_session,
+)  # Импортируйте async_session или создайте его вручную
 from web_app.models import Users
 import asyncio
 import logging
@@ -24,7 +26,9 @@ API_TOKEN = os.getenv("BOT_TOKEN")
 # Инициализация бота и диспетчера
 bot = Bot(
     token=API_TOKEN,
-    default=DefaultBotProperties(parse_mode=ParseMode.HTML)  # Указываем parse_mode здесь
+    default=DefaultBotProperties(
+        parse_mode=ParseMode.HTML
+    ),  # Указываем parse_mode здесь
 )
 dp = Dispatcher()
 
@@ -65,10 +69,14 @@ async def notify_user(session: AsyncSession, username: str, message: str):
     user = await session.execute(select(Users).where(Users.username == username))
     user = user.scalar_one_or_none()
     if user and user.notification and user.tg_user_id:
-        logger.info(f"User {username} found, notification enabled, telegram: {user.tg_user_id}")
+        logger.info(
+            f"User {username} found, notification enabled, telegram: {user.tg_user_id}"
+        )
         await send_notification(user.tg_user_id, message)
     else:
-        logger.info(f"User {username} not found or notification disabled or you should start bot")
+        logger.info(
+            f"User {username} not found or notification disabled or you should start bot"
+        )
 
 
 # Запуск бота
@@ -76,5 +84,5 @@ async def main():
     await dp.start_polling(bot)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     asyncio.run(main())

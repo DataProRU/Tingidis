@@ -1,4 +1,6 @@
 import logging
+import os
+
 from fastapi import FastAPI
 
 from web_app.management.add_form_ownership import add_initial_forms_of_ownership
@@ -20,13 +22,17 @@ from web_app.routes import (
     projects,
     project_executors,
     deadlines,
+    upload,
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from rich.logging import RichHandler
+from fastapi.staticfiles import StaticFiles
 
 from web_app.services.scheduler import scheduler
+
+UPLOAD_DIR = "static"
 
 # Настройка логирования
 logging.basicConfig(
@@ -64,6 +70,9 @@ app.include_router(projects.router)
 app.include_router(project_executors.router)
 app.include_router(backup.router)
 app.include_router(deadlines.router)
+app.include_router(upload.router)
+
+app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = [
     "http://localhost:3000",  # React production server
