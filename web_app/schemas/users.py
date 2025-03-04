@@ -5,8 +5,8 @@ from datetime import date
 
 class UserResponse(BaseModel):
     id: int
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: str
+    last_name: str
     father_name: Optional[str] = None
     full_name: Optional[str] = None
     position: Optional[str] = None
@@ -25,8 +25,8 @@ class UserResponse(BaseModel):
 
 class UserUpdate(BaseModel):
     id: Optional[int] = None
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: str
+    last_name: str
     father_name: Optional[str] = None
     full_name: Optional[str] = None
     position: Optional[str] = None
@@ -45,8 +45,8 @@ class UserUpdate(BaseModel):
 
 class UserCreate(BaseModel):
 
-    first_name: Optional[str] = None
-    last_name: Optional[str] = None
+    first_name: str
+    last_name: str
     father_name: Optional[str] = None
     full_name: Optional[str] = None
     position: Optional[str] = None
