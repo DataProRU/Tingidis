@@ -39,9 +39,7 @@ async def get_projects(
         selectinload(Projects.project_executors).selectinload(
             ProjectExecutors.project_info
         ),
-        selectinload(Projects.contract_info).selectinload(
-            Contracts.customer_info
-        )
+        selectinload(Projects.contract_info).selectinload(Contracts.customer_info),
     )
     result = await db.execute(stmt)
     projects = result.scalars().all()
