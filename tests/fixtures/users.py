@@ -11,8 +11,8 @@ async def sample_user(async_session_test):
     async with async_session_test() as db:
         # Создаем нового пользователя
         new_user = Users(
-            first_name=None,
-            last_name=None,
+            first_name="Ivan",
+            last_name="Ivanov",
             father_name=None,
             full_name=None,
             position=None,
@@ -68,8 +68,8 @@ async def admin_user(async_session_test):
     async with async_session_test() as db:
         # Создаем нового пользователя
         new_user = Users(
-            first_name=None,
-            last_name=None,
+            first_name="Vasya",
+            last_name="Pupkin",
             father_name=None,
             full_name=None,
             position=None,

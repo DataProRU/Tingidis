@@ -1,6 +1,8 @@
 def test_create_user(client):
     payload = {
         "username": "user_alex",
+        "first_name": "Alex",
+        "last_name": "Alexeev",
         "password": "123456789qqFF_",
         "role": "user",
     }
@@ -12,6 +14,8 @@ def test_create_user(client):
 def test_create_user_by_admin(admin_client):
     payload = {
         "username": "user_alex",
+        "first_name": "Alex",
+        "last_name": "Alexeev",
         "password": "123456789qqFF_",
         "role": "user",
     }
@@ -19,6 +23,8 @@ def test_create_user_by_admin(admin_client):
     assert response.status_code == 201
     result = response.json()
     assert result["username"] == "user_alex"
+    assert result["first_name"] == "Alex"
+    assert result["last_name"] == "Alexeev"
     assert result["password"] != "123456789qqFF_"
     assert result["role"] == "user"
 
@@ -26,6 +32,8 @@ def test_create_user_by_admin(admin_client):
 def test_create_same_users(admin_client, sample_user):
     payload = {
         "username": sample_user.username,
+        "first_name": sample_user.first_name,
+        "last_name": sample_user.last_name,
         "password": sample_user.password,
         "role": sample_user.role,
     }
@@ -40,6 +48,8 @@ def test_unauthenticated_user_cannot_create_user(client):
     client.headers = {}
     payload = {
         "username": "user_alex",
+        "first_name": "Alex",
+        "last_name": "Alexeev",
         "password": "123456789qqFF_",
         "role": "user",
     }

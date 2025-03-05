@@ -55,6 +55,8 @@ async def register_user(
     # Создаем нового пользователя
     new_user = Users(
         username=user.username,
+        first_name=user.first_name,
+        last_name=user.last_name,
         password=hashed_password,
         role=user.role,
     )
@@ -85,6 +87,8 @@ async def register_user(
         "refresh_token": refresh_token,
         "user": {
             "username": new_user.username,
+            "first_name": new_user.first_name,
+            "last_name": new_user.last_name,
             "role": new_user.role,
             "id": new_user.id,
         },
@@ -130,6 +134,8 @@ async def login_user(
         "refresh_token": refresh_token,
         "user": {
             "username": existing_user.username,
+            "first_name": existing_user.first_name,
+            "last_name": existing_user.last_name,
             "role": existing_user.role,
             "id": existing_user.id,
         },
@@ -182,6 +188,8 @@ async def refresh_token(
         "refresh_token": refresh_token,
         "user": {
             "username": user.username,
+            "first_name": user.first_name,
+            "last_name": user.last_name,
             "role": user.role,
             "id": user.id,
         },

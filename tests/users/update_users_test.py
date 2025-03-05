@@ -66,6 +66,8 @@ def test_update_password_by_admin(admin_client, sample_user):
     password = sample_user.password
     payload = {
         "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "role": user.role,
         "password": "Test1856#",
     }
@@ -79,6 +81,8 @@ def test_update_password_by_user(client, sample_user):
     user = sample_user
     payload = {
         "username": user.username,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
         "role": user.role,
         "password": "Test1856#",
     }
