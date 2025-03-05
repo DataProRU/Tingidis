@@ -1,5 +1,11 @@
 def test_register_user(client):
-    payload = {"username": "test2", "first_name": "Alex", "last_name": "Brown", "password": "test", "role": "admin"}
+    payload = {
+        "username": "test2",
+        "first_name": "Alex",
+        "last_name": "Brown",
+        "password": "test",
+        "role": "admin",
+    }
     response = client.post("/register", json=payload)
     assert response.status_code == 201
     result = response.json()
@@ -12,7 +18,13 @@ def test_register_user(client):
 
 
 def test_register_user_which_exists(client):
-    payload = {"username": "user", "first_name": "Alex", "last_name": "Brown", "password": "test", "role": "admin"}
+    payload = {
+        "username": "user",
+        "first_name": "Alex",
+        "last_name": "Brown",
+        "password": "test",
+        "role": "admin",
+    }
     response = client.post("/register", json=payload)
     assert response.status_code == 400
     assert response.json() == {"detail": "Пользователь существует"}

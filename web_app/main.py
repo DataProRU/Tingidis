@@ -75,10 +75,15 @@ app.include_router(upload.router)
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 origins = [
-     "https://tingidis-test.ru",
+    "https://tingidis-test.ru",
     "http://tingidis-test.ru",
     "https://91.197.96.232",
     "http://91.197.96.232",
+    "http://localhost:3000",  # React production server
+    "http://localhost:5173",  # React development server
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5173",
 ]
 app.add_middleware(
     CORSMiddleware,

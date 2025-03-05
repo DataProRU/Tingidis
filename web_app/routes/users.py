@@ -77,7 +77,9 @@ async def create_user(
     # Хэшируем пароль перед созданием пользователя
     hashed_password = pwd_context.hash(user_data_create.password)
     user_data_create.password = hashed_password
-    user_data_create.full_name = f"{user_data_create.last_name} {user_data_create.first_name}"
+    user_data_create.full_name = (
+        f"{user_data_create.last_name} {user_data_create.first_name}"
+    )
 
     # Создаем нового пользователя
     user = Users(**user_data_create.dict())
@@ -128,7 +130,11 @@ async def update_user(
         else:
             setattr(user, key, value)
 
-    if "first_name" in update_data or "last_name" in update_data or "father_name" in update_data:
+    if (
+        "first_name" in update_data
+        or "last_name" in update_data
+        or "father_name" in update_data
+    ):
         first_name = update_data.get("first_name", user.first_name)
         last_name = update_data.get("last_name", user.last_name)
         father_name = update_data.get("father_name", user.father_name)
