@@ -22,7 +22,7 @@ def test_create_contracts(client, sample_object, sample_customer, sample_user):
     assert result["sign_date"] == datetime.today().strftime("%Y-%m-%d")
     assert result["price"] == 1000
     assert result["theme"] == "test theme"
-    assert f"1. {(datetime.now()).strftime("%d.%m.%Y")}" in result["evolution"]
+    assert f"1. {(datetime.now()).strftime('%d.%m.%Y')}" in result["evolution"]
 
 
 def test_unauthenticated_user_cannot_create_contracts(
