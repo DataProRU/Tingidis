@@ -105,7 +105,6 @@ async def get_projects(
                             **executor.user_info.__dict__,
                             "password": None,
                         },
-                        "project": executor.project_info,
                     }
                     for executor in project.project_executors
                 ],
@@ -114,7 +113,7 @@ async def get_projects(
     return response
 
 
-@router.get("/projects/{project_id}", response_model=ProjectGetResponse)
+@router.get("/projects/{project_id}")
 async def get_project_by_id(
     project_id: int,
     db: AsyncSession = Depends(get_db),
@@ -134,6 +133,7 @@ async def get_project_by_id(
             selectinload(Projects.project_executors).selectinload(
                 ProjectExecutors.project_info
             ),
+            selectinload(Projects.contract_info).selectinload(Contracts.customer_info),
         )
         .filter(Projects.id == project_id)
     )
@@ -155,7 +155,7 @@ async def get_project_by_id(
                 "id": project.contract_info.id,
                 "code": project.contract_info.code,
                 "name": project.contract_info.name,
-                "customer": project.contract_info.customer,
+                "customer": project.contract_info.customer_info,
                 "executor": project.contract_info.executor,
                 "number": project.contract_info.number,
                 "sign_date": project.contract_info.sign_date,
@@ -200,7 +200,6 @@ async def get_project_by_id(
                     **executor.user_info.__dict__,
                     "password": None,
                 },
-                "project": executor.project_info,
             }
             for executor in project.project_executors
         ],
