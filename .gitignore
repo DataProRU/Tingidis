@@ -9,3 +9,4 @@ idea/
 .venv/
 backup.sql
 .env
+/venv

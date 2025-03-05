@@ -8,7 +8,7 @@ from web_app.models.token import Tokens
 
 # Функция для создания токенов
 def create_token(
-    data: dict, algoritm, key, expires_delta: timedelta = timedelta(minutes=15)
+    data: dict, algoritm, key, expires_delta: timedelta = timedelta(hours=12)
 ):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta

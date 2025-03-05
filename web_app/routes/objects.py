@@ -7,6 +7,7 @@ from web_app.models.objects import Objects
 from web_app.schemas.objects import ObjectCreate, ObjectResponse
 from web_app.middlewares.auth_middleware import token_verification_dependency
 from web_app.utils.logs import log_action
+from sqlalchemy import exc
 
 router = APIRouter()
 
@@ -45,9 +46,23 @@ async def create_object(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
+    # Проверка на уникальность поля code
+    result = await db.execute(select(Objects).filter(Objects.code == object_data.code))
+    existing_obj = result.scalar_one_or_none()
+    if existing_obj:
+        raise HTTPException(
+            status_code=400, detail="Обьект с таким кодом уже существует"
+        )
+
     obj = Objects(**object_data.dict())
     db.add(obj)
-    await db.commit()
+    try:
+        await db.commit()
+    except exc.IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Обьект с таким кодом уже существует"
+        )
     await db.refresh(obj)
     return obj
 
@@ -65,10 +80,29 @@ async def update_object(
     if not obj:
         raise HTTPException(status_code=404, detail="Обьект не найден")
 
+    # Проверка на уникальность поля code
+    if object_data.code:
+        result = await db.execute(
+            select(Objects).filter(
+                Objects.code == object_data.code, Objects.id != object_id
+            )
+        )
+        existing_obj = result.scalar_one_or_none()
+        if existing_obj:
+            raise HTTPException(
+                status_code=400, detail="Обьект с таким кодом уже существует"
+            )
+
     for key, value in object_data.dict(exclude_unset=True).items():
         setattr(obj, key, value)
 
-    await db.commit()
+    try:
+        await db.commit()
+    except exc.IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Обьект с таким кодом уже существует"
+        )
     await db.refresh(obj)
     return obj
 

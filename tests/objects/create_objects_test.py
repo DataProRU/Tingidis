@@ -8,6 +8,13 @@ def test_create_object(client):
     assert result["comment"] is None
 
 
+def test_create_object_with_wrong_code(client, sample_object):
+    payload = {"code": sample_object.code, "name": sample_object.name}
+    response = client.post("/objects", json=payload)
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Обьект с таким кодом уже существует"}
+
+
 def test_unauthenticated_user_cannot_create_object(client):
     client.headers = {}
     payload = {"code": "123456", "name": "test object"}
