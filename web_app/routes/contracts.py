@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from fastapi import HTTPException, APIRouter, Depends, status
 from typing import List
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -180,7 +182,10 @@ async def create_contract(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
-    contract = Contracts(**contract_data.dict())
+    contract_dict = contract_data.dict()
+    contract_dict["evolution"] = f'1. {(datetime.now()).strftime("%d.%m.%Y %H:%M:%S")}'
+
+    contract = Contracts(**contract_dict)
     db.add(contract)
     await db.commit()
     await db.refresh(contract)
@@ -215,6 +220,12 @@ async def update_contract(
 
     for key, value in object_data.dict(exclude_unset=True).items():
         setattr(contract, key, value)
+
+    current_number = int(contract.evolution.split(".")[0].strip())
+    new_number = current_number + 1
+
+    current_time = datetime.now().strftime("%d.%m.%Y %H:%M:%S")
+    contract.evolution = f"{new_number}. {current_time}"
 
     await db.commit()
     await db.refresh(contract)

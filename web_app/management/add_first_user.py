@@ -13,14 +13,15 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 async def add_first_user(db: AsyncSession = Depends(get_db)):
 
-    password = os.getenv("FIRST_USER_PASSWORD", "testpass1234")
+    password = os.getenv("FIRST_USER_PASSWORD")
     hashed_password = pwd_context.hash(password)
     first_user_data = {
         "username": "admin",
         "first_name": "Admin",
         "last_name": "Adminov",
+        "full_name": "Adminov Admin",
         "role": "admin",
-        "password": hashed_password
+        "password": hashed_password,
     }
 
     # Выполните запрос для проверки существования пользователя
@@ -35,7 +36,7 @@ async def add_first_user(db: AsyncSession = Depends(get_db)):
             first_name=first_user_data["first_name"],
             last_name=first_user_data["last_name"],
             role=first_user_data["role"],
-            password=first_user_data["password"]
+            password=first_user_data["password"],
         )
         db.add(new_user)
         await db.commit()

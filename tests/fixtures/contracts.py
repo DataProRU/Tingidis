@@ -18,7 +18,7 @@ async def sample_contract(
             sign_date=datetime(2024, 1, 1),
             price=Decimal("2000.21"),
             theme="test_theme",
-            evolution="test evolution",
+            evolution="2. 24.01.2025 13:00:01",
         )
         db.add(contract)
         await db.commit()
@@ -40,7 +40,7 @@ async def another_contract(
             sign_date=datetime(2024, 2, 2),
             price=Decimal("100.21"),
             theme="test_theme",
-            evolution="test evolution",
+            evolution=None,
         )
         db.add(contract)
         await db.commit()

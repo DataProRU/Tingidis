@@ -23,7 +23,7 @@ class Contracts(Base):
     sign_date = Column(Date, default=func.now())
     price = Column(Decimal)
     theme = Column(String(50))
-    evolution = Column(String(30))
+    evolution = Column(String(30), nullable=True)
 
     code_info = relationship("Objects", back_populates="contracts")
     customer_info = relationship("Customers", back_populates="contracts")
