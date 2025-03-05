@@ -15,6 +15,7 @@ jobs:
           echo "SECRET_KEY=your_secret_key" > .env
           echo "REFRESH_KEY=your_refresh_secret_key" >> .env
           echo "ALGORITHM=HS256" >> .env
+          echo "FIRST_USER_PASSWORD=Testpass123" >> .env
 
       - name: Start Docker containers
         run: docker compose up --build -d
