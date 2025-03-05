@@ -29,6 +29,7 @@ def test_get_project(
     sample_user,
     sample_project_status,
     sample_project_executor,
+    sample_customer,
 ):
     response = client.get(f"/projects/{sample_project.id}")
     assert response.status_code == 200
@@ -45,7 +46,14 @@ def test_get_project(
             "id": sample_contract.id,
             "code": sample_contract.code,
             "name": sample_contract.name,
-            "customer": sample_contract.customer,
+            "customer": {
+                "id": sample_customer.id,
+                "form": sample_customer.form,
+                "name": sample_customer.name,
+                "address": sample_customer.address,
+                "inn": sample_customer.inn,
+                "notes": sample_customer.notes,
+            },
             "executor": sample_contract.executor,
             "number": sample_contract.number,
             "sign_date": sample_contract.sign_date.isoformat(),
@@ -98,17 +106,7 @@ def test_get_project(
                     "notes": sample_user.notes,
                     "role": sample_user.role,
                     "notification": sample_user.notification,
-                },
-                "project": {
-                    "id": sample_project.id,
-                    "object": sample_project.object,
-                    "contract": sample_project.contract,
-                    "name": sample_project.name,
-                    "number": sample_project.number,
-                    "main_executor": sample_project.main_executor,
-                    "deadline": str(sample_project.deadline),
-                    "status": sample_project.status,
-                    "notes": sample_project.notes,
+                    "tg_user_id": None,
                 },
             }
         ],
@@ -117,7 +115,6 @@ def test_get_project(
     assert response.json() == expected_response
 
 
-@pytest.mark.skip
 def test_get_projects(
     client,
     sample_project,
@@ -131,6 +128,7 @@ def test_get_projects(
     another_project_status,
     sample_project_executor,
     another_project_executor,
+    sample_customer,
 ):
     response = client.get("/projects")
     assert response.status_code == 200
@@ -148,7 +146,14 @@ def test_get_projects(
                 "id": sample_contract.id,
                 "code": sample_contract.code,
                 "name": sample_contract.name,
-                "customer": sample_contract.customer,
+                "customer": {
+                    "id": sample_customer.id,
+                    "form": sample_customer.form,
+                    "name": sample_customer.name,
+                    "address": sample_customer.address,
+                    "inn": sample_customer.inn,
+                    "notes": sample_customer.notes,
+                },
                 "executor": sample_contract.executor,
                 "number": sample_contract.number,
                 "sign_date": sample_contract.sign_date.isoformat(),
@@ -210,17 +215,7 @@ def test_get_projects(
                         "notes": sample_user.notes,
                         "role": sample_user.role,
                         "notification": sample_user.notification,
-                    },
-                    "project": {
-                        "id": sample_project.id,
-                        "object": sample_project.object,
-                        "contract": sample_project.contract,
-                        "name": sample_project.name,
-                        "number": sample_project.number,
-                        "main_executor": sample_project.main_executor,
-                        "deadline": str(sample_project.deadline),
-                        "status": sample_project.status,
-                        "notes": sample_project.notes,
+                        "tg_user_id": None,
                     },
                 }
             ],
@@ -288,17 +283,7 @@ def test_get_projects(
                         "notes": another_user.notes,
                         "role": another_user.role,
                         "notification": another_user.notification,
-                    },
-                    "project": {
-                        "id": another_project.id,
-                        "object": another_project.object,
-                        "contract": another_project.contract,
-                        "name": another_project.name,
-                        "number": another_project.number,
-                        "main_executor": another_project.main_executor,
-                        "deadline": str(another_project.deadline),
-                        "status": another_project.status,
-                        "notes": another_project.notes,
+                        "tg_user_id": None,
                     },
                 }
             ],
