@@ -35,6 +35,7 @@ async def add_first_user(db: AsyncSession = Depends(get_db)):
             username=first_user_data["username"],
             first_name=first_user_data["first_name"],
             last_name=first_user_data["last_name"],
+            full_name=first_user_data["full_name"],
             role=first_user_data["role"],
             password=first_user_data["password"],
         )
