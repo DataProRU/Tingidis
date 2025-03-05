@@ -3,6 +3,7 @@ import os
 
 from fastapi import FastAPI
 
+from web_app.management.add_first_user import add_first_user
 from web_app.management.add_form_ownership import add_initial_forms_of_ownership
 from web_app.management.add_project_status import add_initial_project_statuses
 from web_app.management.restore_scheduled_tasks import restore_scheduled_tasks
@@ -46,6 +47,7 @@ async def lifespan(app: FastAPI):
     await init_db()
     scheduler.start()
     async with async_session() as db:
+        await add_first_user(db)
         await add_initial_forms_of_ownership(db)
         await add_initial_project_statuses(db)
         await restore_scheduled_tasks(db)

@@ -26,5 +26,10 @@ docker-compose up --build
 uvicorn web_app.main:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+7. Запустите телеграм бота
+```terminal
+python3 bot.py
+```
+
 Документация:
 http://127.0.0.1:8000/docs
