@@ -11,7 +11,6 @@ def test_create_contracts(client, sample_object, sample_customer, sample_user):
         "sign_date": str(datetime.today().strftime("%Y-%m-%d")),
         "price": 1000,
         "theme": "test theme",
-        "evolution": "test string",
     }
     response = client.post("/contracts", json=payload)
     assert response.status_code == 201
@@ -23,7 +22,7 @@ def test_create_contracts(client, sample_object, sample_customer, sample_user):
     assert result["sign_date"] == datetime.today().strftime("%Y-%m-%d")
     assert result["price"] == 1000
     assert result["theme"] == "test theme"
-    assert result["evolution"] == "test string"
+    assert f"1. {(datetime.now()).strftime('%d.%m.%Y')}" in result["evolution"]
 
 
 def test_unauthenticated_user_cannot_create_contracts(

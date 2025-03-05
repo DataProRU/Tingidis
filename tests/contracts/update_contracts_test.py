@@ -1,3 +1,6 @@
+from datetime import datetime
+
+
 async def test_update_contract(
     sample_contract, client, sample_object, sample_customer, sample_user
 ):
@@ -10,7 +13,6 @@ async def test_update_contract(
         "sign_date": "2025-02-11",
         "price": 2000.21,
         "theme": "test",
-        "evolution": "test evolution",
     }
 
     response = client.patch(f"/contracts/{sample_contract.id}", json=payload)
@@ -43,7 +45,7 @@ async def test_update_contract(
     assert result["sign_date"] == "2025-02-11"
     assert result["price"] == 2000.21
     assert result["theme"] == "test"
-    assert result["evolution"] == "test evolution"
+    assert f"3. {(datetime.now()).strftime('%d.%m.%Y')}" in result["evolution"]
 
 
 def test_unauthenticated_user_cannot_update_contract(
@@ -60,7 +62,6 @@ def test_unauthenticated_user_cannot_update_contract(
         "sign_date": "2025-02-11",
         "price": 2000.21,
         "theme": "test",
-        "evolution": "test evolution",
     }
     response = client.patch(f"/contracts/{sample_contract.id}", json=payload)
     assert response.status_code == 401
