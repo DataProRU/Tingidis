@@ -73,7 +73,7 @@ async def register_user(
         data={"sub": user.username, "role": user.role},
         key=REFRESH_KEY,
         algoritm=ALGORITHM,
-        expires_delta=timedelta(days=7),
+        expires_delta=timedelta(days=30),
     )
 
     await save_token(new_user.id, refresh_token, db)

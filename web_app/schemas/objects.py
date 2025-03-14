@@ -10,6 +10,12 @@ class ObjectCreate(BaseModel):
     comment: Optional[str] = None
 
 
+class ObjectUpdate(BaseModel):
+    code: Optional[constr(min_length=1, max_length=6)]
+    name: Optional[constr(min_length=1, max_length=30)]
+    comment: Optional[str] = None
+
+
 class ObjectResponse(BaseModel):
     id: int
     code: str

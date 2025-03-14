@@ -16,6 +16,9 @@ from web_app.routes.projects import get_projects
 
 from web_app.utils.core import model_to_dict
 
+from web_app.models.users import Users
+from sqlalchemy.future import select
+
 
 async def generate_excel_report(db: AsyncSession):
     contracts_data = await get_contracts_data(db)
@@ -28,6 +31,7 @@ async def generate_excel_report(db: AsyncSession):
     project_exectors_data = await get_project_executors_data(db)
     project_statuses_data = await get_project_statuses_data(db)
     projects_data = await get_projects_data(db)
+    users_data = await get_users_data(db)
 
     # Преобразуем данные в DataFrame
     contracts_df = pd.DataFrame(contracts_data)
@@ -40,6 +44,7 @@ async def generate_excel_report(db: AsyncSession):
     project_exectors_df = pd.DataFrame(project_exectors_data)
     project_statuses_df = pd.DataFrame(project_statuses_data)
     projects_df = pd.DataFrame(projects_data)
+    users_df = pd.DataFrame(users_data)
 
     # Создаем Excel-файл в памяти
     output = BytesIO()
@@ -58,6 +63,7 @@ async def generate_excel_report(db: AsyncSession):
         )
         project_statuses_df.to_excel(writer, sheet_name="Статусы проектов", index=False)
         projects_df.to_excel(writer, sheet_name="Проекты", index=False)
+        users_df.to_excel(writer, sheet_name="Пользователи", index=False)
 
     # Возвращаем содержимое файла
     output.seek(0)
@@ -129,6 +135,7 @@ async def get_objects_data(db):
         parsed_item = {
             "Номер": item["id"],
             "Шифр объекта": item["code"],
+            "Наименование": item["name"],
             "Комментарии": item["comment"],
         }
         parsed_data.append(parsed_item)
@@ -264,6 +271,44 @@ async def get_project_executors_data(db):
             "Срок выполнения": item["project"]["deadline"].strftime(
                 "%d.%m.%Y"
             ),  # Срок выполнения проекта
+        }
+        parsed_data.append(parsed_item)
+
+    return parsed_data
+
+
+async def get_users_data(db):
+    stmt = select(Users)
+    result = await db.execute(stmt)
+    users = result.scalars().all()
+
+    data = [{**user.__dict__} for user in users]
+
+    parsed_data = []
+    for item in data:
+
+        parsed_item = {
+            "Номер": item["id"],
+            "Имя": item["first_name"],
+            "Фамилия": item["last_name"],
+            "Отчество": item["father_name"],
+            "Полное имя": item["full_name"],
+            "Позиция": item["position"],
+            "Телефон": item["phone"],
+            "Почта": item["email"],
+            "Телеграм": item["telegram"],
+            "Дата рождения": (
+                item["birthday"].strftime("%d.%m.%Y")
+                if item["birthday"] is not None
+                else None
+            ),
+            "Категория": item["category"],
+            "Специализация": item["specialization"],
+            "Логин": item["username"],
+            "Примечание": item["notes"],
+            "Роль": item["role"],
+            "Уведомления": item["notification"],
+            "id телеграмм": item["tg_user_id"],
         }
         parsed_data.append(parsed_item)
 
