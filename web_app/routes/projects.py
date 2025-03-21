@@ -15,6 +15,7 @@ from web_app.schemas.projects import (
     ProjectCreateResponse,
 )
 from web_app.middlewares.auth_middleware import token_verification_dependency
+from sqlalchemy import exc
 
 from web_app.utils.logs import log_action
 
@@ -217,9 +218,25 @@ async def create_project(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
+    # Проверка на уникальность поля number
+    result = await db.execute(
+        select(Projects).filter(Projects.number == project_data.number)
+    )
+    existing_project = result.scalar_one_or_none()
+    if existing_project:
+        raise HTTPException(
+            status_code=400, detail="Проект с таким номером уже существует"
+        )
+
     project = Projects(**project_data.dict())
     db.add(project)
-    await db.commit()
+    try:
+        await db.commit()
+    except exc.IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Проект с таким номером уже существует"
+        )
     await db.refresh(project)
     return project
 
@@ -228,7 +245,7 @@ async def create_project(
 @log_action("Обновление проекта")
 async def update_project(
     project_id: int,
-    object_data: ProjectUpdate,
+    project_data: ProjectUpdate,
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
@@ -253,10 +270,29 @@ async def update_project(
     if not project:
         raise HTTPException(status_code=404, detail="Проект не найден")
 
-    for key, value in object_data.dict(exclude_unset=True).items():
+    # Проверка на уникальность поля number
+    if project_data.number:
+        result = await db.execute(
+            select(Projects).filter(
+                Projects.number == project_data.number, Projects.id != project_id
+            )
+        )
+        existing_project = result.scalar_one_or_none()
+        if existing_project:
+            raise HTTPException(
+                status_code=400, detail="Проект с таким номером уже существует"
+            )
+
+    for key, value in project_data.dict(exclude_unset=True).items():
         setattr(project, key, value)
 
-    await db.commit()
+    try:
+        await db.commit()
+    except exc.IntegrityError:
+        await db.rollback()
+        raise HTTPException(
+            status_code=400, detail="Проект с таким номером уже существует"
+        )
     await db.refresh(project)
     return {
         "id": project.id,

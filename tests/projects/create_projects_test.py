@@ -28,6 +28,30 @@ def test_create_project(
     assert result["notes"] == "test notes"
 
 
+def test_create_project_with_wrong_code(
+    client,
+    sample_project,
+    sample_object,
+    sample_contract,
+    sample_user,
+    sample_project_status,
+):
+    payload = {
+        "object": sample_object.id,
+        "contract": sample_contract.id,
+        "name": sample_project.name,
+        "number": sample_project.number,
+        "main_executor": sample_user.id,
+        "deadline": date.today().isoformat(),
+        "status": sample_project_status.id,
+        "notes": sample_project.notes,
+    }
+
+    response = client.post("/projects", json=payload)
+    assert response.status_code == 400
+    assert response.json() == {"detail": "Проект с таким номером уже существует"}
+
+
 def test_unauthenticated_user_cannot_create_projects(
     client, sample_object, sample_contract, sample_user, sample_project_status
 ):
