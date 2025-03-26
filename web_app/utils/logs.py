@@ -34,18 +34,17 @@ def log_action(action: str):
             await session.commit()
 
             # Теперь отправляем уведомление после коммита
-            logger.info(f"Attempting to send notification to user '{username}'")
+            logger.info(f"Attempting to send notifications to users about '{username}'")
             try:
-                from bot import notify_user
+                from bot import notify_all_users
 
-                await notify_user(
+                await notify_all_users(
                     session,
-                    username,
                     f"Пользователь {username} совершил действие '{action}' для объекта по ID: {object_id}",
                 )
             except Exception as e:
                 logger.error(
-                    f"Failed to send notification to user '{username}': {str(e)}"
+                    f"Failed to send notifications to users about '{username}': {str(e)}"
                 )
             return result
 

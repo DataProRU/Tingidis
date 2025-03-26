@@ -49,7 +49,7 @@ async def command_start_handler(message: Message):
             user.tg_user_id = tg_user_id
             await session.commit()
             await session.refresh(user)
-            await notify_user(session, user.username, "Telegram id успешно привязан")
+            await send_notification(tg_user_id, "Telegram id успешно привязан")
         else:
             logger.info(f"User with telegram username {tg_username} does not exist")
 
@@ -64,20 +64,28 @@ async def send_notification(user_id: int, message: str):
         logger.exception(f"Failed to send message to {user_id}: {e}")
 
 
-# Функция уведомления пользователя
-async def notify_user(session: AsyncSession, username: str, message: str):
-    user = await session.execute(select(Users).where(Users.username == username))
-    user = user.scalar_one_or_none()
-    if user and user.notification and user.tg_user_id:
-        logger.info(
-            f"User {username} found, notification enabled, telegram: {user.tg_user_id}"
+# Функция массовых уведомлений пользователей
+async def notify_all_users(session: AsyncSession, message: str):
+    # Выбираем всех пользователей с включенными уведомлениями и указанным tg_user_id
+    result = await session.execute(
+        select(Users).where(
+            Users.notification == True,
+            Users.tg_user_id.is_not(None)
         )
-        await send_notification(user.tg_user_id, message)
-    else:
-        logger.info(
-            f"User {username} not found or notification disabled or you should start bot"
-        )
+    )
+    users = result.scalars().all()
 
+    logger.info(f"Starting notifications broadcast for {len(users)} users")
+
+    # Отправляем уведомления каждому пользователю
+    for user in users:
+        try:
+            await send_notification(user.tg_user_id, message)
+            logger.info(f"Notification sent to {user.username} (ID: {user.tg_user_id})")
+        except Exception as e:
+            logger.error(f"Failed to send notification to {user.username}: {str(e)}")
+
+    logger.info(f"Notifications broadcast completed. Total processed: {len(users)} users")
 
 # Запуск бота
 async def main():
