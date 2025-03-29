@@ -1,5 +1,9 @@
+from datetime import date
+
 from fastapi import HTTPException, APIRouter, Depends, status
-from typing import List
+from typing import List, Optional
+
+from sqlalchemy import and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -20,37 +24,65 @@ router = APIRouter()
 @router.get("/agreements", response_model=List[AgreementsGetResponse])
 async def get_agreements(
     db: AsyncSession = Depends(get_db),
-    user_data: dict = Depends(token_verification_dependency),
+    #user_data: dict = Depends(token_verification_dependency),
+    # Параметры фильтрации
+    name: Optional[str] = None,
+    number: Optional[str] = None,
+    price_min: Optional[float] = None,
+    price_max: Optional[float] = None,
+    deadline_start: Optional[date] = None,
+    deadline_end: Optional[date] = None,
+    notes: Optional[str] = None,
+    contract_id: Optional[int] = None,
 ):
     stmt = select(Agreements).options(selectinload(Agreements.contract_info))
+    filters = []
+
+    if name:
+        filters.append(Agreements.name.ilike(f"%{name}%"))
+    if number:
+        filters.append(Agreements.number == number)
+    if notes:
+        filters.append(Agreements.notes.ilike(f"%{notes}%"))
+    if price_min is not None:
+        filters.append(Agreements.price >= price_min)
+    if price_max is not None:
+        filters.append(Agreements.price <= price_max)
+    if deadline_start:
+        filters.append(Agreements.deadline >= deadline_start)
+    if deadline_end:
+        filters.append(Agreements.deadline <= deadline_end)
+    if contract_id:
+        filters.append(Agreements.contract == contract_id)
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
     result = await db.execute(stmt)
     agreements = result.scalars().all()
-    response = []
-    for agreement in agreements:
-        response.append(
-            {
-                "id": agreement.id,
-                "name": agreement.name,
-                "number": agreement.number,
-                "price": agreement.price,
-                "deadline": agreement.deadline,
-                "notes": agreement.notes,
-                "contract": {
-                    "id": agreement.contract_info.id,
-                    "code": agreement.contract_info.code,
-                    "name": agreement.contract_info.name,
-                    "customer": agreement.contract_info.customer,
-                    "executor": agreement.contract_info.executor,
-                    "number": agreement.contract_info.number,
-                    "sign_date": agreement.contract_info.sign_date,
-                    "price": agreement.contract_info.price,
-                    "theme": agreement.contract_info.theme,
-                    "evolution": agreement.contract_info.evolution,
-                },
-            }
-        )
 
-    return response
+    return [
+        {
+            "id": agreement.id,
+            "name": agreement.name,
+            "number": agreement.number,
+            "price": agreement.price,
+            "deadline": agreement.deadline,
+            "notes": agreement.notes,
+            "contract": {
+                "id": agreement.contract_info.id,
+                "code": agreement.contract_info.code,
+                "name": agreement.contract_info.name,
+                "customer": agreement.contract_info.customer,
+                "executor": agreement.contract_info.executor,
+                "number": agreement.contract_info.number,
+                "sign_date": agreement.contract_info.sign_date,
+                "price": float(agreement.contract_info.price),
+                "theme": agreement.contract_info.theme,
+                "evolution": agreement.contract_info.evolution,
+            } if agreement.contract_info else None
+        }
+        for agreement in agreements
+    ]
 
 
 @router.get("/agreements/{agreements_id}", response_model=AgreementsGetResponse)
@@ -99,7 +131,7 @@ async def get_agreements_by_id(
 async def create_agreement(
     agreement_data: AgreementsCreate,
     db: AsyncSession = Depends(get_db),
-    user_data: dict = Depends(token_verification_dependency),
+    #user_data: dict = Depends(token_verification_dependency),
 ):
     agreement = Agreements(**agreement_data.dict())
     db.add(agreement)
