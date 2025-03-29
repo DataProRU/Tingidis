@@ -15,5 +15,15 @@ class Customers(Base):
     notes = Column(Text, nullable=True)
 
     form_of_ownership = relationship("FormOfOwnerships", back_populates="customers")
-    contacts = relationship("Contacts", back_populates="customer_info")
-    contracts = relationship("Contracts", back_populates="customer_info")
+    contacts = relationship(
+        "Contacts",
+        back_populates="customer_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )
+    contracts = relationship(
+        "Contracts",
+        back_populates="customer_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )

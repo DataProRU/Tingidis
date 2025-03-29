@@ -74,7 +74,11 @@ def client(sample_user):
     app.dependency_overrides[get_db] = _get_test_db
     client = TestClient(app)
     token = create_token(
-        data={"sub": sample_user.username, "role": sample_user.role},
+        data={
+            "sub": sample_user.username,
+            "role": sample_user.role,
+            "id": sample_user.id,
+        },
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )
@@ -87,7 +91,7 @@ def admin_client(admin_user):
     app.dependency_overrides[get_db] = _get_test_db
     client = TestClient(app)
     token = create_token(
-        data={"sub": admin_user.username, "role": admin_user.role},
+        data={"sub": admin_user.username, "role": admin_user.role, "id": admin_user.id},
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )

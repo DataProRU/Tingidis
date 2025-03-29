@@ -1,8 +1,12 @@
-from fastapi import HTTPException, APIRouter, Depends, status
-from typing import List
+from fastapi import HTTPException, APIRouter, Depends, status, Query
+from typing import Annotated, Optional, List
+
+from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from sqlalchemy.future import select
+
+from web_app.models import Projects
 from web_app.models.project_statuses import ProjectStatuses
 from web_app.schemas.project_statuses import ProjectStatusCreate, ProjectStatusResponse
 from web_app.middlewares.auth_middleware import token_verification_dependency
@@ -12,14 +16,42 @@ router = APIRouter()
 
 
 # Endpoints
-@router.get("/project-statuses", response_model=List[ProjectStatusResponse])
+
+
+@router.get("/project-statuses", response_model=list[ProjectStatusResponse])
 async def get_project_statuses(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
+    id: Annotated[list[int] | None, Query()] = None,
+    name: Annotated[list[str] | None, Query()] = None,
+    sortBy: Optional[str] = None,
+    sortDir: Optional[str] = "asc",
 ):
     stmt = select(ProjectStatuses)
+
+    filters = []
+
+    if id:
+        filters.append((ProjectStatuses.id.in_(id)))
+    if name:
+        filters.append(or_(ProjectStatuses.name.ilike(f"%{n}%") for n in name))
+
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    if sortBy:
+        try:
+            sort_column = getattr(ProjectStatuses, sortBy)
+            if sortDir.lower() == "desc":
+                stmt = stmt.order_by(sort_column.desc())
+            else:
+                stmt = stmt.order_by(sort_column.asc())
+        except AttributeError:
+            raise HTTPException(status_code=404, detail="Поле не найдено")
+
     result = await db.execute(stmt)
     project_statuses = result.scalars().all()
+
     return project_statuses
 
 
@@ -97,6 +129,15 @@ async def delete_project_status(
     project_status = result.scalar_one_or_none()
     if not project_status:
         raise HTTPException(status_code=404, detail="Статус проекта не найден")
+
+    projects_exist = await db.execute(
+        select(Projects).filter(Projects.status == object_id).limit(1)
+    )
+    if projects_exist.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail="Невозможно удалить статус проекта: существуют связанные проекты. Удалите их сначала.",
+        )
 
     # Удаление объекта
     await db.delete(project_status)

@@ -65,12 +65,12 @@ async def register_user(
 
     # Создаем токены с ролью пользователя в payload
     access_token = create_token(
-        data={"sub": user.username, "role": user.role},
+        data={"sub": user.username, "role": user.role, "id": user.id},
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )
     refresh_token = create_token(
-        data={"sub": user.username, "role": user.role},
+        data={"sub": user.username, "role": user.role, "id": user.id},
         key=REFRESH_KEY,
         algoritm=ALGORITHM,
         expires_delta=timedelta(days=30),
@@ -114,12 +114,20 @@ async def login_user(
 
     # Создаем токены с ролью пользователя в payload
     access_token = create_token(
-        data={"sub": existing_user.username, "role": existing_user.role},
+        data={
+            "sub": existing_user.username,
+            "role": existing_user.role,
+            "id": existing_user.id,
+        },
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )
     refresh_token = create_token(
-        data={"sub": existing_user.username, "role": existing_user.role},
+        data={
+            "sub": existing_user.username,
+            "role": existing_user.role,
+            "id": existing_user.id,
+        },
         key=REFRESH_KEY,
         algoritm=ALGORITHM,
         expires_delta=timedelta(days=7),
@@ -168,12 +176,12 @@ async def refresh_token(
         raise HTTPException(status_code=404, detail="User not found")
 
     access_token = create_token(
-        data={"sub": user.username, "role": user.role},
+        data={"sub": user.username, "role": user.role, "id": user.id},
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )
     refresh_token = create_token(
-        data={"sub": user.username, "role": user.role},
+        data={"sub": user.username, "role": user.role, "id": user.id},
         key=REFRESH_KEY,
         algoritm=ALGORITHM,
         expires_delta=timedelta(days=7),

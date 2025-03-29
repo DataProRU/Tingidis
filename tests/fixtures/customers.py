@@ -33,3 +33,35 @@ async def another_customer(async_session_test, another_form):
         await db.commit()
         await db.refresh(customer)
         return customer
+
+
+@pytest.fixture
+async def third_customer(async_session_test, third_form):
+    async with async_session_test() as db:
+        customer = Customers(
+            name="Nicolas",
+            form=third_form.id,
+            address="second",
+            inn="111111",
+            notes="aaa",
+        )
+        db.add(customer)
+        await db.commit()
+        await db.refresh(customer)
+        return customer
+
+
+@pytest.fixture
+async def fouth_customer(async_session_test, foth_form):
+    async with async_session_test() as db:
+        customer = Customers(
+            name="John",
+            form=foth_form.id,
+            address="second",
+            inn="22222",
+            notes="bbbbb",
+        )
+        db.add(customer)
+        await db.commit()
+        await db.refresh(customer)
+        return customer

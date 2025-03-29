@@ -1,12 +1,16 @@
-from fastapi import HTTPException, APIRouter, Depends, status
-from typing import List
+from datetime import date
+
+from fastapi import HTTPException, APIRouter, Depends, status, Query
+from typing import Annotated, Optional, List
+
+from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from web_app.database import get_db
 from sqlalchemy.future import select
 
-from web_app.models import ProjectExecutors, Projects
+from web_app.models import ProjectExecutors, Projects, Users
 from web_app.schemas.project_executors import (
     ProjectExecutorsGetResponse,
     ProjectExecutorsResponse,
@@ -21,15 +25,89 @@ router = APIRouter()
 
 
 # Endpoints
-@router.get("/project-executors", response_model=List[ProjectExecutorsGetResponse])
+
+
+@router.get("/project-executors", response_model=list[ProjectExecutorsGetResponse])
 async def get_project_executors(
     db: AsyncSession = Depends(get_db),
+    user_full_name: Annotated[list[str] | None, Query()] = None,
+    user_position: Annotated[list[str] | None, Query()] = None,
+    user_email: Annotated[list[str] | None, Query()] = None,
+    user_specialization: Annotated[list[str] | None, Query()] = None,
+    project_name: Annotated[list[str] | None, Query()] = None,
+    project_number: Annotated[list[str] | None, Query()] = None,
+    project_status: Annotated[list[int] | None, Query()] = None,
+    project_deadline: Annotated[list[date] | None, Query()] = None,
     user_data: dict = Depends(token_verification_dependency),
+    sortBy: Optional[str] = None,
+    sortDir: Optional[str] = "asc",
 ):
     stmt = select(ProjectExecutors).options(
         selectinload(ProjectExecutors.project_info),
         selectinload(ProjectExecutors.user_info),
     )
+
+    filters = []
+
+    if user_full_name or user_position or user_email or user_specialization:
+        stmt = stmt.join(ProjectExecutors.user_info)
+
+        if user_full_name:
+            filters.append(
+                or_(
+                    or_(
+                        Users.full_name.ilike(f"%{name}%"),
+                        Users.first_name.ilike(f"%{name}%"),
+                        Users.last_name.ilike(f"%{name}%"),
+                    )
+                    for name in user_full_name
+                )
+            )
+        if user_position:
+            filters.append(
+                or_(Users.position.ilike(f"%{pos}%") for pos in user_position)
+            )
+        if user_email:
+            filters.append(or_(Users.email.ilike(f"%{email}%") for email in user_email))
+        if user_specialization:
+            filters.append(
+                or_(
+                    Users.specialization.ilike(f"%{spec}%")
+                    for spec in user_specialization
+                )
+            )
+
+    if project_name or project_number or project_status:
+        stmt = stmt.join(ProjectExecutors.project_info)
+
+        if project_name:
+            filters.append(
+                or_(Projects.name.ilike(f"%{name}%") for name in project_name)
+            )
+        if project_number:
+            filters.append(
+                or_(Projects.number.ilike(f"%{num}%") for num in project_number)
+            )
+        if project_status:
+            filters.append(
+                or_(Projects.status.ilike(f"%{ps}%") for ps in project_status)
+            )
+        if project_deadline:
+            filters.append((Projects.deadline.in_(project_deadline)))
+
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    if sortBy:
+        try:
+            sort_column = getattr(ProjectExecutors, sortBy)
+            if sortDir.lower() == "desc":
+                stmt = stmt.order_by(sort_column.desc())
+            else:
+                stmt = stmt.order_by(sort_column.asc())
+        except AttributeError:
+            raise HTTPException(status_code=404, detail="Поле не найдено")
+
     result = await db.execute(stmt)
     projects_executors = result.scalars().all()
 
@@ -38,36 +116,44 @@ async def get_project_executors(
         response.append(
             {
                 "id": projects_executor.id,
-                "user": {
-                    "id": projects_executor.user_info.id,
-                    "first_name": projects_executor.user_info.first_name,
-                    "last_name": projects_executor.user_info.last_name,
-                    "father_name": projects_executor.user_info.father_name,
-                    "full_name": projects_executor.user_info.full_name,
-                    "position": projects_executor.user_info.position,
-                    "phone": projects_executor.user_info.phone,
-                    "email": projects_executor.user_info.email,
-                    "telegram": projects_executor.user_info.telegram,
-                    "birthday": projects_executor.user_info.birthday,
-                    "category": projects_executor.user_info.category,
-                    "specialization": projects_executor.user_info.specialization,
-                    "username": projects_executor.user_info.username,
-                    "password": None,
-                    "notes": projects_executor.user_info.notes,
-                    "role": projects_executor.user_info.role,
-                    "notification": projects_executor.user_info.notification,
-                },
-                "project": {
-                    "id": projects_executor.project_info.id,
-                    "object": projects_executor.project_info.object,
-                    "contract": projects_executor.project_info.contract,
-                    "name": projects_executor.project_info.name,
-                    "number": projects_executor.project_info.number,
-                    "main_executor": projects_executor.project_info.main_executor,
-                    "deadline": projects_executor.project_info.deadline,
-                    "status": projects_executor.project_info.status,
-                    "notes": projects_executor.project_info.notes,
-                },
+                "user": (
+                    {
+                        "id": projects_executor.user_info.id,
+                        "first_name": projects_executor.user_info.first_name,
+                        "last_name": projects_executor.user_info.last_name,
+                        "father_name": projects_executor.user_info.father_name,
+                        "full_name": projects_executor.user_info.full_name,
+                        "position": projects_executor.user_info.position,
+                        "phone": projects_executor.user_info.phone,
+                        "email": projects_executor.user_info.email,
+                        "telegram": projects_executor.user_info.telegram,
+                        "birthday": projects_executor.user_info.birthday,
+                        "category": projects_executor.user_info.category,
+                        "specialization": projects_executor.user_info.specialization,
+                        "username": projects_executor.user_info.username,
+                        "password": None,
+                        "notes": projects_executor.user_info.notes,
+                        "role": projects_executor.user_info.role,
+                        "notification": projects_executor.user_info.notification,
+                    }
+                    if projects_executor.user_info
+                    else None
+                ),
+                "project": (
+                    {
+                        "id": projects_executor.project_info.id,
+                        "object": projects_executor.project_info.object,
+                        "contract": projects_executor.project_info.contract,
+                        "name": projects_executor.project_info.name,
+                        "number": projects_executor.project_info.number,
+                        "main_executor": projects_executor.project_info.main_executor,
+                        "deadline": projects_executor.project_info.deadline,
+                        "status": projects_executor.project_info.status,
+                        "notes": projects_executor.project_info.notes,
+                    }
+                    if projects_executor.project_info
+                    else None
+                ),
             }
         )
 

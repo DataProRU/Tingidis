@@ -68,10 +68,7 @@ async def send_notification(user_id: int, message: str):
 async def notify_all_users(session: AsyncSession, message: str):
     # Выбираем всех пользователей с включенными уведомлениями и указанным tg_user_id
     result = await session.execute(
-        select(Users).where(
-            Users.notification == True,
-            Users.tg_user_id.is_not(None)
-        )
+        select(Users).where(Users.notification == True, Users.tg_user_id.is_not(None))
     )
     users = result.scalars().all()
 
@@ -85,7 +82,10 @@ async def notify_all_users(session: AsyncSession, message: str):
         except Exception as e:
             logger.error(f"Failed to send notification to {user.username}: {str(e)}")
 
-    logger.info(f"Notifications broadcast completed. Total processed: {len(users)} users")
+    logger.info(
+        f"Notifications broadcast completed. Total processed: {len(users)} users"
+    )
+
 
 # Запуск бота
 async def main():

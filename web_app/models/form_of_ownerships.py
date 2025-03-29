@@ -10,4 +10,9 @@ class FormOfOwnerships(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(30))
 
-    customers = relationship("Customers", back_populates="form_of_ownership")
+    customers = relationship(
+        "Customers",
+        back_populates="form_of_ownership",
+        cascade="all, delete-orphan",  # SQLAlchemy удалит связанные записи
+        passive_deletes=False,
+    )

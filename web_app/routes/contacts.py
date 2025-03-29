@@ -1,10 +1,14 @@
-from fastapi import HTTPException, APIRouter, Depends, status
-from typing import List
+from fastapi import HTTPException, APIRouter, Depends, status, Query
+from typing import Annotated, List, Optional
+
+from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from web_app.database import get_db
 from sqlalchemy.future import select
+
+from web_app.models import Customers
 from web_app.models.contacts import Contacts
 from web_app.schemas.contacts import (
     ContactResponse,
@@ -18,39 +22,83 @@ from web_app.utils.logs import log_action
 router = APIRouter()
 
 
-# Endpoints
-@router.get("/contacts", response_model=List[ContactGetResponse])
+@router.get("/contacts", response_model=list[ContactGetResponse])
 async def get_contacts(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
+    id: Annotated[list[int] | None, Query()] = None,
+    first_name: Annotated[list[str] | None, Query()] = None,
+    last_name: Annotated[list[str] | None, Query()] = None,
+    father_name: Annotated[list[str] | None, Query()] = None,
+    phone: Annotated[list[str] | None, Query()] = None,
+    email: Annotated[list[str] | None, Query()] = None,
+    position: Annotated[list[str] | None, Query()] = None,
+    customer: Annotated[list[str] | None, Query()] = None,
+    sortBy: Optional[str] = None,  # поле для сортировки
+    sortDir: Optional[str] = "asc",  # направление сортировки
 ):
     stmt = select(Contacts).options(selectinload(Contacts.customer_info))
+    filters = []
+
+    if id:
+        filters.append((Contacts.id.in_(id)))
+    if first_name:
+        filters.append(or_(Contacts.first_name.ilike(f"%{n}%") for n in first_name))
+    if last_name:
+        filters.append(or_(Contacts.last_name.ilike(f"%{n}%") for n in last_name))
+    if father_name:
+        filters.append(or_(Contacts.father_name.ilike(f"%{n}%") for n in father_name))
+    if phone:
+        filters.append(or_(Contacts.phone.ilike(f"%{n}%") for n in phone))
+    if email:
+        filters.append(or_(Contacts.email.ilike(f"%{n}%") for n in email))
+    if position:
+        filters.append(or_(Contacts.position.ilike(f"%{n}%") for n in position))
+
+    if customer:
+        stmt = stmt.join(Contacts.customer_info)
+        filters.append(or_(Customers.name.ilike(f"%{n}%") for n in customer))
+
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    if sortBy:
+        try:
+            sort_column = getattr(Contacts, sortBy)
+            if sortDir.lower() == "desc":
+                stmt = stmt.order_by(sort_column.desc())
+            else:
+                stmt = stmt.order_by(sort_column.asc())
+        except AttributeError:
+            raise HTTPException(status_code=404, detail="Поле не найдено")
+
     result = await db.execute(stmt)
     contacts = result.scalars().all()
 
-    response = []
-    for contact in contacts:
-        response.append(
-            {
-                "id": contact.id,
-                "first_name": contact.first_name,
-                "last_name": contact.last_name,
-                "father_name": contact.father_name,
-                "phone": contact.phone,
-                "email": contact.email,
-                "position": contact.position,
-                "customer": {
+    return [
+        {
+            "id": contact.id,
+            "first_name": contact.first_name,
+            "last_name": contact.last_name,
+            "father_name": contact.father_name,
+            "phone": contact.phone,
+            "email": contact.email,
+            "position": contact.position,
+            "customer": (
+                {
                     "id": contact.customer_info.id,
                     "form": contact.customer_info.form,
                     "name": contact.customer_info.name,
                     "address": contact.customer_info.address,
                     "inn": contact.customer_info.inn,
                     "notes": contact.customer_info.notes,
-                },
-            }
-        )
-
-    return response
+                }
+                if contact.customer_info
+                else None
+            ),
+        }
+        for contact in contacts
+    ]
 
 
 @router.get("/contacts/{contact_id}", response_model=ContactGetResponse)

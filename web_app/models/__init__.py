@@ -2,6 +2,7 @@ from .users import Users
 from .token import Tokens
 from .logs import LogEntry
 from .form_of_ownerships import FormOfOwnerships
+from .personal_settings import PersonalSettings
 
 from .contacts import Contacts
 from .contracts import Contracts

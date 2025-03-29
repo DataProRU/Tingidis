@@ -6,6 +6,7 @@ from web_app.services.auth import validate_access_token
 
 async def token_verification_dependency(request: Request):
     authorization = request.headers.get("Authorization")
+    print(authorization)
     if not authorization:
         raise HTTPException(status_code=401, detail="Отсутствует токен")
     if not authorization.startswith("Bearer "):
