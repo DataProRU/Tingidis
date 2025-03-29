@@ -11,5 +11,15 @@ class Objects(Base):
     name = Column(String(30), nullable=False)
     comment = Column(Text, nullable=True)
 
-    contracts = relationship("Contracts", back_populates="code_info")
-    projects = relationship("Projects", back_populates="object_info")
+    contracts = relationship(
+        "Contracts",
+        back_populates="code_info",
+        cascade="all, delete-orphan",  # SQLAlchemy удалит связанные записи
+        passive_deletes=False,
+    )
+    projects = relationship(
+        "Projects",
+        back_populates="object_info",
+        cascade="all, delete-orphan",  # SQLAlchemy удалит связанные записи
+        passive_deletes=False,
+    )

@@ -9,4 +9,9 @@ class ProjectStatuses(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(30))
 
-    projects = relationship("Projects", back_populates="project_info")
+    projects = relationship(
+        "Projects",
+        back_populates="project_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )

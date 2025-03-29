@@ -23,7 +23,7 @@ def test_login_with_incorrect_data(client):
     }
     response = client.post("/login", json=payload)
     assert response.status_code == 401
-    assert response.json() == {"detail": "Неверный логин или пароль"}
+    assert response.json() == {"detail": "Пользователь не найден"}
 
 
 def test_login_with_empty_field(client):

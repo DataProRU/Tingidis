@@ -1,5 +1,9 @@
-from fastapi import HTTPException, APIRouter, Depends, status
-from typing import List
+from datetime import date
+
+from fastapi import HTTPException, APIRouter, Depends, status, Query
+from typing import Optional, Annotated, List
+
+from sqlalchemy import and_, or_
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
@@ -17,25 +21,91 @@ from web_app.utils.logs import log_action
 router = APIRouter()
 
 
-@router.get("/agreements", response_model=List[AgreementsGetResponse])
+@router.get("/agreements", response_model=list[AgreementsGetResponse])
 async def get_agreements(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
+    id: Annotated[list[int] | None, Query()] = None,
+    name: Annotated[list[str] | None, Query()] = None,
+    number: Annotated[list[str] | None, Query()] = None,
+    price: Annotated[list[float] | None, Query()] = None,
+    deadline: Annotated[list[date] | None, Query()] = None,
+    notes: Annotated[list[str] | None, Query()] = None,
+    contract: Annotated[list[str] | None, Query()] = None,
+    sortBy: Optional[str] = None,
+    sortDir: Optional[str] = "asc",
 ):
-    stmt = select(Agreements).options(selectinload(Agreements.contract_info))
+    join_contracts = sortBy == "contract" or bool(contract)
+
+    if join_contracts:
+        stmt = (
+            select(Agreements)
+            .join(Agreements.contract_info)
+            .options(selectinload(Agreements.contract_info))
+        )
+    else:
+        stmt = select(Agreements).options(selectinload(Agreements.contract_info))
+
+    filters = []
+
+    if id:
+        filters.append((Agreements.id.in_(id)))
+
+    if name:
+        filters.append(or_(Agreements.name.ilike(f"%{n}%") for n in name))
+
+    if number:
+        filters.append(or_(Agreements.number.ilike(f"%{n}%") for n in number))
+
+    if notes:
+        filters.append(or_(Agreements.notes.ilike(f"%{n}%") for n in notes))
+
+    if price:
+        filters.append(Agreements.price.in_(price))
+
+    if deadline:
+        filters.append(Agreements.deadline.in_(deadline))
+
+    if contract:
+        if not join_contracts:
+            stmt = stmt.join(Agreements.contract_info)
+        filters.append(or_(Contracts.name.ilike(f"%{n}%") for n in contract))
+
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    if sortBy:
+        if sortBy == "contract":
+            if not join_contracts:
+                stmt = stmt.join(Agreements.contract_info)
+            sort_column = Contracts.name
+        else:
+            try:
+                sort_column = getattr(Agreements, sortBy)
+            except AttributeError:
+                raise HTTPException(
+                    status_code=404, detail="Поле для сортировки не найдено"
+                )
+
+        # Применяем направление сортировки
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
+
     result = await db.execute(stmt)
     agreements = result.scalars().all()
-    response = []
-    for agreement in agreements:
-        response.append(
-            {
-                "id": agreement.id,
-                "name": agreement.name,
-                "number": agreement.number,
-                "price": agreement.price,
-                "deadline": agreement.deadline,
-                "notes": agreement.notes,
-                "contract": {
+
+    return [
+        {
+            "id": agreement.id,
+            "name": agreement.name,
+            "number": agreement.number,
+            "price": agreement.price,
+            "deadline": agreement.deadline,
+            "notes": agreement.notes,
+            "contract": (
+                {
                     "id": agreement.contract_info.id,
                     "code": agreement.contract_info.code,
                     "name": agreement.contract_info.name,
@@ -43,14 +113,16 @@ async def get_agreements(
                     "executor": agreement.contract_info.executor,
                     "number": agreement.contract_info.number,
                     "sign_date": agreement.contract_info.sign_date,
-                    "price": agreement.contract_info.price,
+                    "price": float(agreement.contract_info.price),
                     "theme": agreement.contract_info.theme,
                     "evolution": agreement.contract_info.evolution,
-                },
-            }
-        )
-
-    return response
+                }
+                if agreement.contract_info
+                else None
+            ),
+        }
+        for agreement in agreements
+    ]
 
 
 @router.get("/agreements/{agreements_id}", response_model=AgreementsGetResponse)

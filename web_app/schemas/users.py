@@ -45,6 +45,7 @@ class UserUpdate(BaseModel):
 
 class UserCreate(BaseModel):
 
+    id: Optional[int] = None
     first_name: str
     last_name: str
     father_name: Optional[str] = None

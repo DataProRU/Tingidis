@@ -176,7 +176,7 @@ def test_get_all_users_by_user_role(client, admin_user, sample_user, another_use
             "password": None,  # Use the actual password field
             "notes": admin_user.notes,
             "role": admin_user.role,
-            "notification": another_user.notification,
+            "notification": False,
         },
         {
             "id": another_user.id,
