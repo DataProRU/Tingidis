@@ -2,6 +2,7 @@ from pydantic import BaseModel
 from typing import Dict, Any, Optional
 from datetime import datetime
 
+
 class ColumnSettings(BaseModel):
     width: Optional[int] = None
     title: Optional[str] = None
@@ -11,6 +12,7 @@ class ColumnSettings(BaseModel):
 class SettingsData(BaseModel):
     columns: Optional[dict[str, ColumnSettings]] = None
     filters: Optional[dict[str, Any]] = None
+
 
 class SettingsResponse(BaseModel):
     component: str

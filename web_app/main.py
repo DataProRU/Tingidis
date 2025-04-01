@@ -23,7 +23,7 @@ from web_app.routes import (
     project_executors,
     deadlines,
     upload,
-personal_settings,
+    personal_settings,
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware

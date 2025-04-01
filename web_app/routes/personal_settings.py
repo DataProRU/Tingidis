@@ -16,27 +16,27 @@ router = APIRouter(prefix="/api/user-settings", tags=["User Settings"])
 
 @router.get("/{component}", response_model=SettingsResponse)
 async def get_settings(
-        component: Any,
-        db: AsyncSession = Depends(get_db),
-        current_user: dict = Depends(token_verification_dependency)
+    component: Any,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(token_verification_dependency),
 ):
     result = await db.execute(
         select(PersonalSettings).where(
-            PersonalSettings.user_id == current_user.get('id'),
-            PersonalSettings.component == component
+            PersonalSettings.user_id == current_user.get("id"),
+            PersonalSettings.component == component,
         )
     )
 
     personal_settings = result.scalars().one_or_none()
 
-    #если настроек не было в бд, делаем их пустыми
+    # если настроек не было в бд, делаем их пустыми
     if not personal_settings:
         empty_settings = SettingsData()
         return SettingsResponse(
             component=component,
             settings=empty_settings,
-            user_id=current_user.get('id'),
-            updated_at=datetime.utcnow()
+            user_id=current_user.get("id"),
+            updated_at=datetime.utcnow(),
         )
 
     table = await get_table_by_component(component)
@@ -44,7 +44,7 @@ async def get_settings(
         return personal_settings
 
     # получаем json настроек для таблицы в виде:
-    '''
+    """
     {
       "columns": {
         "id": {
@@ -77,7 +77,7 @@ async def get_settings(
       },
       "filters": {}
     }
-    '''
+    """
 
     settings_dict = personal_settings.settings.copy()
 
@@ -93,7 +93,9 @@ async def get_settings(
                     stmt = select(distinct(column_attr)).where(column_attr != None)
                     result = await db.execute(stmt)
                     unique_values = result.scalars().all()
-                    valid_columns[column_name]["filters_all_data_in_column"] = unique_values
+                    valid_columns[column_name][
+                        "filters_all_data_in_column"
+                    ] = unique_values
             except AttributeError:
                 continue
 
@@ -106,21 +108,21 @@ async def get_settings(
 
 @router.post("/{component}", response_model=SettingsResponse)
 async def update_settings(
-        component: str,
-        settings_data: SettingsData,
-        db: AsyncSession = Depends(get_db),
-        current_user: dict = Depends(token_verification_dependency)
+    component: str,
+    settings_data: SettingsData,
+    db: AsyncSession = Depends(get_db),
+    current_user: dict = Depends(token_verification_dependency),
 ):
     settings_dict = settings_data.model_dump(exclude_unset=True)
 
-    if 'columns' in settings_dict:
-        for col_settings in settings_dict['columns'].values():
-            col_settings['filters_all_data_in_column'] = None
+    if "columns" in settings_dict:
+        for col_settings in settings_dict["columns"].values():
+            col_settings["filters_all_data_in_column"] = None
 
     result = await db.execute(
         select(PersonalSettings).where(
-            PersonalSettings.user_id ==  current_user.get('id'),
-            PersonalSettings.component == component
+            PersonalSettings.user_id == current_user.get("id"),
+            PersonalSettings.component == component,
         )
     )
 
@@ -134,7 +136,7 @@ async def update_settings(
             user_id=1,
             component=component,
             settings=settings_dict,
-            updated_at=datetime.utcnow()
+            updated_at=datetime.utcnow(),
         )
         db.add(existing)
 

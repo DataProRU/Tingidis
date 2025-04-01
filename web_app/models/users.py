@@ -30,6 +30,6 @@ class Users(Base):
     contracts = relationship("Contracts", back_populates="executor_info")
     project_executors = relationship("ProjectExecutors", back_populates="user_info")
     projects = relationship("Projects", back_populates="executor_info")
-    personal_settings = relationship("PersonalSettings",
-                                     back_populates="user",
-                                     cascade="all, delete-orphan") 
+    personal_settings = relationship(
+        "PersonalSettings", back_populates="user", cascade="all, delete-orphan"
+    )
