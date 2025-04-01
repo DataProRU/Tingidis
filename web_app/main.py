@@ -1,5 +1,4 @@
 import logging
-import os
 
 from fastapi import FastAPI
 
@@ -24,6 +23,7 @@ from web_app.routes import (
     project_executors,
     deadlines,
     upload,
+personal_settings,
 )
 from web_app.database import init_db, async_session
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,6 +73,7 @@ app.include_router(project_executors.router)
 app.include_router(backup.router)
 app.include_router(deadlines.router)
 app.include_router(upload.router)
+app.include_router(personal_settings.router)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
