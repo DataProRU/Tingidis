@@ -7,11 +7,13 @@ class ColumnSettings(BaseModel):
     width: Optional[int] = None
     title: Optional[str] = None
     filters_all_data_in_column: Optional[list] = None
+    visible: Optional[bool] = True
 
 
 class SettingsData(BaseModel):
     columns: Optional[dict[str, ColumnSettings]] = None
     filters: Optional[dict[str, Any]] = None
+    sorted: Optional[dict[str, Any]] = None
 
 
 class SettingsResponse(BaseModel):

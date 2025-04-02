@@ -56,7 +56,7 @@ async def get_settings(
           "width": 200,
           "visible": true,
           "title": "Шифр",
-          "filters": [все значения уникальные из этого столбца - 'code']
+          "filters": [все значения уникальные из этого столбца - 'code'],
         },
         "name": {
           "width": 200,
@@ -75,7 +75,11 @@ async def get_settings(
           "title": "Действия"
         }
       },
-      "filters": {}
+      "filters": {},
+      "sort": {
+    "column": "string",
+    "direction": "string" // "asc" или "desc"
+  },
     }
     """
 
@@ -114,6 +118,14 @@ async def update_settings(
     current_user: dict = Depends(token_verification_dependency),
 ):
     settings_dict = settings_data.model_dump(exclude_unset=True)
+
+    if "sort" in settings_dict and settings_dict["sort"].get("direction"):
+        direction = settings_dict["sort"]["direction"].lower()
+        if direction not in ("asc", "desc"):
+            raise HTTPException(
+                status_code=400, detail="Sort direction must be either 'asc' or 'desc'"
+            )
+        settings_dict["sort"]["direction"] = direction
 
     if "columns" in settings_dict:
         for col_settings in settings_dict["columns"].values():
