@@ -2,10 +2,8 @@ def test_filters_customers(
     client,
     sample_customer,
     another_customer,
-    third_customer,
     sample_form,
     another_form,
-    third_form,
     sample_contact,
     another_contact,
 ):
@@ -245,6 +243,31 @@ def test_filters_customers(
     assert response.status_code == 200
     assert response.json() == [
         {
+            "id": sample_customer.id,
+            "form": (
+                {
+                    "id": sample_form.id,
+                    "name": sample_form.name,
+                }
+            ),
+            "name": sample_customer.name,
+            "address": sample_customer.address,
+            "inn": sample_customer.inn,
+            "notes": sample_customer.notes,
+            "contacts": [
+                {
+                    "customer": sample_contact.id,
+                    "email": sample_contact.email,
+                    "father_name": sample_contact.father_name,
+                    "first_name": sample_contact.first_name,
+                    "id": sample_contact.id,
+                    "last_name": sample_contact.last_name,
+                    "phone": sample_contact.phone,
+                    "position": sample_contact.position,
+                }
+            ],
+        },
+        {
             "id": another_customer.id,
             "form": (
                 {
@@ -268,19 +291,5 @@ def test_filters_customers(
                     "position": another_contact.position,
                 }
             ],
-        },
-        {
-            "id": third_customer.id,
-            "form": (
-                {
-                    "id": third_form.id,
-                    "name": third_form.name,
-                }
-            ),
-            "name": third_customer.name,
-            "address": third_customer.address,
-            "inn": third_customer.inn,
-            "notes": third_customer.notes,
-            "contacts": [],
         },
     ]

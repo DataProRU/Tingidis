@@ -48,14 +48,14 @@ async def sample_contract(create_contract, sample_object, sample_customer, sampl
     """
     return await create_contract(
         code=sample_object.id,
-        name="new_test_name",
+        name="new_test_name_1",
         customer_id=sample_customer.id,
         executor_id=sample_user.id,
         number="123456",
         sign_date=datetime(2024, 1, 1),
         price=Decimal("2000.21"),
-        theme="test_theme",
-        evolution="2. 24.01.2025 13:00:01",
+        theme="test_theme_1",
+        evolution="1. 24.01.2025 13:00:01",
     )
 
 
@@ -68,14 +68,14 @@ async def another_contract(
     """
     return await create_contract(
         code=another_object.id,
-        name="test_name",
+        name="test_name_2",
         customer_id=another_customer.id,
         executor_id=another_user.id,
         number="654321",
         sign_date=datetime(2024, 2, 2),
         price=Decimal("100.21"),
-        theme="test_theme",
-        evolution=None,
+        theme="test_theme_2",
+        evolution="2. 24.01.2025 13:00:01",
     )
 
 
@@ -98,14 +98,14 @@ async def third_contract(create_contract, third_object, third_customer, third_us
 
 
 @pytest.fixture
-async def fourth_contract(create_contract, fourth_object, fourth_customer, fourth_user):
+async def fourth_contract(create_contract, second_object, fouth_customer, fourth_user):
     """
     Фикстура для создания четвертого тестового контракта.
     """
     return await create_contract(
-        code=fourth_object.id,
+        code=second_object.id,
         name="fourth_contract_name",
-        customer_id=fourth_customer.id,
+        customer_id=fouth_customer.id,
         executor_id=fourth_user.id,
         number="432109",
         sign_date=datetime(2024, 4, 4),

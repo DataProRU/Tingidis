@@ -162,7 +162,7 @@ async def delete_object(
     if contracts_exist.scalar_one_or_none():
         raise HTTPException(
             status_code=400,
-            detail="Невозможно удалить объект: существуют связанные контракты. Удалите их сначала.",
+            detail="Невозможно удалить объект: существуют связанные договоры. Удалите их сначала.",
         )
 
     projects_exist = await db.execute(

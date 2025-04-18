@@ -38,7 +38,7 @@ def test_get_project_executor(
             "phone": sample_user.phone,
             "email": sample_user.email,
             "telegram": sample_user.telegram,
-            "birthday": sample_user.birthday,
+            "birthday": str(sample_user.birthday),
             "category": sample_user.category,
             "specialization": sample_user.specialization,
             "username": sample_user.username,

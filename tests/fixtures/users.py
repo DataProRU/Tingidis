@@ -13,8 +13,8 @@ async def create_user(async_session_test):
     async def _create_user(
         first_name: str,
         last_name: str,
-        father_name=None,
-        full_name=None,
+        father_name: str,
+        full_name: str,
         position=None,
         phone=None,
         email=None,
@@ -26,6 +26,7 @@ async def create_user(async_session_test):
         password: str = "123456789",  # По умолчанию пароль, который будет хэшироваться
         notes=None,
         role="user",
+        notification=None
     ):
         async with async_session_test() as db:
             user = Users(
@@ -44,6 +45,7 @@ async def create_user(async_session_test):
                 password=pwd_context.hash(password),  # Хэшируем пароль
                 notes=notes,
                 role=role,
+                notification=notification
             )
             db.add(user)
             await db.commit()
@@ -59,7 +61,21 @@ async def sample_user(create_user):
     Фикстура для создания тестового пользователя.
     """
     return await create_user(
-        first_name="Ivan", last_name="Ivanov", username="user", password="123456789"
+        first_name="Ivan",
+        last_name="Ivanov",
+        father_name="Ivanovich",
+        full_name="Ivan Ivanovich",
+        username="user 1",
+        password="123456789",
+        position="painter",
+        phone="+7(911) 337 65 43",
+        email="ivan@example.com",
+        telegram="@ivan_paint",
+        birthday=date(1981, 12, 30),
+        category="paint",
+        specialization="Painter house",
+        notes="sample test user",
+        notification=True
     )
 
 
@@ -71,7 +87,7 @@ async def another_user(create_user):
     return await create_user(
         first_name="Alex",
         last_name="Alexeev",
-        father_name="Ivanovich",
+        father_name="Alekseevich",
         full_name="Alex Ivanovich",
         position="Worker",
         phone="+3 (911) 181 00 32",
@@ -83,6 +99,7 @@ async def another_user(create_user):
         username="user_alex",
         password="123456789qqFF_",
         notes="another test user",
+        notification=True
     )
 
 
@@ -94,9 +111,12 @@ async def admin_user(create_user):
     return await create_user(
         first_name="Vasya",
         last_name="Pupkin",
+        father_name="Vasilyevich",
+        full_name="Vasya Pupkin",
         username="admin_user",
         password="123456789",
         role="admin",
+        notes="another test user",
     )
 
 
@@ -140,7 +160,7 @@ async def fourth_user(create_user):
         birthday=date(1985, 11, 30),
         category="developer",
         specialization="Backend Development",
-        username="user_petr",
+        username="user_petr 4",
         password="developerpass2023",
         notes="Fourth test user",
     )

@@ -11,7 +11,6 @@ from web_app.services.get_data_from_fk_columns import get_unique_values
 async def create_default_settings(
     table, component: str, db: AsyncSession, current_user: int
 ) -> SettingsResponse:
-    print(current_user, "!!!!!!!!!!!!!!!!!!!!!!!!!")
     """Создает настройки по умолчанию для всех колонок таблицы"""
     default_columns = {}
 

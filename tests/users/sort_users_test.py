@@ -31,7 +31,7 @@ async def test_sort_users_by_username_desc(client, sample_user, another_user):
 
 
 @pytest.mark.asyncio
-async def test_sort_users_by_full_name_asc(client, another_user, third_user):
+async def test_sort_users_by_full_name_asc(client, another_user, sample_user):
     """
     Тест сортировки пользователей по полному имени (full_name) в порядке возрастания.
     """
@@ -40,12 +40,12 @@ async def test_sort_users_by_full_name_asc(client, another_user, third_user):
 
     users = response.json()
     assert users[0]["full_name"] == another_user.full_name  # "Alex Ivanovich"
-    assert users[1]["full_name"] == third_user.full_name  # "Maria Petrovna Sidorova"
+    assert users[1]["full_name"] == sample_user.full_name  # "Maria Petrovna Sidorova"
 
 
 @pytest.mark.asyncio
 async def test_sort_users_by_birthday_asc(
-    client, another_user, third_user, fourth_user
+    client, another_user, third_user, sample_user, fourth_user
 ):
     """
     Тест сортировки пользователей по дате рождения (birthday) в порядке возрастания.
@@ -55,9 +55,9 @@ async def test_sort_users_by_birthday_asc(
 
     users = response.json()
     assert len(users) >= 3
-    assert users[0]["birthday"] == fourth_user.birthday.isoformat()  # "1985-11-30"
-    assert users[1]["birthday"] == third_user.birthday.isoformat()  # "1995-05-15"
-    assert users[2]["birthday"] == another_user.birthday.isoformat()  # "2001-02-02"
+    assert users[0]["birthday"] == sample_user.birthday.isoformat()  # "1981-12-30"
+    assert users[1]["birthday"] == fourth_user.birthday.isoformat()  # "1985-11-30"
+    assert users[2]["birthday"] == third_user.birthday.isoformat()  # "1995-05-15"
 
 
 @pytest.mark.asyncio

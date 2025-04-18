@@ -21,14 +21,13 @@ async def create_object(async_session_test):
 
 @pytest.fixture
 async def sample_object(create_object):
-    return await create_object(code="123456", name="test name", comment=None)
+    return await create_object(code="123456", name="test name", comment="OBJ 1 notes")
 
 
 @pytest.fixture
 async def another_object(create_object):
     return await create_object(
-        code="123457", name="test name 2", comment="test comment 2"
-    )
+        code="123457", name="test name 2", comment="test comment 2")
 
 
 @pytest.fixture

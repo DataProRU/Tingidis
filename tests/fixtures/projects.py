@@ -59,20 +59,20 @@ async def sample_project(
 
 @pytest.fixture
 async def another_project(
-    create_project, another_object, another_user, another_project_status
+    create_project, another_object, another_user, another_project_status, another_contract
 ):
     """
     Фикстура для создания другого тестового проекта.
     """
     return await create_project(
         object_id=another_object.id,
-        contract_id=None,
+        contract_id=another_contract.id,
         name="test project 2",
         number="222",
         main_executor_id=another_user.id,
         deadline=date(2024, 2, 4),
         status_id=another_project_status.id,
-        notes=None,
+        notes="another notes",
     )
 
 

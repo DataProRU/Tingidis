@@ -50,8 +50,8 @@ async def test_sort_agreements_by_price_asc(
 
     agreements = response.json()
     # Проверяем, что соглашения отсортированы по цене в порядке возрастания
-    assert agreements[0]["price"] == another_agreement.price  # 1000
-    assert agreements[1]["price"] == sample_agreement.price  # 1000
+    assert agreements[0]["price"] == sample_agreement.price  # 1000
+    assert agreements[1]["price"] == another_agreement.price  # 1500
     assert agreements[2]["price"] == third_agreement.price  # 2000
 
 

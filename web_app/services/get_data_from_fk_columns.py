@@ -1,3 +1,5 @@
+import logging
+
 from sqlalchemy import select, distinct
 
 from web_app.models import (
@@ -31,6 +33,7 @@ MODEL_MAPPING = {
     "FormOfOwnerships": FormOfOwnerships,
 }
 
+logger = logging.getLogger(__name__)
 
 def get_relation_info(table, column_name):
     key = f"{table.__tablename__}.{column_name}"
@@ -41,7 +44,6 @@ async def get_unique_values(db, table, column_name):
     try:
         column_attr = getattr(table, column_name)
         relation_info = get_relation_info(table, column_name)
-        print(relation_info)
 
         if relation_info:
             related_model_name, display_field = relation_info
@@ -70,5 +72,5 @@ async def get_unique_values(db, table, column_name):
         return result.scalars().all()
 
     except Exception as e:
-        print(f"Error getting values for {table.__name__}.{column_name}: {str(e)}")
+        logger.info(f"Ошибка получения данных из {table.__name__}.{column_name}: {str(e)}")
         return []

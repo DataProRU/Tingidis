@@ -19,7 +19,7 @@ def test_register_user(client):
 
 def test_register_user_which_exists(client):
     payload = {
-        "username": "user",
+        "username": "user 1",
         "first_name": "Alex",
         "last_name": "Brown",
         "password": "test",

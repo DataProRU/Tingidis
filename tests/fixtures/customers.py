@@ -11,7 +11,7 @@ async def sample_customer(async_session_test, sample_form):
             form=sample_form.id,
             address="test addres",
             inn="test inn",
-            notes=None,
+            notes="Test notes 1",
         )
         db.add(customer)
         await db.commit()
@@ -27,7 +27,7 @@ async def another_customer(async_session_test, another_form):
             form=another_form.id,
             address="another test addres",
             inn="new test inn",
-            notes="Test notes",
+            notes="Test notes 2",
         )
         db.add(customer)
         await db.commit()

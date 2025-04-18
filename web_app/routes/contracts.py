@@ -1,4 +1,5 @@
 from datetime import datetime, date
+from decimal import Decimal
 
 from fastapi import HTTPException, APIRouter, Depends, status, Query
 from typing import Annotated, Optional, List
@@ -31,7 +32,7 @@ async def get_contracts(
     name: Annotated[list[str] | None, Query()] = None,
     number: Annotated[list[str] | None, Query()] = None,
     sign_date: Annotated[list[date] | None, Query()] = None,
-    price: Annotated[list[float] | None, Query()] = None,
+    price: Annotated[list[Decimal] | None, Query()] = None,
     theme: Annotated[list[str] | None, Query()] = None,
     evolution: Annotated[list[str] | None, Query()] = None,
     code: Annotated[list[str] | None, Query()] = None,
@@ -74,14 +75,16 @@ async def get_contracts(
 
     if executor:
         stmt = stmt.join(Contracts.executor_info)
-        filters.append(
-            or_(
-                Users.full_name.ilike(f"%{name}%"),
-                Users.first_name.ilike(f"%{name}%"),
-                Users.last_name.ilike(f"%{name}%"),
+        name_conditions = []
+        for name in executor:
+            name_conditions.append(
+                or_(
+                    Users.full_name.ilike(f"%{name}%"),
+                    Users.first_name.ilike(f"%{name}%"),
+                    Users.last_name.ilike(f"%{name}%"),
+                )
             )
-            for name in executor
-        )
+        filters.append(or_(*name_conditions))
 
     if filters:
         stmt = stmt.where(and_(*filters))

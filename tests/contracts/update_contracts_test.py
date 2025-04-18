@@ -45,7 +45,7 @@ async def test_update_contract(
     assert result["sign_date"] == "2025-02-11"
     assert result["price"] == 2000.21
     assert result["theme"] == "test"
-    assert f"3. {(datetime.now()).strftime('%d.%m.%Y')}" in result["evolution"]
+    assert f"2. {(datetime.now()).strftime('%d.%m.%Y')}" in result["evolution"]
 
 
 def test_unauthenticated_user_cannot_update_contract(

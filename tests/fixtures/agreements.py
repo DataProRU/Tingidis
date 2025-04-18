@@ -1,5 +1,6 @@
 from datetime import date
 import pytest
+
 from web_app.models.agreements import Agreements
 
 
@@ -57,7 +58,7 @@ async def another_agreement(create_agreement, sample_contract):
     return await create_agreement(
         name="new_test_agreement",
         number="987654321",
-        price=1000,
+        price=1500,
         deadline=date(2024, 2, 2),
         notes="new_test notes",
         contract_id=sample_contract.id,
@@ -65,7 +66,7 @@ async def another_agreement(create_agreement, sample_contract):
 
 
 @pytest.fixture
-async def third_agreement(create_agreement, sample_contract):
+async def third_agreement(create_agreement, fourth_contract):
     """
     Фикстура для создания третьего тестового соглашения.
     """
@@ -75,12 +76,12 @@ async def third_agreement(create_agreement, sample_contract):
         price=2000,
         deadline=date(2025, 3, 3),
         notes="third notes",
-        contract_id=sample_contract.id,
+        contract_id=fourth_contract.id,
     )
 
 
 @pytest.fixture
-async def fourth_agreement(create_agreement, another_contract):
+async def fourth_agreement(create_agreement, third_contract):
     """
     Фикстура для создания четвертого тестового соглашения.
     """
@@ -90,20 +91,5 @@ async def fourth_agreement(create_agreement, another_contract):
         price=5000,
         deadline=date(2026, 4, 4),
         notes="fourth notes",
-        contract_id=another_contract.id,
-    )
-
-
-@pytest.fixture
-async def fifth_agreement(create_agreement, third_contract):
-    """
-    Фикстура для создания пятого тестового соглашения.
-    """
-    return await create_agreement(
-        name="fifth_agreement",
-        number="33333",
-        price=10000,
-        deadline=date(2027, 5, 5),
-        notes="fifth notes",
         contract_id=third_contract.id,
     )
