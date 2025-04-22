@@ -4,37 +4,35 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
 from alembic import context
-from web_app.models import Users  # noqa
-from web_app.models import Tokens  # noqa
-from web_app.models import LogEntry  # noqa
-from web_app.models import FormOfOwnerships  # noqa
-from web_app.models import Contacts  # noqa
-from web_app.models import Contracts  # noqa
-from web_app.models import Agreements  # noqa
 
-
-from web_app.models import Objects  # noqa
-from web_app.models import Customers  # noqa
-from web_app.models import ProjectStatuses  # noqa
-from web_app.models import ProjectExecutors  # noqa
-from web_app.models import Projects  # noqa
-from web_app.models import Backups  # noqa
+from web_app.config import DB_PASS, DB_NAME, DB_USER, DB_PORT, DB_HOST
 from web_app.database import Base
 
-
+# this is the Alembic Config object, which provides
+# access to the values within the .ini file in use.
 config = context.config
 
+section = config.config_ini_section
+config.set_section_option(section, "DB_HOST", DB_HOST)
+config.set_section_option(section, "DB_PORT", DB_PORT)
+config.set_section_option(section, "DB_USER", DB_USER)
+config.set_section_option(section, "DB_NAME", DB_NAME)
+config.set_section_option(section, "DB_PASS", DB_PASS)
 
+# Interpret the config file for Python logging.
+# This line sets up loggers basically.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option(
-    "sqlalchemy.url",
-    "postgresql+asyncpg://admin:2606QWmg@localhost:5432/users" + "?async_fallback=True",
-)
-
-
+# add your model's MetaData object here
+# for 'autogenerate' support
+from web_app.models import *
 target_metadata = Base.metadata
+
+# other values from the config, defined by the needs of env.py,
+# can be acquired:
+# my_important_option = config.get_main_option("my_important_option")
+# ... etc.
 
 
 def run_migrations_offline() -> None:
@@ -76,9 +74,7 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection,
-            target_metadata=target_metadata,
-            compare_server_default=True,
+            connection=connection, target_metadata=target_metadata
         )
 
         with context.begin_transaction():

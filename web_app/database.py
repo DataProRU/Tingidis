@@ -1,24 +1,24 @@
 from fastapi import APIRouter, Request, Depends
-from sqlalchemy.orm import declarative_base, relationship  # Updated import
-from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
+from sqlalchemy.orm import declarative_base, relationship, DeclarativeBase  # Updated import
+from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from fastapi.templating import Jinja2Templates
 import os
+
+from web_app.config import DB_USER, DB_PASS, DB_HOST, DB_PORT, DB_NAME
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 # Строка подключения к базе данных
-DATABASE_URL = os.getenv(
-    "DATABASE_URL", "postgresql+asyncpg://admin:2606QWmg@localhost:5432/users"
-)
+DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
 async_engine = create_async_engine(DATABASE_URL, echo=True)
-async_session = sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
+async_session = async_sessionmaker(async_engine, class_=AsyncSession, expire_on_commit=False)
 
 # Создаем базовый класс для моделей
-Base = declarative_base()  # Now uses sqlalchemy.orm.declarative_base
-
+class Base(DeclarativeBase):
+    pass
 
 # Асинхронная функция для создания таблиц
 async def init_db():
