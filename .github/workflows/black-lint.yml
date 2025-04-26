@@ -16,6 +16,11 @@ jobs:
           echo "REFRESH_KEY=your_refresh_secret_key" >> .env
           echo "ALGORITHM=HS256" >> .env
           echo "FIRST_USER_PASSWORD=Testpass123" >> .env
+          echo "DB_PASS=postgres" >> .env
+          echo "DB_USER=postgres" >> .env
+          echo "DB_NAME=app_db" >> .env
+          echo "DB_PORT=5432" >> .env
+          echo "DB_HOST=localhost" >> .env
 
       - name: Start Docker containers
         run: docker compose up --build -d

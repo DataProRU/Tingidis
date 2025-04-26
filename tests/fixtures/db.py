@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
+
+from web_app.config import DB_USER, DB_PASS, DB_HOST
 from web_app.database import Base
 
 from web_app.database import get_db
@@ -20,8 +22,9 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 REFRESH_KEY = os.getenv("REFRESH_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
+
 TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL", "postgresql+asyncpg://admin:2606QWmg@localhost:5433/tests"
+    "TEST_DATABASE_URL", f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:5433/tests"
 )
 
 
