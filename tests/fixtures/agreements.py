@@ -45,7 +45,7 @@ async def sample_agreement(create_agreement, another_contract):
         number="1234567890",
         price=1000,
         deadline=date(2024, 1, 1),
-        notes=None,
+            notes="first notes",
         contract_id=another_contract.id,
     )
 

@@ -36,17 +36,25 @@ async def get_customers(
     inn: Annotated[list[str] | None, Query()] = None,
     notes: Annotated[list[str] | None, Query()] = None,
     form: Annotated[list[str] | None, Query()] = None,
-    sortBy: Optional[str] = None,  # поле для сортировки
-    sortDir: Optional[str] = "asc",  # направление сортировки
+    sortBy: Optional[str] = None,
+    sortDir: Optional[str] = "asc",
 ):
-    stmt = select(Customers).options(
-        selectinload(Customers.form_of_ownership), selectinload(Customers.contacts)
+    join_form = sortBy == "name" or bool(form)
+
+    if join_form:
+        stmt = select(Customers).join(Customers.form_of_ownership)
+    else:
+        stmt = select(Customers)
+
+    stmt = stmt.options(
+        selectinload(Customers.form_of_ownership),
+        selectinload(Customers.contacts)
     )
 
     filters = []
 
     if id:
-        filters.append((Contracts.id.in_(id)))
+        filters.append(Customers.id.in_(id))
     if name:
         filters.append(or_(Customers.name.ilike(f"%{n}%") for n in name))
     if address:
@@ -63,20 +71,20 @@ async def get_customers(
         stmt = stmt.where(and_(*filters))
 
     if sortBy:
-        try:
-            if "." in sortBy:  # Если сортировка по связанному полю
-                related_model, field_name = sortBy.split(".")
-                related_column = getattr(getattr(Customers, related_model), field_name)
-                sort_column = related_column
-            else:
+        if sortBy == "form":
+            if not join_form:
+                stmt = stmt.join(Customers.form_of_ownership)
+            sort_column = FormOfOwnerships.name
+        else:
+            try:
                 sort_column = getattr(Customers, sortBy)
+            except AttributeError:
+                raise HTTPException(status_code=404, detail=f"Поле '{sortBy}' не найдено")
 
-            if sortDir.lower() == "desc":
-                stmt = stmt.order_by(sort_column.desc())
-            else:
-                stmt = stmt.order_by(sort_column.asc())
-        except AttributeError:
-            raise HTTPException(status_code=404, detail=f"Поле '{sortBy}' не найдено")
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
 
     result = await db.execute(stmt)
     customers = result.scalars().all()

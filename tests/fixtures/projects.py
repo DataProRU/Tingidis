@@ -78,7 +78,7 @@ async def another_project(
 
 @pytest.fixture
 async def third_project(
-    create_project, third_object, third_contract, third_user, completed_project_status
+    create_project, third_object, third_contract, third_user, completed_status
 ):
     """
     Фикстура для создания третьего тестового проекта.
@@ -90,7 +90,7 @@ async def third_project(
         number="333",
         main_executor_id=third_user.id,
         deadline=date(2023, 12, 31),
-        status_id=completed_project_status.id,
+        status_id=completed_status.id,
         notes="This project is completed.",
     )
 

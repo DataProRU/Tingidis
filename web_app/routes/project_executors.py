@@ -42,71 +42,126 @@ async def get_project_executors(
     sortBy: Optional[str] = None,
     sortDir: Optional[str] = "asc",
 ):
-    stmt = select(ProjectExecutors).options(
+    join_user = sortBy in ["user_full_name", "user_position", "user_email", "user_specialization"] or \
+                bool(user_full_name or user_position or user_email or user_specialization)
+    join_project = sortBy in ["project_name", "project_number", "project_status", "project_deadline"] or \
+                   bool(project_name or project_number or project_status or project_deadline)
+
+    stmt = select(ProjectExecutors)
+
+    if join_user:
+        stmt = stmt.join(ProjectExecutors.user_info)
+    if join_project:
+        stmt = stmt.join(ProjectExecutors.project_info)
+
+    stmt = stmt.options(
         selectinload(ProjectExecutors.project_info),
         selectinload(ProjectExecutors.user_info),
     )
 
     filters = []
 
-    if user_full_name or user_position or user_email or user_specialization:
-        stmt = stmt.join(ProjectExecutors.user_info)
-
-        if user_full_name:
-            filters.append(
+    if user_full_name:
+        if not join_user:
+            stmt = stmt.join(ProjectExecutors.user_info)
+        filters.append(
+            or_(
                 or_(
-                    or_(
-                        Users.full_name.ilike(f"%{name}%"),
-                        Users.first_name.ilike(f"%{name}%"),
-                        Users.last_name.ilike(f"%{name}%"),
-                    )
-                    for name in user_full_name
+                    Users.full_name.ilike(f"%{name}%"),
+                    Users.first_name.ilike(f"%{name}%"),
+                    Users.last_name.ilike(f"%{name}%"),
                 )
+                for name in user_full_name
             )
-        if user_position:
-            filters.append(
-                or_(Users.position.ilike(f"%{pos}%") for pos in user_position)
+        )
+    if user_position:
+        if not join_user:
+            stmt = stmt.join(ProjectExecutors.user_info)
+        filters.append(
+            or_(Users.position.ilike(f"%{pos}%") for pos in user_position)
+        )
+    if user_email:
+        if not join_user:
+            stmt = stmt.join(ProjectExecutors.user_info)
+        filters.append(or_(Users.email.ilike(f"%{email}%") for email in user_email))
+    if user_specialization:
+        if not join_user:
+            stmt = stmt.join(ProjectExecutors.user_info)
+        filters.append(
+            or_(
+                Users.specialization.ilike(f"%{spec}%")
+                for spec in user_specialization
             )
-        if user_email:
-            filters.append(or_(Users.email.ilike(f"%{email}%") for email in user_email))
-        if user_specialization:
-            filters.append(
-                or_(
-                    Users.specialization.ilike(f"%{spec}%")
-                    for spec in user_specialization
-                )
-            )
+        )
 
-    if project_name or project_number or project_status:
-        stmt = stmt.join(ProjectExecutors.project_info)
-
-        if project_name:
-            filters.append(
-                or_(Projects.name.ilike(f"%{name}%") for name in project_name)
-            )
-        if project_number:
-            filters.append(
-                or_(Projects.number.ilike(f"%{num}%") for num in project_number)
-            )
-        if project_status:
-            filters.append(
-                or_(Projects.status.ilike(f"%{ps}%") for ps in project_status)
-            )
-        if project_deadline:
-            filters.append((Projects.deadline.in_(project_deadline)))
+    if project_name:
+        if not join_project:
+            stmt = stmt.join(ProjectExecutors.project_info)
+        filters.append(
+            or_(Projects.name.ilike(f"%{name}%") for name in project_name)
+        )
+    if project_number:
+        if not join_project:
+            stmt = stmt.join(ProjectExecutors.project_info)
+        filters.append(
+            or_(Projects.number.ilike(f"%{num}%") for num in project_number)
+        )
+    if project_status:
+        if not join_project:
+            stmt = stmt.join(ProjectExecutors.project_info)
+        filters.append(Projects.status.in_(project_status))
+    if project_deadline:
+        if not join_project:
+            stmt = stmt.join(ProjectExecutors.project_info)
+        filters.append(Projects.deadline.in_(project_deadline))
 
     if filters:
         stmt = stmt.where(and_(*filters))
 
     if sortBy:
-        try:
-            sort_column = getattr(ProjectExecutors, sortBy)
-            if sortDir.lower() == "desc":
-                stmt = stmt.order_by(sort_column.desc())
-            else:
-                stmt = stmt.order_by(sort_column.asc())
-        except AttributeError:
-            raise HTTPException(status_code=404, detail="Поле не найдено")
+        if sortBy == "user_full_name":
+            if not join_user:
+                stmt = stmt.join(ProjectExecutors.user_info)
+            sort_column = Users.full_name
+        elif sortBy == "user_position":
+            if not join_user:
+                stmt = stmt.join(ProjectExecutors.user_info)
+            sort_column = Users.position
+        elif sortBy == "user_email":
+            if not join_user:
+                stmt = stmt.join(ProjectExecutors.user_info)
+            sort_column = Users.email
+        elif sortBy == "user_specialization":
+            if not join_user:
+                stmt = stmt.join(ProjectExecutors.user_info)
+            sort_column = Users.specialization
+        elif sortBy == "project_name":
+            if not join_project:
+                stmt = stmt.join(ProjectExecutors.project_info)
+            sort_column = Projects.name
+        elif sortBy == "project_number":
+            if not join_project:
+                stmt = stmt.join(ProjectExecutors.project_info)
+            sort_column = Projects.number
+        elif sortBy == "project_status":
+            if not join_project:
+                stmt = stmt.join(ProjectExecutors.project_info)
+            sort_column = Projects.status
+        elif sortBy == "project_deadline":
+            if not join_project:
+                stmt = stmt.join(ProjectExecutors.project_info)
+            sort_column = Projects.deadline
+        else:
+            try:
+                sort_column = getattr(ProjectExecutors, sortBy)
+            except AttributeError:
+                raise HTTPException(status_code=404, detail=f"Поле '{sortBy}' не найдено")
+
+        # Применяем направление сортировки
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
 
     result = await db.execute(stmt)
     projects_executors = result.scalars().all()

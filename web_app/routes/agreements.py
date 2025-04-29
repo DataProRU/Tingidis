@@ -35,7 +35,13 @@ async def get_agreements(
     sortBy: Optional[str] = None,
     sortDir: Optional[str] = "asc",
 ):
-    stmt = select(Agreements).options(selectinload(Agreements.contract_info))
+    join_contracts = sortBy == "contract" or bool(contract)
+
+    if join_contracts:
+        stmt = select(Agreements).join(Agreements.contract_info).options(selectinload(Agreements.contract_info))
+    else:
+        stmt = select(Agreements).options(selectinload(Agreements.contract_info))
+
     filters = []
 
     if id:
@@ -57,21 +63,29 @@ async def get_agreements(
         filters.append(Agreements.deadline.in_(deadline))
 
     if contract:
-        stmt = stmt.join(Agreements.contract_info)
+        if not join_contracts:
+            stmt = stmt.join(Agreements.contract_info)
         filters.append(or_(Contracts.name.ilike(f"%{n}%") for n in contract))
 
     if filters:
         stmt = stmt.where(and_(*filters))
 
     if sortBy:
-        try:
-            sort_column = getattr(Agreements, sortBy)
-            if sortDir.lower() == "desc":
-                stmt = stmt.order_by(sort_column.desc())
-            else:
-                stmt = stmt.order_by(sort_column.asc())
-        except AttributeError:
-            raise HTTPException(status_code=404, detail="Поле не найдено")
+        if sortBy == "contract":
+            if not join_contracts:
+                stmt = stmt.join(Agreements.contract_info)
+            sort_column = Contracts.name
+        else:
+            try:
+                sort_column = getattr(Agreements, sortBy)
+            except AttributeError:
+                raise HTTPException(status_code=404, detail="Поле для сортировки не найдено")
+
+        # Применяем направление сортировки
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
 
     result = await db.execute(stmt)
     agreements = result.scalars().all()

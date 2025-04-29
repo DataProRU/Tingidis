@@ -41,7 +41,20 @@ async def get_contracts(
     sortBy: Optional[str] = None,  # поле для сортировки
     sortDir: Optional[str] = "asc",  # направление сортировки
 ):
-    stmt = select(Contracts).options(
+    join_code = sortBy == "code" or bool(code)
+    join_customer = sortBy == "customer" or bool(customer)
+    join_executor = sortBy == "executor" or bool(executor)
+
+    stmt = select(Contracts)
+
+    if join_code:
+        stmt = stmt.join(Contracts.code_info)
+    if join_customer:
+        stmt = stmt.join(Contracts.customer_info)
+    if join_executor:
+        stmt = stmt.join(Contracts.executor_info)
+
+    stmt = stmt.options(
         selectinload(Contracts.code_info),
         selectinload(Contracts.customer_info),
         selectinload(Contracts.executor_info),
@@ -51,7 +64,7 @@ async def get_contracts(
     filters = []
 
     if id:
-        filters.append((Contracts.id.in_(id)))
+        filters.append(Contracts.id.in_(id))
     if name:
         filters.append(or_(Contracts.name.ilike(f"%{n}%") for n in name))
     if number:
@@ -66,15 +79,18 @@ async def get_contracts(
         filters.append(or_(Contracts.evolution.ilike(f"%{e}%") for e in evolution))
 
     if code:
-        stmt = stmt.join(Contracts.code_info)
+        if not join_code:
+            stmt = stmt.join(Contracts.code_info)
         filters.append(or_(Objects.code.ilike(f"%{c}%") for c in code))
 
     if customer:
-        stmt = stmt.join(Contracts.customer_info)
+        if not join_customer:
+            stmt = stmt.join(Contracts.customer_info)
         filters.append(or_(Customers.name.ilike(f"%{n}%") for n in customer))
 
     if executor:
-        stmt = stmt.join(Contracts.executor_info)
+        if not join_executor:
+            stmt = stmt.join(Contracts.executor_info)
         name_conditions = []
         for name in executor:
             name_conditions.append(
@@ -90,14 +106,29 @@ async def get_contracts(
         stmt = stmt.where(and_(*filters))
 
     if sortBy:
-        try:
-            sort_column = getattr(Contracts, sortBy)
-            if sortDir.lower() == "desc":
-                stmt = stmt.order_by(sort_column.desc())
-            else:
-                stmt = stmt.order_by(sort_column.asc())
-        except AttributeError:
-            raise HTTPException(status_code=404, detail="Поле не найдено")
+        if sortBy == "code":
+            if not join_code:
+                stmt = stmt.join(Contracts.code_info)
+            sort_column = Objects.name
+        elif sortBy == "customer":
+            if not join_customer:
+                stmt = stmt.join(Contracts.customer_info)
+            sort_column = Customers.name
+        elif sortBy == "executor":
+            if not join_executor:
+                stmt = stmt.join(Contracts.executor_info)
+            sort_column = Users.full_name
+        else:
+            try:
+                sort_column = getattr(Contracts, sortBy)
+            except AttributeError:
+                raise HTTPException(status_code=404, detail="Поле не найдено")
+
+        # Применяем направление сортировки
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
 
     result = await db.execute(stmt)
     contracts = result.scalars().all()
@@ -170,7 +201,6 @@ async def get_contracts(
         }
         for contract in contracts
     ]
-
 
 @router.get(
     "/contracts/{contract_id}",

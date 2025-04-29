@@ -37,7 +37,13 @@ async def get_contacts(
     sortBy: Optional[str] = None,  # поле для сортировки
     sortDir: Optional[str] = "asc",  # направление сортировки
 ):
-    stmt = select(Contacts).options(selectinload(Contacts.customer_info))
+    join_customers = sortBy == "customer" or bool(customer)
+
+    if join_customers:
+        stmt = select(Contacts).join(Contacts.customer_info).options(selectinload(Contacts.customer_info))
+    else:
+        stmt = select(Contacts).options(selectinload(Contacts.customer_info))
+
     filters = []
 
     if id:
@@ -56,21 +62,29 @@ async def get_contacts(
         filters.append(or_(Contacts.position.ilike(f"%{n}%") for n in position))
 
     if customer:
-        stmt = stmt.join(Contacts.customer_info)
+        if not join_customers:
+            stmt = stmt.join(Contacts.customer_info)
         filters.append(or_(Customers.name.ilike(f"%{n}%") for n in customer))
 
     if filters:
         stmt = stmt.where(and_(*filters))
 
     if sortBy:
-        try:
-            sort_column = getattr(Contacts, sortBy)
-            if sortDir.lower() == "desc":
-                stmt = stmt.order_by(sort_column.desc())
-            else:
-                stmt = stmt.order_by(sort_column.asc())
-        except AttributeError:
-            raise HTTPException(status_code=404, detail="Поле не найдено")
+        if sortBy == "customer":
+            if not join_customers:
+                stmt = stmt.join(Contacts.customer_info)
+            sort_column = Customers.name
+        else:
+            try:
+                sort_column = getattr(Contacts, sortBy)
+            except AttributeError:
+                raise HTTPException(status_code=404, detail="Поле для сортировки не найдено")
+
+        # Применяем направление сортировки
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
 
     result = await db.execute(stmt)
     contacts = result.scalars().all()
