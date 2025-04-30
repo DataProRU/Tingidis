@@ -27,6 +27,27 @@ class Users(Base):
     tg_user_id = Column(Integer, nullable=True)
 
     tokens = relationship("Tokens", back_populates="user", cascade="all, delete-orphan")
-    contracts = relationship("Contracts", back_populates="executor_info")
-    project_executors = relationship("ProjectExecutors", back_populates="user_info")
-    projects = relationship("Projects", back_populates="executor_info")
+    contracts = relationship(
+        "Contracts",
+        back_populates="executor_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )
+    project_executors = relationship(
+        "ProjectExecutors",
+        back_populates="user_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )
+    projects = relationship(
+        "Projects",
+        back_populates="executor_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )
+    personal_settings = relationship(
+        "PersonalSettings",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )

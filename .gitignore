@@ -10,3 +10,11 @@ idea/
 backup.sql
 .env
 /venv
+static/*.jpg
+static/*.png
+
+certfile.pem
+keyfile.pem
+nohup.out
+output.log
+uvicorn.log

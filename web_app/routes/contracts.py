@@ -1,11 +1,16 @@
-from datetime import datetime
+from datetime import datetime, date
+from decimal import Decimal
 
-from fastapi import HTTPException, APIRouter, Depends, status
-from typing import List
+from fastapi import HTTPException, APIRouter, Depends, status, Query
+from typing import Annotated, Optional, List
+
+from sqlalchemy import or_, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from web_app.database import get_db
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
+
+from web_app.models import Objects, Customers, Users, Agreements, Projects
 from web_app.models.contracts import Contracts
 from web_app.schemas.contracts import (
     ContractsCreateResponse,
@@ -19,47 +24,148 @@ from web_app.utils.logs import log_action
 router = APIRouter()
 
 
-# Endpoints
-@router.get("/contracts", response_model=List[ContractsGetResponse])
+@router.get("/contracts", response_model=list[ContractsGetResponse])
 async def get_contracts(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
+    id: Annotated[list[int] | None, Query()] = None,
+    name: Annotated[list[str] | None, Query()] = None,
+    number: Annotated[list[str] | None, Query()] = None,
+    sign_date: Annotated[list[date] | None, Query()] = None,
+    price: Annotated[list[Decimal] | None, Query()] = None,
+    theme: Annotated[list[str] | None, Query()] = None,
+    evolution: Annotated[list[str] | None, Query()] = None,
+    code: Annotated[list[str] | None, Query()] = None,
+    customer: Annotated[list[str] | None, Query()] = None,
+    executor: Annotated[list[str] | None, Query()] = None,
+    sortBy: Optional[str] = None,  # поле для сортировки
+    sortDir: Optional[str] = "asc",  # направление сортировки
 ):
-    stmt = select(Contracts).options(
+    join_code = sortBy == "code" or bool(code)
+    join_customer = sortBy == "customer" or bool(customer)
+    join_executor = sortBy == "executor" or bool(executor)
+
+    stmt = select(Contracts)
+
+    if join_code:
+        stmt = stmt.join(Contracts.code_info)
+    if join_customer:
+        stmt = stmt.join(Contracts.customer_info)
+    if join_executor:
+        stmt = stmt.join(Contracts.executor_info)
+
+    stmt = stmt.options(
         selectinload(Contracts.code_info),
         selectinload(Contracts.customer_info),
         selectinload(Contracts.executor_info),
         selectinload(Contracts.agreements),
     )
+
+    filters = []
+
+    if id:
+        filters.append(Contracts.id.in_(id))
+    if name:
+        filters.append(or_(Contracts.name.ilike(f"%{n}%") for n in name))
+    if number:
+        filters.append(or_(Contracts.number.ilike(f"%{n}%") for n in number))
+    if sign_date:
+        filters.append(Contracts.sign_date.in_(sign_date))
+    if price is not None:
+        filters.append(Contracts.price.in_(price))
+    if theme:
+        filters.append(or_(Contracts.theme.ilike(f"%{t}%") for t in theme))
+    if evolution:
+        filters.append(or_(Contracts.evolution.ilike(f"%{e}%") for e in evolution))
+
+    if code:
+        if not join_code:
+            stmt = stmt.join(Contracts.code_info)
+        filters.append(or_(Objects.code.ilike(f"%{c}%") for c in code))
+
+    if customer:
+        if not join_customer:
+            stmt = stmt.join(Contracts.customer_info)
+        filters.append(or_(Customers.name.ilike(f"%{n}%") for n in customer))
+
+    if executor:
+        if not join_executor:
+            stmt = stmt.join(Contracts.executor_info)
+        name_conditions = []
+        for name in executor:
+            name_conditions.append(
+                or_(
+                    Users.full_name.ilike(f"%{name}%"),
+                    Users.first_name.ilike(f"%{name}%"),
+                    Users.last_name.ilike(f"%{name}%"),
+                )
+            )
+        filters.append(or_(*name_conditions))
+
+    if filters:
+        stmt = stmt.where(and_(*filters))
+
+    if sortBy:
+        if sortBy == "code":
+            if not join_code:
+                stmt = stmt.join(Contracts.code_info)
+            sort_column = Objects.name
+        elif sortBy == "customer":
+            if not join_customer:
+                stmt = stmt.join(Contracts.customer_info)
+            sort_column = Customers.name
+        elif sortBy == "executor":
+            if not join_executor:
+                stmt = stmt.join(Contracts.executor_info)
+            sort_column = Users.full_name
+        else:
+            try:
+                sort_column = getattr(Contracts, sortBy)
+            except AttributeError:
+                raise HTTPException(status_code=404, detail="Поле не найдено")
+
+        # Применяем направление сортировки
+        if sortDir.lower() == "desc":
+            stmt = stmt.order_by(sort_column.desc())
+        else:
+            stmt = stmt.order_by(sort_column.asc())
+
     result = await db.execute(stmt)
     contracts = result.scalars().all()
 
-    response = []
-    for contract in contracts:
-        response.append(
-            {
-                "id": contract.id,
-                "name": contract.name,
-                "number": contract.number,
-                "sign_date": contract.sign_date,
-                "price": contract.price,
-                "theme": contract.theme,
-                "evolution": contract.evolution,
-                "code": {
+    return [
+        {
+            "id": contract.id,
+            "name": contract.name,
+            "number": contract.number,
+            "sign_date": contract.sign_date,
+            "price": contract.price,
+            "theme": contract.theme,
+            "evolution": contract.evolution,
+            "code": (
+                {
                     "id": contract.code_info.id,
                     "code": contract.code_info.code,
                     "name": contract.code_info.name,
                     "comment": contract.code_info.comment,
-                },
-                "customer": {
+                }
+                if contract.code_info
+                else None
+            ),
+            "customer": (
+                {
                     "id": contract.customer_info.id,
                     "form": contract.customer_info.form,
                     "name": contract.customer_info.name,
                     "address": contract.customer_info.address,
                     "inn": contract.customer_info.inn,
                     "notes": contract.customer_info.notes,
-                },
-                "executor": {
+                }
+                if contract.customer_info
+                else None
+            ),
+            "executor": (
+                {
                     "id": contract.executor_info.id,
                     "first_name": contract.executor_info.first_name,
                     "last_name": contract.executor_info.last_name,
@@ -76,23 +182,25 @@ async def get_contracts(
                     "notes": contract.executor_info.notes,
                     "role": contract.executor_info.role,
                     "notification": contract.executor_info.notification,
-                },
-                "agreements": [
-                    {
-                        "id": agreement.id,
-                        "name": agreement.name,
-                        "number": agreement.number,
-                        "price": agreement.price,
-                        "deadline": agreement.deadline,
-                        "notes": agreement.notes,
-                        "contract": agreement.contract,
-                    }
-                    for agreement in contract.agreements
-                ],
-            }
-        )
-
-    return response
+                }
+                if contract.executor_info
+                else None
+            ),
+            "agreements": [
+                {
+                    "id": agreement.id,
+                    "name": agreement.name,
+                    "number": agreement.number,
+                    "price": agreement.price,
+                    "deadline": agreement.deadline,
+                    "notes": agreement.notes,
+                    "contract": agreement.contract,
+                }
+                for agreement in contract.agreements
+            ],
+        }
+        for contract in contracts
+    ]
 
 
 @router.get(
@@ -296,6 +404,24 @@ async def delete_contract(
     obj = result.scalar_one_or_none()
     if not obj:
         raise HTTPException(status_code=404, detail="Контракт не найден")
+
+    projects_exist = await db.execute(
+        select(Projects).filter(Projects.contract == object_id).limit(1)
+    )
+    if projects_exist.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail="Невозможно удалить контракт: существуют связанные проекты. Удалите их сначала.",
+        )
+
+    agreements_exist = await db.execute(
+        select(Agreements).filter(Agreements.contract == object_id).limit(1)
+    )
+    if agreements_exist.scalar_one_or_none():
+        raise HTTPException(
+            status_code=400,
+            detail="Невозможно удалить контракт: существуют связанные доп. соглашения. Удалите их сначала.",
+        )
 
     # Удаление объекта
     await db.delete(obj)

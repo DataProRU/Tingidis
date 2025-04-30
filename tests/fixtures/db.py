@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy.orm import sessionmaker
 from starlette.testclient import TestClient
+
+from web_app.config import DB_USER, DB_PASS, DB_HOST
 from web_app.database import Base
 
 from web_app.database import get_db
@@ -20,8 +22,10 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 REFRESH_KEY = os.getenv("REFRESH_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
 
+
 TEST_DATABASE_URL = os.getenv(
-    "TEST_DATABASE_URL", "postgresql+asyncpg://admin:2606QWmg@localhost:5433/tests"
+    "TEST_DATABASE_URL",
+    f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:5433/tests",
 )
 
 
@@ -74,7 +78,11 @@ def client(sample_user):
     app.dependency_overrides[get_db] = _get_test_db
     client = TestClient(app)
     token = create_token(
-        data={"sub": sample_user.username, "role": sample_user.role},
+        data={
+            "sub": sample_user.username,
+            "role": sample_user.role,
+            "id": sample_user.id,
+        },
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )
@@ -87,7 +95,7 @@ def admin_client(admin_user):
     app.dependency_overrides[get_db] = _get_test_db
     client = TestClient(app)
     token = create_token(
-        data={"sub": admin_user.username, "role": admin_user.role},
+        data={"sub": admin_user.username, "role": admin_user.role, "id": admin_user.id},
         key=SECRET_KEY,
         algoritm=ALGORITHM,
     )

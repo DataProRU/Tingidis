@@ -33,7 +33,12 @@ class Projects(Base):
     executor_info = relationship("Users", back_populates="projects")
 
     project_info = relationship("ProjectStatuses", back_populates="projects")
-    project_executors = relationship("ProjectExecutors", back_populates="project_info")
+    project_executors = relationship(
+        "ProjectExecutors",
+        back_populates="project_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )
 
 
 @event.listens_for(Projects, "before_insert")

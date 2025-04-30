@@ -28,8 +28,18 @@ class Contracts(Base):
     code_info = relationship("Objects", back_populates="contracts")
     customer_info = relationship("Customers", back_populates="contracts")
     executor_info = relationship("Users", back_populates="contracts")
-    agreements = relationship("Agreements", back_populates="contract_info")
-    projects = relationship("Projects", back_populates="contract_info")
+    agreements = relationship(
+        "Agreements",
+        back_populates="contract_info",
+        cascade="all, delete-orphan",
+        passive_deletes=False,
+    )
+    projects = relationship(
+        "Projects",
+        back_populates="contract_info",
+        cascade="all, delete-orphan",  # SQLAlchemy удалит связанные записи
+        passive_deletes=False,
+    )
 
     @staticmethod
     def generate_evolution(session):
