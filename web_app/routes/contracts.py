@@ -1,6 +1,10 @@
 from datetime import datetime, date
 from decimal import Decimal
 
+from fastapi import HTTPException, APIRouter, Depends, status
+from typing import List
+
+from sqlalchemy.exc import IntegrityError
 from fastapi import HTTPException, APIRouter, Depends, status, Query
 from typing import Annotated, Optional, List
 
@@ -290,14 +294,31 @@ async def create_contract(
     db: AsyncSession = Depends(get_db),
     user_data: dict = Depends(token_verification_dependency),
 ):
+    existing_contract = await db.execute(
+        select(Contracts).where(Contracts.number == contract_data.number)
+    )
+    if existing_contract.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Договор с таким номером уже существует"
+        )
+
     contract_dict = contract_data.dict()
     contract_dict["evolution"] = f'1. {(datetime.now()).strftime("%d.%m.%Y %H:%M:%S")}'
 
-    contract = Contracts(**contract_dict)
-    db.add(contract)
-    await db.commit()
-    await db.refresh(contract)
-    return contract
+    try:
+        contract = Contracts(**contract_dict)
+        db.add(contract)
+        await db.commit()
+        await db.refresh(contract)
+        return contract
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Произошла ошибка при создании договора"
+        )
+
 
 
 @router.patch(
