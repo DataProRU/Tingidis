@@ -8,7 +8,7 @@ class Objects(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     code = Column(String(6), nullable=False)
-    name = Column(String(30), nullable=False)
+    name = Column(String(256), nullable=False)
     comment = Column(Text, nullable=True)
 
     contracts = relationship(
