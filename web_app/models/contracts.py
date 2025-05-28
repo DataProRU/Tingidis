@@ -16,14 +16,14 @@ class Contracts(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     code = Column(Integer, ForeignKey("objects.id"))
-    name = Column(String(50))
+    name = Column(String(256))
     customer = Column(Integer, ForeignKey("customers.id"))
     executor = Column(Integer, ForeignKey("web_user.id"))
     number = Column(String(256), unique=True)
     sign_date = Column(Date, default=func.now())
     price = Column(Decimal)
-    theme = Column(String(50))
-    evolution = Column(String(30), nullable=True)
+    theme = Column(String(256))
+    evolution = Column(String(256), nullable=True)
 
     code_info = relationship("Objects", back_populates="contracts")
     customer_info = relationship("Customers", back_populates="contracts")

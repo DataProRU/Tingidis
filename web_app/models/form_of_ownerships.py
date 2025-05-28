@@ -8,7 +8,7 @@ class FormOfOwnerships(Base):
     __tablename__ = "form_of_ownership"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(30))
+    name = Column(String(256))
 
     customers = relationship(
         "Customers",

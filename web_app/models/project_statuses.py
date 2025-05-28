@@ -7,7 +7,7 @@ class ProjectStatuses(Base):
     __tablename__ = "project_statuses"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(30))
+    name = Column(String(256))
 
     projects = relationship(
         "Projects",

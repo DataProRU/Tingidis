@@ -7,6 +7,6 @@ class Backups(Base):
     __tablename__ = "backups"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    email = Column(String(50), nullable=False)
+    email = Column(String(256), nullable=False)
     frequency = Column(Integer, nullable=False)
     send_date = Column(Date, default=func.current_date())

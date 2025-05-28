@@ -9,9 +9,9 @@ class Customers(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     form = Column(Integer, ForeignKey("form_of_ownership.id"))
-    name = Column(String)
-    address = Column(String)
-    inn = Column(String)
+    name = Column(String(256))
+    address = Column(String(256))
+    inn = Column(String(256))
     notes = Column(Text, nullable=True)
 
     form_of_ownership = relationship("FormOfOwnerships", back_populates="customers")

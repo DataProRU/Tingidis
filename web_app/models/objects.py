@@ -7,7 +7,7 @@ class Objects(Base):
     __tablename__ = "objects"
 
     id = Column(Integer, primary_key=True, index=True)
-    code = Column(String(6), nullable=False)
+    code = Column(String(256), nullable=False)
     name = Column(String(256), nullable=False)
     comment = Column(Text, nullable=True)
 

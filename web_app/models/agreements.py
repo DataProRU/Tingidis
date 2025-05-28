@@ -16,8 +16,8 @@ class Agreements(Base):
     __tablename__ = "agreements"
 
     id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(100))
-    number = Column(String)
+    name = Column(String(256))
+    number = Column(String(256))
     price = Column(Decimal)
     deadline = Column(Date)
     notes = Column(Text, nullable=True)
